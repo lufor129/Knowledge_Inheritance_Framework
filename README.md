@@ -20,6 +20,7 @@
 <!-- 知識庫清單：由 build.py --readme 產生，請勿手改 -->
 | 知識庫 | 介紹 | 維護者 | 簡報 | 下載 |
 |---|---|---|---|---|
+| [電腦視覺](kb/cv/) | 給剛進團隊、會寫 Python 但沒做過電腦視覺專案的工程師與研究生：讀完能依任務選方法、讀懂主流模型架構，並從資料準備、訓練、評估做到部署。 | lufor129 | 還沒有 | [手冊網站](https://github.com/lufor129/Knowledge_Inheritance_Framework/releases/latest/download/cv-handbook.html) |
 | [半導體製程](kb/semiconductor/) | 給半導體新人的知識庫：從電晶體結構演進、十章製程與量產，到先進封裝與背面供電。 | lufor129 | 有 | [手冊網站](https://github.com/lufor129/Knowledge_Inheritance_Framework/releases/latest/download/semiconductor-handbook.html)・[簡報](https://github.com/lufor129/Knowledge_Inheritance_Framework/releases/latest/download/semiconductor-deck.html) |
 <!-- 知識庫清單結束 -->
 
