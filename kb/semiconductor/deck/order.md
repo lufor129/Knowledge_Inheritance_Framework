@@ -50,7 +50,7 @@
 - litho3 → litho3@f30d0e
 - litho3m → litho3m@cdaa31
 - litho4 → litho4@a6d85f
-- litho5 → reso@09ee2b, mpat@abebb2, litho5@5fd99b
+- litho5 → reso@09ee2b, mpat@abebb2, litho5@2a9ff1
 - litho6 → litho6@310844
 - cmask → cmask@1690c6
 - etch1
