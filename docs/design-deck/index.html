@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>知識傳承框架互動簡報</title>
+<link rel="stylesheet" href="css/deck.css">
+</head>
+<body>
+<div id="viewport"><div id="stage"></div></div>
+<div id="progress"></div>
+<div id="help">先點一下畫面 · ←/→ 翻頁 · N 講稿 · O 總覽 · B 跳回 · F 全螢幕</div>
+<div id="hud"><button id="btn-prev" type="button" aria-label="上一頁">◀</button><span id="hud-num"></span><button id="btn-next" type="button" aria-label="下一頁">▶</button><button id="btn-notes" type="button">講稿</button><button id="btn-pv" type="button">講者視窗</button><button id="btn-ov" type="button">總覽</button></div>
+<aside id="notes" hidden></aside>
+<div id="overview" hidden></div>
+
+<script src="js/engine.js"></script>
+<script src="js/widgets/core.js"></script>
+<script src="js/widgets/anim.js"></script>
+<script src="js/slides/p0-intro.js"></script>
+<script src="js/slides/p1-why.js"></script>
+<script src="js/slides/p1-usecases.js"></script>
+<script src="js/slides/p2-store-add.js"></script>
+<script src="js/slides/p2-change-check-learn.js"></script>
+<script src="js/slides/p3-git.js"></script>
+<script src="js/slides/p4-start.js"></script>
+<script src="js/slides/p4-skills.js"></script>
+<script src="js/slides/p9-end.js"></script>
+<script>Deck.start();</script>
+</body>
+</html>

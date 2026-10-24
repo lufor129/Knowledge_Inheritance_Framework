@@ -1,0 +1,9 @@
+# 搬遷前的舊資料夾（有自己的 git），搬遷確認後刪除
+Semi_Conductor_Manufactor/
+# 建置結果
+kb/*/dist/
+out/
+# 只存在本機：使用者偏好、下載的檔案
+.kif/
+__pycache__/
+.DS_Store

@@ -1,0 +1,2518 @@
+<title>知識傳承框架互動簡報</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:ital@1&display=swap">
+<style>/* ===== 先進製程簡報 · 淺色學術風 =====
+   畫布固定 1600×900，由 engine.js 等比例縮放 */
+:root {
+  color-scheme: light;
+  --paper: #fbfcfd;
+  --panel: #f2f5f8;
+  --panel-2: #e8edf3;
+  --line: #d3dbe4;
+  --line-strong: #9aa8b8;
+  --ink: #17202b;
+  --ink-2: #3e4b5b;
+  --ink-3: #6a7888;
+  --accent: #1f4fb5;        /* 教科書圖藍 */
+  --accent-soft: #e3ebfa;
+  --accent-2: #b3541e;      /* 銅／警示重點 */
+  --accent-2-soft: #f8e9df;
+  --good: #1f7a4d;
+  --warn: #a8660a;
+  --bad: #b3261e;
+  /* 材料配色（全場一致） */
+  --m-si: #a9bcd0;
+  --m-si-dark: #7f97b0;
+  --m-ox: #f1e3a8;
+  --m-nit: #8fc1b5;
+  --m-pr: #e39ac2;
+  --m-pr-exp: #f6d3e6;
+  --m-poly: #c2a878;
+  --m-hk: #9d80d6;
+  --m-metal: #7b8794;
+  --m-cu: #c9793b;
+  --m-sige: #b8c85a;
+  --m-ndope: #5b8fd9;
+  --m-pdope: #d9765b;
+  --m-w: #5e6770;
+  --m-ru: #6f86a8;
+
+  --font-sans: "IBM Plex Sans", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Heiti TC", system-ui, sans-serif;
+  --font-cjk: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+  --font-serif: "Source Serif 4", "Songti TC", "Noto Serif TC", Georgia, serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: #dfe4ea;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- 舞台 ---------- */
+#viewport { position: fixed; inset: 0; display: grid; place-items: center; overflow: hidden; }
+#stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1600px; height: 900px;
+  transform-origin: 0 0;
+  background: var(--paper);
+  box-shadow: 0 10px 40px rgba(20, 30, 45, .18);
+  overflow: hidden;
+}
+.slide { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 34px 48px 26px; font-size: 19px; line-height: 1.5; }
+.slide.enter { animation: slideIn .28s ease-out; }
+@keyframes slideIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+
+/* ---------- 標題列 ---------- */
+.s-head { display: grid; grid-template-columns: 1fr auto; gap: 6px 24px; align-items: end; border-bottom: 1.5px solid var(--ink); padding-bottom: 10px; margin-bottom: 16px; }
+.s-eyebrow { font-family: var(--font-mono); font-size: 15px; letter-spacing: .08em; color: var(--accent); text-transform: uppercase; display: flex; gap: 12px; align-items: center; }
+.s-eyebrow .num { color: var(--ink-3); }
+.s-title { grid-column: 1 / -1; font-size: 36px; line-height: 1.2; font-weight: 700; margin: 2px 0 0; letter-spacing: .01em; }
+.s-title .en, .s-title .newtag { display: inline-block; }
+.s-title .en { font-weight: 400; color: var(--ink-3); font-size: 24px; margin-left: 10px; }
+.s-thesis { grid-column: 1 / -1; font-size: 19px; color: var(--ink-2); margin: 2px 0 0; }
+.s-thesis b { color: var(--accent-2); font-weight: 600; }
+
+/* 迷你流程列 */
+.miniflow { grid-column: 2; grid-row: 1; align-self: start; display: flex; gap: 3px; font-size: 13.5px; font-family: var(--font-cjk); }
+.miniflow span[data-chap]:not(.on) { cursor: pointer; }
+.miniflow span[data-chap]:not(.on):hover { background: var(--accent-soft); color: var(--accent); }
+.miniflow span { padding: 4px 9px; background: var(--panel); color: var(--ink-3); border-radius: 2px; white-space: nowrap; }
+.miniflow span.on { background: var(--accent); color: #fff; font-weight: 600; }
+.miniflow span.rel { background: var(--accent-soft); color: var(--accent); }
+
+/* ---------- 版面格線 ---------- */
+.s-body { flex: 1; min-height: 0; display: grid; gap: 22px; grid-template-columns: 58fr 42fr; }
+.s-body.w50 { grid-template-columns: 1fr 1fr; }
+.s-body.w66 { grid-template-columns: 66fr 34fr; }
+.s-body.full { grid-template-columns: 1fr; }
+.s-body.three { grid-template-columns: repeat(3, 1fr); }
+.col { display: flex; flex-direction: column; gap: 14px; min-height: 0; min-width: 0; }
+.s-foot { margin-top: 10px; display: flex; justify-content: space-between; gap: 20px; font-size: 14px; color: var(--ink-3); align-items: flex-end; }
+.s-foot .src { font-family: var(--font-mono); font-size: 13px; margin-right: 330px; text-align: right; } /* 讓開右下角的翻頁按鈕列 */
+
+/* 主圖面板 */
+.fig { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.fig.grow { flex: 1; }
+.fig-title { font-size: 15px; font-family: var(--font-mono); letter-spacing: .04em; color: var(--ink-3); display: flex; justify-content: space-between; gap: 12px; }
+.fig-canvas { flex: 1; min-height: 0; position: relative; }
+.fig-canvas > svg, .fig-canvas > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.caption { font-size: 15px; color: var(--ink-3); }
+
+/* 重點條列 */
+.points { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.points li { position: relative; padding-left: 22px; font-size: 18.5px; line-height: 1.5; }
+.points li::before { content: ""; position: absolute; left: 3px; top: .62em; width: 8px; height: 8px; background: var(--accent); }
+.points li b { color: var(--ink); }
+.points li .k { color: var(--accent-2); font-weight: 600; }
+.points.tight li { font-size: 17px; }
+.points.num { counter-reset: p; }
+.points.num li::before { counter-increment: p; content: counter(p); width: 18px; height: 18px; top: .2em; left: -2px; font-size: 13px; font-family: var(--font-mono); color: #fff; display: grid; place-items: center; border-radius: 50%; }
+.points.num li { padding-left: 26px; }
+
+/* 數字／公式卡 */
+.card { border: 1px solid var(--line); background: var(--panel); border-radius: 4px; padding: 12px 16px; }
+.card.key { background: var(--accent-soft); border-color: #bfcfee; }
+.card.alt { background: var(--accent-2-soft); border-color: #eccab4; }
+.card h4 { margin: 0 0 4px; font-size: 14px; font-family: var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+.card .big { font-size: 34px; font-weight: 700; font-family: var(--font-mono); color: var(--accent); line-height: 1.15; font-variant-numeric: tabular-nums; }
+.card.alt .big { color: var(--accent-2); }
+.card p { margin: 4px 0 0; font-size: 16.5px; color: var(--ink-2); line-height: 1.45; }
+.formula { font-family: var(--font-serif); font-size: 30px; font-style: italic; color: var(--ink); letter-spacing: .02em; }
+.formula sub, .formula sup { font-size: .6em; }
+.cards { display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr); }
+.cards.c3 { grid-template-columns: repeat(3, 1fr); }
+
+/* 表格 */
+table.t { width: 100%; border-collapse: collapse; font-size: 16px; font-variant-numeric: tabular-nums; }
+table.t th, table.t td { padding: 6px 9px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+table.t th { font-size: 14px; font-family: var(--font-mono); letter-spacing: .04em; color: var(--ink-3); font-weight: 500; border-bottom: 1.5px solid var(--ink-2); }
+table.t td.n { font-family: var(--font-mono); text-align: right; }
+table.t tr.hl td { background: var(--accent-soft); }
+table.t tr.clickable { cursor: pointer; }
+table.t tr.clickable:hover td { background: var(--panel); }
+
+/* 控制元件 */
+.controls { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.ctl { display: flex; flex-direction: column; gap: 2px; min-width: 180px; flex: 1; }
+.ctl label { font-size: 15px; color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px; }
+.ctl label output { font-family: var(--font-mono); color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; accent-color: var(--accent); height: 22px; cursor: pointer; }
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 4px; overflow: hidden; background: #fff; flex-wrap: wrap; }
+.seg button { font: inherit; font-size: 15.5px; border: 0; background: transparent; padding: 6px 13px; cursor: pointer; color: var(--ink-2); border-right: 1px solid var(--line); }
+.seg button:last-child { border-right: 0; }
+.seg button.on { background: var(--accent); color: #fff; }
+.seg button:hover:not(.on) { background: var(--panel); }
+.btn { font: inherit; font-size: 15.5px; border: 1px solid var(--line-strong); background: #fff; color: var(--ink); padding: 6px 14px; border-radius: 4px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.btn:hover { background: var(--panel); }
+.btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn.primary:hover { background: #193f93; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.stepper { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.stepper .dots { display: flex; gap: 4px; }
+.stepper .dots i { width: 36px; height: 14px; background: var(--line); border-radius: 3px; cursor: pointer; }
+.stepper .dots i.on { background: var(--accent); }
+.stepper .dots i.done { background: #9fb5e3; }
+.step-text { font-size: 17px; color: var(--ink-2); min-height: 52px; line-height: 1.45; }
+.step-text b { color: var(--accent); }
+
+/* 標籤 */
+.tag { display: inline-block; font-size: 13.5px; font-family: var(--font-mono); padding: 1px 7px; border-radius: 2px; background: var(--panel-2); color: var(--ink-2); vertical-align: 2px; }
+.tag.g { background: #dcefe4; color: var(--good); }
+.tag.w { background: #f7ead3; color: var(--warn); }
+.tag.b { background: #f6dcda; color: var(--bad); }
+.tag.a { background: var(--accent-soft); color: var(--accent); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 14.5px; color: var(--ink-2); }
+.legend i { display: inline-block; width: 13px; height: 13px; margin-right: 5px; vertical-align: -1px; border: 1px solid rgba(0,0,0,.18); }
+
+/* SVG 共用 */
+svg text { font-family: var(--font-sans); fill: var(--ink-2); }
+svg .axis line, svg .axis path { stroke: var(--line-strong); }
+svg .grid line { stroke: var(--line); stroke-dasharray: 2 3; }
+svg .lbl { font-size: 14px; fill: var(--ink-2); }
+svg .lbl-s { font-size: 12.5px; fill: var(--ink-3); }
+svg .mono { font-family: var(--font-mono); }
+svg .hot { cursor: pointer; }
+svg .hot:hover { filter: brightness(.94); }
+
+/* ---------- 封面 / 章節頁 ---------- */
+.cover { padding: 0; }
+.cover-grid { display: grid; grid-template-columns: 1.05fr .95fr; height: 100%; }
+.cover-left { padding: 70px 64px; display: flex; flex-direction: column; justify-content: space-between; }
+.cover-right { background: var(--panel); position: relative; border-left: 1px solid var(--line); }
+.cover h1 { font-size: 64px; line-height: 1.15; margin: 18px 0 18px; font-weight: 700; letter-spacing: .01em; }
+.cover .sub { font-size: 24px; color: var(--ink-2); line-height: 1.5; }
+.cover .meta { font-family: var(--font-mono); font-size: 15px; color: var(--ink-3); line-height: 1.8; }
+
+.divider-slide { padding: 0; }
+.divider-grid { display: grid; grid-template-columns: 420px 1fr; height: 100%; }
+.divider-num { background: var(--accent); color: #fff; display: flex; flex-direction: column; justify-content: flex-end; padding: 56px; }
+.divider-num .n { font-family: var(--font-mono); font-size: 140px; line-height: 1; font-weight: 300; }
+.divider-num .l { font-family: var(--font-mono); letter-spacing: .12em; font-size: 16px; text-transform: uppercase; opacity: .85; }
+.divider-body { padding: 70px 64px; display: flex; flex-direction: column; gap: 22px; }
+.divider-body h2 { font-size: 50px; margin: 0; line-height: 1.2; }
+.divider-body .q { font-size: 23px; color: var(--ink-2); max-width: 900px; }
+
+/* ---------- 講者備註 / 總覽 / 進度 ---------- */
+#progress { position: fixed; left: 0; bottom: 0; height: 4px; background: var(--accent); transition: width .25s; z-index: 30; }
+#hud { position: fixed; right: 12px; bottom: 10px; font-family: var(--font-mono); font-size: 12.5px; color: #5b6878; z-index: 31; display: flex; gap: 8px; align-items: center; }
+#hud button { font: inherit; border: 1px solid #b8c3cf; background: rgba(255,255,255,.85); color: #3e4b5b; padding: 3px 8px; border-radius: 3px; cursor: pointer; }
+#hud button:hover { background: #fff; }
+#notes { position: fixed; left: 0; right: 0; bottom: 0; max-height: 42vh; background: #1b2430; color: #e9eef4; z-index: 40; padding: 16px 28px 22px; overflow: auto; font-size: 17px; line-height: 1.65; box-shadow: 0 -6px 30px rgba(0,0,0,.25); }
+#notes .nh { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 13px; color: #9fb0c4; margin-bottom: 8px; gap: 16px; flex-wrap: wrap; }
+#notes .nh b { color: #ffd28a; font-weight: 500; }
+#notes .tg { color: #ffd28a; }
+#notes p { margin: 0 0 8px; max-width: 1200px; }
+#overview { position: fixed; inset: 0; background: rgba(233,237,242,.97); z-index: 50; overflow: auto; padding: 28px 36px 60px; }
+#overview h3 { font-family: var(--font-mono); font-size: 14px; letter-spacing: .08em; color: var(--accent); margin: 18px 0 8px; text-transform: uppercase; }
+#overview .og { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; }
+#overview .oc { background: #fff; border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; cursor: pointer; font-size: 14.5px; display: grid; grid-template-columns: 30px 1fr auto; gap: 6px; align-items: baseline; }
+#overview .oc:hover { border-color: var(--accent); }
+#overview .oc.cur { outline: 2px solid var(--accent); }
+#overview .oc .i { font-family: var(--font-mono); color: var(--ink-3); font-size: 12.5px; }
+#overview .oc .m { font-family: var(--font-mono); color: var(--ink-3); font-size: 12px; }
+#overview .ot { font-size: 14px; color: var(--ink-2); margin-bottom: 6px; font-family: var(--font-mono); }
+#help { position: fixed; left: 12px; bottom: 10px; font-family: var(--font-mono); font-size: 12px; color: #6a7888; z-index: 31; }
+
+/* ---------- 簡單版元件：比喻卡、量條、一句話數字 ---------- */
+.points.simple li { font-size: 21px; line-height: 1.45; }
+.analogy { display: grid; grid-template-columns: 64px 1fr; gap: 14px; align-items: center; background: var(--accent-2-soft); border: 1px solid #eccab4; border-radius: 6px; padding: 14px 16px; }
+.analogy .ic { width: 64px; height: 64px; border-radius: 50%; background: #fff; display: grid; place-items: center; border: 1px solid #eccab4; }
+.analogy .ic svg { width: 40px; height: 40px; }
+.analogy h4 { margin: 0 0 2px; font-size: 14px; font-family: var(--font-mono); letter-spacing: .08em; color: var(--accent-2); font-weight: 500; }
+.analogy p { margin: 0; font-size: 20px; line-height: 1.45; color: var(--ink); }
+.fact { border-left: 4px solid var(--accent); padding: 6px 0 6px 14px; }
+.fact .v { font-size: 34px; font-weight: 700; color: var(--accent); line-height: 1.15; font-variant-numeric: tabular-nums; }
+.fact .d { font-size: 18px; color: var(--ink-2); }
+.meter { display: grid; grid-template-columns: 110px 1fr 70px; gap: 10px; align-items: center; font-size: 16px; color: var(--ink-2); }
+.meter .bar { height: 16px; background: var(--panel-2); border-radius: 8px; overflow: hidden; }
+.meter .bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 8px; transition: width .25s, background .25s; }
+.meter .bar i.bad { background: var(--bad); }
+.meter .bar i.warn { background: var(--warn); }
+.meter .bar i.good { background: var(--good); }
+.meter .val { font-family: var(--font-mono); text-align: right; color: var(--ink); }
+.meters { display: flex; flex-direction: column; gap: 8px; }
+.gloss { font-size: 15px; color: var(--ink-3); }
+.gloss b { color: var(--accent); font-weight: 600; }
+.bigword { font-size: 26px; font-weight: 700; line-height: 1.3; text-wrap: balance; }
+
+/* 跳頁後的返回按鈕 */
+.backbtn { white-space: nowrap; font-family: var(--font-cjk); font-size: 14px; letter-spacing: 0; text-transform: none; padding: 2px 12px; margin-left: 8px; border-radius: 16px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent); cursor: pointer; box-shadow: 0 2px 8px rgba(31,79,181,.15); }
+.backbtn:hover { background: var(--accent); color: #fff; }
+.backbtn.float { position: absolute; left: 48px; bottom: 8px; z-index: 5; font-size: 15px; padding: 5px 14px; }
+.sc-row.primary span { color: #fff !important; }
+.hubbtn { border-color: var(--accent-2); background: var(--accent-2-soft); color: var(--accent-2); }
+.hubbtn:hover { background: var(--accent-2); color: #fff; }
+.go-card { font: inherit; text-align: left; cursor: pointer; }
+.go-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+.go-card h4 { color: var(--accent); }
+
+/* 標題旁的「新技術」標籤 */
+.newtag { display: inline-block; margin-left: 12px; padding: 3px 12px; font-size: 17px; font-weight: 700; letter-spacing: .04em; border-radius: 14px; background: var(--accent-2); color: #fff; vertical-align: 6px; font-family: var(--font-cjk); }
+.newcard { border-left: 4px solid var(--accent-2); background: #fdf3ea; }
+.newcard h4 { color: var(--accent-2); }
+.newcard p { font-size: 17.5px; margin: 2px 0 6px; line-height: 1.45; }
+
+/* 全螢幕醒目游標 */
+#ptr-halo { position: fixed; left: 0; top: 0; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; pointer-events: none; z-index: 9999;
+  background: radial-gradient(circle, rgba(255,60,40,.55) 0 28%, rgba(255,60,40,.25) 52%, rgba(255,60,40,0) 72%);
+  box-shadow: 0 0 0 2px rgba(255,255,255,.85), 0 0 14px 4px rgba(255,60,40,.45); opacity: 0; transition: opacity .25s; will-change: transform; }
+#ptr-halo.on { opacity: 1; }
+#ptr-halo.on.idle { opacity: 0; transition: opacity .8s; }
+.ptr-ripple { position: fixed; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; border: 3px solid rgba(255,60,40,.9); pointer-events: none; z-index: 9999; animation: ptr-rip .6s ease-out forwards; }
+@keyframes ptr-rip { from { transform: scale(1); opacity: 1; } to { transform: scale(4); opacity: 0; } }
+
+/* OCD 補充頁：小地圖＋右欄「目的／原因／做法」 */
+.minimap { display: flex; align-items: center; gap: 6px; font-size: 15px; }
+.minimap .nd { padding: 3px 14px; border-radius: 14px; background: var(--panel); color: var(--ink-3); border: 1px solid var(--line); }
+.minimap .nd.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.minimap .ar { color: var(--line-strong); display: inline-flex; align-items: center; gap: 2px; font-weight: 700; }
+.minimap .ar small { font-size: 14px; font-weight: 600; }
+.minimap .ar.on { color: var(--accent-2); }
+.ppw { gap: 10px; }
+.card.pp { padding: 10px 16px; border-left: 5px solid var(--line-strong); background: #fff; transition: border-color .25s, background .25s; }
+.card.pp h4 { font-family: var(--font-cjk); font-size: 15px; letter-spacing: .1em; color: var(--ink-3); font-weight: 700; }
+.card.pp p { font-size: 18px; color: var(--ink); line-height: 1.45; }
+.card.pp.on { border-left-color: var(--accent-2); background: var(--accent-2-soft); }
+.card.pp.how { border-left-color: var(--accent); }
+.how ol { margin: 4px 0 0; padding: 0; list-style: none; counter-reset: h; display: flex; flex-direction: column; gap: 6px; }
+.how li { counter-increment: h; position: relative; padding: 5px 8px 5px 34px; border-radius: 4px; font-size: 17.5px; line-height: 1.4; color: var(--ink-2); transition: background .25s, color .25s; }
+.how li::before { content: counter(h); position: absolute; left: 6px; top: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--panel-2); color: var(--ink-3); font: 600 13px var(--font-mono); display: grid; place-items: center; }
+.how li.on { background: var(--accent-soft); color: var(--ink); }
+.how li.on::before { background: var(--accent); color: #fff; }
+.controls.guided { visibility: hidden; }
+.controls.guided.live { visibility: visible; }
+/* 供應鏈小卡（第三部分） */
+.slide [hidden] { display: none !important; }
+/* 每頁上方的浮水印 */
+.slide .wm { position: absolute; top: 8px; left: 0; right: 0; text-align: center; font-size: 12px; color: var(--ink-3); opacity: .65; letter-spacing: .04em; pointer-events: none; z-index: 20; }
+
+/* ===== 知識傳承框架簡報：新增元件（沿用上面的配色與字級） ===== */
+.btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.chat { display: flex; flex-direction: column; gap: 10px; }
+.bub { max-width: 86%; padding: 10px 14px; border-radius: 10px; font-size: 18px; line-height: 1.5; }
+.bub .by { display: block; font-size: 13px; font-family: var(--font-mono); color: var(--ink-3); margin-bottom: 2px; letter-spacing: .04em; }
+.bub.me { align-self: flex-end; background: var(--accent-soft); border: 1px solid #bfcfee; border-bottom-right-radius: 3px; }
+.bub.ai { align-self: flex-start; background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 3px; }
+.bub.show { animation: bubIn .35s ease-out; }
+@keyframes bubIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.cite { display: inline-block; margin-top: 4px; font-size: 14px; font-family: var(--font-mono); color: var(--accent); }
+.tree { display: flex; flex-direction: column; gap: 4px; }
+.tree button { font: 500 15px var(--font-mono); text-align: left; border: 1px solid transparent; background: transparent; color: var(--ink-3); padding: 6px 10px; border-radius: 4px; cursor: pointer; }
+.tree button:hover { border-color: var(--line); color: var(--ink); }
+.tree button.on { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+.tree .d1 { margin-left: 18px; } .tree .d2 { margin-left: 36px; }
+pre.code { margin: 0; background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; font: 14px/1.6 var(--font-mono); white-space: pre; overflow: auto; color: var(--ink); }
+.node { position: absolute; transform: translate(-50%, -50%); padding: 7px 14px; border-radius: 20px; border: 1.5px solid var(--line-strong); background: #fff; font: 600 16px var(--font-cjk); white-space: nowrap; cursor: pointer; text-align: center; color: var(--ink); transition: background .2s, border-color .2s, color .2s, box-shadow .2s; }
+.node.in { border-color: #e2b597; }
+.node.core { border-color: var(--ink); border-width: 2.5px; }
+.node.out { border-color: #a9bfe9; }
+.node.on { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 14px rgba(31,79,181,.3); }
+.node .w { display: block; font: 500 12px var(--font-mono); color: var(--ink-3); letter-spacing: .04em; }
+.node.on .w { color: #dbe5fb; }
+.lane-lbl { position: absolute; transform: translate(-50%, -50%); font: 600 15px var(--font-cjk); letter-spacing: .14em; color: var(--ink-3); text-align: center; }
+.rcol h4 { margin: 0 0 6px; font: 500 14px var(--font-mono); letter-spacing: .06em; color: var(--ink-3); }
+.ritems { display: flex; flex-direction: column; gap: 6px; }
+.ritem { border: 1px solid var(--line); background: #fff; border-radius: 4px; padding: 6px 10px; font-size: 16px; transition: background .2s, border-color .2s; text-align: left; font-family: inherit; color: var(--ink); }
+.ritem .ids { display: block; font: 13px var(--font-mono); color: var(--ink-3); }
+.ritem.click { cursor: pointer; }
+.ritem.click:hover { border-color: var(--accent); }
+.ritem.sel { border-color: var(--accent); background: var(--accent-soft); }
+.ritem.hit { border-color: var(--warn); background: #f7ead3; }
+.ritem.hit.del { border-color: var(--bad); background: #f6dcda; }
+.ritem.ok { border-color: var(--good); background: #dcefe4; }
+.quiz { display: flex; flex-direction: column; gap: 8px; }
+.quiz button { font: inherit; font-size: 18px; text-align: left; border: 1px solid var(--line-strong); background: #fff; border-radius: 4px; padding: 8px 14px; cursor: pointer; color: var(--ink); }
+.quiz button:hover { background: var(--panel); }
+.quiz button.right { border-color: var(--good); background: #dcefe4; }
+.quiz button.wrong { border-color: var(--bad); background: #f6dcda; }
+.fb { font-size: 17px; color: var(--ink-2); min-height: 52px; line-height: 1.5; }
+.mock { background: #fff; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.mock .mbar { background: var(--panel); border-bottom: 1px solid var(--line); padding: 6px 12px; font: 13px var(--font-mono); color: var(--ink-3); display: flex; gap: 8px; align-items: center; }
+.mock .mbar i { width: 10px; height: 10px; border-radius: 50%; background: var(--line-strong); display: inline-block; }
+.mock .pg { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; overflow: auto; }
+.ov-box { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 8px 12px; font-size: 17px; }
+.chips { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 15px; }
+.chips span { padding: 3px 12px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.chips span.ar { background: none; border: 0; color: var(--ink-3); padding: 0; }
+.faqi { border: 1px solid var(--line); border-radius: 4px; padding: 8px 12px; font-size: 17px; }
+.faqi summary { cursor: pointer; font-weight: 600; }
+.faqi p { margin: 6px 0 0; color: var(--ink-2); }
+.faqi .rel { font: 13px var(--font-mono); color: var(--ink-3); margin-top: 4px; }
+.qa-row { display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: start; padding: 9px 12px; border: 1px solid var(--line); border-radius: 4px; background: #fff; font-size: 17px; }
+.qa-row .mk { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: #fff; font-size: 16px; }
+.qa-row .mk.y { background: var(--good); } .qa-row .mk.n { background: var(--bad); }
+.qa-row .q { font-weight: 600; }
+.qa-row .a { color: var(--ink-2); font-size: 16px; margin-top: 2px; }
+.excerpt { font-size: 19px; line-height: 1.65; background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 12px 16px; }
+.excerpt .term { background: #f6dcda; border-radius: 2px; padding: 0 3px; }
+.excerpt .fix { background: #dcefe4; border-radius: 2px; padding: 0 3px; }
+.fileflow { display: grid; grid-template-columns: 1fr 44px 1fr; gap: 10px; flex: 1; min-height: 0; }
+.fbox { background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 10px 12px; display: flex; flex-direction: column; gap: 5px; overflow: hidden; }
+.fbox h4 { margin: 0 0 4px; font: 600 14px var(--font-mono); color: var(--ink-3); }
+.fchip { font: 14.5px/1.35 var(--font-mono); padding: 4px 9px; border-radius: 3px; background: var(--panel); color: var(--ink-2); transition: opacity .3s, background .3s; }
+.fchip.gone { opacity: .35; text-decoration: line-through; }
+.fchip.now { background: var(--accent-2-soft); color: var(--ink); outline: 1.5px solid var(--accent-2); text-decoration: none; opacity: 1; }
+.fchip.new { background: var(--accent-soft); color: var(--ink); }
+.fchip.wait { opacity: .12; }
+.farrow { display: grid; place-items: center; color: var(--accent-2); font-size: 30px; }
+table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var(--bad); } table.t td.m { color: var(--warn); }
+.adr-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.adr-btn { font: inherit; text-align: left; border: 1px solid var(--line); background: #fff; border-radius: 4px; padding: 10px 12px; cursor: pointer; font-size: 16.5px; line-height: 1.4; color: var(--ink); }
+.adr-btn .no { display: block; font: 13px var(--font-mono); color: var(--ink-3); margin-bottom: 2px; }
+.adr-btn.old b { text-decoration: line-through; color: var(--ink-3); }
+.adr-btn.on { border-color: var(--accent); background: var(--accent-soft); }
+.role-card { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; padding-top: 6px; }
+.role-card h4, .lbl4 { margin: 0 0 8px; font: 500 14px var(--font-mono); letter-spacing: .06em; color: var(--ink-3); }
+.say { display: flex; flex-direction: column; gap: 8px; }
+.say span { align-self: flex-start; background: var(--accent-soft); border-radius: 12px 12px 12px 3px; padding: 6px 12px; font-size: 17.5px; }
+/* 第四部分：討論頁 */
+.swim { display: grid; grid-template-columns: 84px repeat(10, 1fr); gap: 5px; }
+.swim .hd { font: 12px var(--font-mono); color: var(--ink-3); text-align: center; }
+.swim .ln { font: 600 16px var(--font-cjk); color: var(--ink-2); display: flex; align-items: center; }
+.swim .cell { min-height: 62px; border-radius: 4px; background: var(--panel); display: flex; align-items: center; justify-content: center; text-align: center; padding: 2px; font-size: 14.5px; line-height: 1.25; color: var(--ink-3); }
+.swim .cell.has { background: #fff; border: 1px solid var(--line-strong); color: var(--ink-2); }
+.swim .cell.done { background: var(--accent-soft); border-color: #bfcfee; color: var(--ink); }
+.swim .cell.now { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+.swim .cell.wait { box-shadow: inset 0 0 0 2.5px var(--accent-2); }
+.flowrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.flowrow .ar { color: var(--ink-3); font-size: 20px; }
+.st { padding: 10px 14px; border-radius: 6px; border: 2px solid var(--line-strong); background: #fff; font-size: 17px; font-weight: 600; transition: opacity .25s; }
+.st.hum { border-color: var(--good); } .st.prog { border-color: var(--accent-2); } .st.ag { border-color: var(--accent); } .st.core { border-color: var(--ink); }
+.st.skip { opacity: .3; text-decoration: line-through; border-style: dashed; }
+.kbbox { border: 1.5px solid var(--line-strong); border-radius: 6px; background: #fff; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.kbbox h4 { margin: 0; font-size: 19px; }
+.appr { font: 600 15px var(--font-cjk); padding: 3px 12px; border-radius: 12px; display: inline-block; align-self: flex-start; }
+.appr.need { background: #dcefe4; color: var(--good); } .appr.info { background: var(--accent-soft); color: var(--accent); } .appr.bad { background: #f6dcda; color: var(--bad); }
+.wcard { border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; background: #fff; display: flex; justify-content: space-between; gap: 12px; align-items: center; font-size: 17px; }
+.wcard .ch { display: block; font: 13px var(--font-mono); color: var(--ink-3); }
+.asg { font: 600 14.5px var(--font-cjk); padding: 3px 12px; border-radius: 12px; white-space: nowrap; }
+.asg.set { background: var(--accent-soft); color: var(--accent); } .asg.none { background: #f7ead3; color: var(--warn); } .asg.risk { background: #f6dcda; color: var(--bad); }
+</style>
+
+<div id="viewport"><div id="stage"></div></div>
+<div id="progress"></div>
+<div id="help">先點一下畫面 · ←/→ 翻頁 · N 講稿 · O 總覽 · B 跳回 · F 全螢幕</div>
+<div id="hud"><button id="btn-prev" type="button" aria-label="上一頁">◀</button><span id="hud-num"></span><button id="btn-next" type="button" aria-label="下一頁">▶</button><button id="btn-notes" type="button">講稿</button><button id="btn-pv" type="button">講者視窗</button><button id="btn-ov" type="button">總覽</button></div>
+<aside id="notes" hidden></aside>
+<div id="overview" hidden></div>
+
+<script>/* 簡報引擎：翻頁、縮放、講者備註、總覽、章節列
+   每頁用 Deck.add({ id, part, title, minutes, render(h) -> html, init(el, ctx), notes }) 註冊 */
+(function () {
+  const W = 1600, H = 900;
+  /* 第二部分的章節列：[章序, 名稱, 該章第一頁 id]；頁面用 chap: 1–5 指定所屬章節 */
+  const CHAPS = [
+    [1, '知識怎麼存', 'struct'], [2, '新增', 'modes'], [3, '修改與刪除', 'refs'], [4, '檢查與審核', 'gates'], [5, '新人怎麼學', 'learn']
+  ];
+  const PARTS = { 0: '開場', 1: '第一部分 · 為什麼、給誰', 2: '第二部分 · 怎麼運作', 3: '第三部分 · 跟 Git 主機結合', 4: '第四部分 · 怎麼開始', 9: '結尾' };
+
+  const Deck = {
+    slides: [],
+    cur: -1,
+    _rafs: [],
+    add(s) { this.slides.push(s); },
+    /* 檢查用：同步推進目前頁面的動畫 n 幀（背景分頁時瀏覽器會暫停動畫） */
+    tick(n) { for (let k = 0; k < (n || 1); k++) { const t = performance.now() / 1000 + k * 0.05; this._rafs.forEach(f => f(0.05, t)); } },
+    CHAPS, PARTS
+  };
+  window.Deck = Deck;
+
+  /* ---------- 版面輔助 ---------- */
+  function esc(s) { return String(s); }
+  Deck.head = function (s, i) {
+    let flow = '';
+    if (s.chap) { // 右上角的章節列：亮起目前所在的章，點名稱跳到該章第一頁
+      flow = '<div class="miniflow" aria-label="第二部分章節">' + CHAPS.map(([k, n, go]) =>
+        `<span class="${k === s.chap ? 'on' : ''}" data-chap="${go}" title="跳到第 ${k} 章">${'①②③④⑤⑥⑦⑧⑨⑩'[k - 1]} ${n}</span>`).join('') + '</div>';
+    }
+    return `<header class="s-head">
+      <div class="s-eyebrow"><span class="num">${String(i + 1).padStart(2, '0')}</span><span>${esc(s.eyebrow || PARTS[s.part] || '')}</span></div>
+      ${flow}
+      <h2 class="s-title">${s.title}${s.badge ? `<span class="newtag">${s.badge}</span>` : ''}${s.en ? `<span class="en">${s.en}</span>` : ''}</h2>
+      ${s.thesis ? `<p class="s-thesis">${s.thesis}</p>` : ''}
+    </header>`;
+  };
+  Deck.foot = function (s) {
+    if (!s.src && !s.footL) return '';
+    return `<footer class="s-foot"><span>${s.footL || ''}</span><span class="src">${s.src ? '資料：' + s.src : ''}</span></footer>`;
+  };
+
+  /* ---------- 舞台與縮放 ---------- */
+  let stage, progress, hudNum, notesEl, overviewEl;
+  let cleanups = [];
+  let startTime = null;
+
+  function fit() {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const sc = Math.min(vw / W, vh / H);
+    stage.style.transform = `translate(${-W * sc / 2}px, ${-H * sc / 2}px) scale(${sc})`;
+    Deck.scale = sc;
+  }
+
+  /* 互動狀態：離頁前記下分頁鈕、逐步動畫、滑桿，按 B 回來或視窗縮放重建時還原（不用從第 1 步重來） */
+  Deck._state = {};
+  function snapState(el) {
+    const st = { seg: [], step: [], rng: [] };
+    el.querySelectorAll('.seg[id]').forEach(b => { const k = [...b.querySelectorAll('button')].findIndex(x => x.classList.contains('on')); if (k >= 0) st.seg.push([b.id, k]); });
+    el.querySelectorAll('.stepper[id]').forEach(b => { const d = [...b.querySelectorAll('.dots i')]; const k = d.findIndex(x => x.classList.contains('on')); if (k >= 0) st.step.push([b.id, k]); });
+    el.querySelectorAll('input[type=range][id]').forEach(r => st.rng.push([r.id, r.value]));
+    return st;
+  }
+  function applyState(el, st) {
+    const q = id => el.querySelector('#' + CSS.escape(id));
+    st.seg.forEach(([id, k]) => { const b = q(id), bt = b && b.querySelectorAll('button')[k]; if (bt && !bt.classList.contains('on')) bt.click(); }); // 先切分頁（分頁會換掉下面的內容）
+    st.rng.forEach(([id, v]) => { const r = q(id); if (r && r.value !== v) { r.value = v; r.dispatchEvent(new Event('input', { bubbles: true })); } });
+    st.step.forEach(([id, k]) => { const b = q(id), d = b && b.querySelectorAll('.dots i')[k]; if (d && k > 0) d.click(); });
+  }
+
+  function runCleanups() {
+    cleanups.forEach(fn => { try { fn(); } catch (e) { console.error(e); } });
+    cleanups = [];
+  }
+
+  Deck.go = function (i, opts) {
+    const n = Deck.slides.length;
+    i = Math.max(0, Math.min(n - 1, i));
+    if (i === Deck.cur && !(opts && opts.force)) return;
+    const old = stage.querySelector('section.slide');
+    if (old && Deck.slides[Deck.cur]) { try { Deck._state[Deck.slides[Deck.cur].id] = snapState(old); } catch (e) { console.error(e); } }
+    runCleanups();
+    Deck.cur = i; Deck._builtScale = Deck.scale;
+    const s = Deck.slides[i];
+    const el = document.createElement('section');
+    el.className = 'slide enter ' + (s.cls || '');
+    el.setAttribute('aria-label', `第 ${i + 1} 頁：${String(s.title).replace(/<[^>]+>/g, '')}`);
+    try {
+      el.innerHTML = s.raw ? s.render(i) : Deck.head(s, i) + s.render(i) + Deck.foot(s);
+    } catch (e) { el.innerHTML = `<pre>${e.stack}</pre>`; console.error(e); }
+    el.insertAdjacentHTML('beforeend', '<div class="wm">知識傳承框架 · 設計說明（2026-10-24 討論結果）· 對話、數字與情境皆為示意</div>'); // 每頁上方的浮水印
+    stage.innerHTML = '';
+    stage.appendChild(el);
+    backButton(el, s, opts);
+    el.querySelectorAll('.miniflow [data-chap]').forEach(sp => { if (!sp.classList.contains('on')) sp.onclick = () => Deck.goId(sp.dataset.chap); });
+    if (s.hub) { // 回到章節全貌頁（全貌頁會出現「回到第 N 頁」，可以來回跳）
+      const t = Deck.slides.find(x => x.id === s.hub), eb = el.querySelector('.s-eyebrow');
+      if (t && eb && Deck.slides[Deck._back] !== t) { const b = document.createElement('button'); b.type = 'button'; b.className = 'backbtn hubbtn'; b.textContent = '⌂ ' + String(t.hubShort || t.short || t.title).replace(/<[^>]+>/g, ''); b.onclick = () => Deck.goId(s.hub); eb.appendChild(b); }
+    }
+    if (s.init) {
+      const ctx = {
+        onCleanup(fn) { cleanups.push(fn); },
+        raf(fn) { // 動畫迴圈，離頁自動停止
+          let id, alive = true, last = performance.now();
+          // 第一幀的 rAF 時間戳可能早於 performance.now()，dt 會是負的：夾在 0–0.05；單一幀出錯也不讓迴圈停掉
+          const loop = t => { if (!alive) return; const dt = Math.max(0, Math.min(0.05, (t - last) / 1000)); last = t; try { fn(dt, t / 1000); } catch (e) { console.error('raf error', e); } id = requestAnimationFrame(loop); };
+          id = requestAnimationFrame(loop);
+          Deck._rafs.push(fn);
+          const stop = () => { alive = false; cancelAnimationFrame(id); Deck._rafs = Deck._rafs.filter(f => f !== fn); };
+          cleanups.push(stop); return stop;
+        },
+        timer(fn, ms) { const id = setInterval(fn, ms); cleanups.push(() => clearInterval(id)); return id; },
+        timeout(fn, ms) { const id = setTimeout(fn, ms); cleanups.push(() => clearTimeout(id)); return id; }
+      };
+      try { s.init(el, ctx); } catch (e) { console.error('init error on slide', i + 1, e); }
+      const keep = opts && (opts.returning || opts.keep) && Deck._state[s.id];
+      if (keep) { try { applyState(el, keep); } catch (e) { console.error('restore error on slide', i + 1, e); } }
+    }
+    progress.style.width = ((i + 1) / n * 100) + '%';
+    hudNum.textContent = `${i + 1} / ${n}`;
+    try { history.replaceState(null, '', '#' + (i + 1)); } catch (e) { location.hash = String(i + 1); }
+    renderNotes();
+    renderPresenter();
+    if (!overviewEl.hidden) renderOverview();
+  };
+
+
+  /* 跳頁連結：記住從哪一頁跳來，目標頁會出現「回到第 N 頁」按鈕（B 鍵也可以） */
+  /* 調整頁序：把 id 那一頁搬到 afterId 那一頁後面 */
+  Deck.move = function (id, afterId) {
+    const i = Deck.slides.findIndex(s => s.id === id); if (i < 0) return;
+    const [s] = Deck.slides.splice(i, 1);
+    const j = Deck.slides.findIndex(x => x.id === afterId);
+    Deck.slides.splice(j + 1, 0, s);
+  };
+
+  Deck.goId = function (id) {
+    const i = Deck.slides.findIndex(s => s.id === id);
+    if (i >= 0 && i !== Deck.cur) Deck.go(i, { from: Deck.cur });
+  };
+  Deck.goBack = function () { if (Deck._back != null) Deck.go(Deck._back, { returning: true }); };
+  function backButton(el, s, opts) {
+    let to = null;
+    if (opts && opts.from != null) to = opts.from;
+    else if (s.back) to = Deck.slides.findIndex(x => x.id === s.back);
+    Deck._back = to != null && to >= 0 ? to : null;
+    if (Deck._back == null) return;
+    const t = Deck.slides[Deck._back];
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'backbtn';
+    b.innerHTML = `↩ 回到第 ${Deck._back + 1} 頁：${String(t.short || t.title).replace(/<[^>]+>/g, '')}`;
+    b.onclick = Deck.goBack;
+    const eb = el.querySelector('.s-eyebrow');
+    if (eb) eb.appendChild(b); else { b.classList.add('float'); el.appendChild(b); }
+  }
+
+  function cumMinutes(upto) {
+    let m = 0; for (let k = 0; k < upto; k++) m += Deck.slides[k].minutes || 0; return m;
+  }
+  // 計時基準：按 T 時記下目前頁，計畫進度從這一頁起算（第二場從中間開講時才不會顯示超前一大截）
+  let planBase = 0;
+  const planAt = i => cumMinutes(i) - cumMinutes(planBase);
+  // 講稿段落開頭的【可略】【提示】標籤換顏色，講者一眼看得到
+  const notesHTML = s => (s.notes || '（本頁沒有講稿）').trim().split(/\n\s*\n/).map(p => `<p>${p.trim().replace(/^【(.+?)】/, '<b class="tg">【$1】</b>')}</p>`).join('');
+  function fmtMin(m) { return `${Math.floor(m)}:${String(Math.round((m % 1) * 60)).padStart(2, '0')}`; }
+
+  function renderNotes() {
+    if (notesEl.hidden) return;
+    const s = Deck.slides[Deck.cur];
+    const total = planAt(Deck.slides.length);
+    const el = startTime ? (Date.now() - startTime) / 60000 : 0;
+    const paras = notesHTML(s);
+    notesEl.innerHTML = `<div class="nh"><span>講稿 · 第 ${Deck.cur + 1} 頁 · 建議 <b>${s.minutes || 0} 分</b></span>
+      <span>計畫進度 ${fmtMin(Math.max(0, planAt(Deck.cur)))} → ${fmtMin(Math.max(0, planAt(Deck.cur + 1)))} / ${planBase ? '本場（從第 ' + (planBase + 1) + ' 頁起）' : '全場'} ${fmtMin(total)}</span>
+      <span>實際經過 <b id="elapsed">${fmtMin(el)}</b>（按 T 重設計時）</span></div>${paras}`;
+  }
+
+  /* 講者視窗：另開一個視窗顯示備註、下一頁與計時（投影時主畫面維持乾淨） */
+  let presenter = null;
+  function openPresenter() {
+    try { presenter = window.open('', 'deck-presenter', 'width=900,height=640'); } catch (e) { presenter = null; }
+    if (!presenter) { notesEl.hidden = false; renderNotes(); return; }
+    const d = presenter.document;
+    d.open();
+    d.write(`<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>講者視窗</title><style>
+      body{margin:0;font-family:"PingFang TC","Noto Sans TC",system-ui,sans-serif;background:#1b2430;color:#e9eef4}
+      header{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;background:#111822;gap:16px;flex-wrap:wrap}
+      .big{font-size:40px;font-family:Menlo,monospace;color:#ffd28a}.cur{font-size:22px;font-weight:700}.nx{color:#9fb0c4;font-size:16px}
+      main{padding:18px 26px;font-size:21px;line-height:1.75}main p{margin:0 0 12px}
+      button{font:inherit;font-size:18px;padding:8px 18px;border-radius:4px;border:1px solid #4a5a70;background:#26344a;color:#fff;cursor:pointer}
+      .bar{height:6px;background:#26344a}.bar i{display:block;height:100%;background:#1f4fb5}.tg{color:#ffd28a}
+    </style></head><body><header><div><div class="cur" id="pc"></div><div class="nx" id="pn"></div></div>
+      <div><span class="big" id="pt"></span> <span class="nx" id="pp"></span></div>
+      <div><button id="bp">◀ 上一頁</button> <button id="bn">下一頁 ▶</button></div></header>
+      <div class="bar"><i id="pb"></i></div><main id="pm"></main></body></html>`);
+    d.close();
+    d.getElementById('bp').onclick = () => Deck.go(Deck.cur - 1);
+    d.getElementById('bn').onclick = () => Deck.go(Deck.cur + 1);
+    d.addEventListener('keydown', e => {
+      if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { Deck.go(Deck.cur + 1); e.preventDefault(); }
+      if (['ArrowLeft', 'PageUp'].includes(e.key)) { Deck.go(Deck.cur - 1); e.preventDefault(); }
+    });
+    renderPresenter();
+  }
+  function renderPresenter() {
+    if (!presenter || presenter.closed) return;
+    const d = presenter.document, s = Deck.slides[Deck.cur], nx = Deck.slides[Deck.cur + 1];
+    const strip = x => String(x || '').replace(/<[^>]+>/g, '');
+    const el = startTime ? (Date.now() - startTime) / 60000 : 0, plan = Math.max(0, planAt(Deck.cur));
+    const q = id => d.getElementById(id);
+    if (!q('pc')) return;
+    q('pc').textContent = `${Deck.cur + 1} / ${Deck.slides.length}　${strip(s.title)}（建議 ${s.minutes || 0} 分）`;
+    q('pn').textContent = nx ? '下一頁：' + strip(nx.short || nx.title) : '最後一頁';
+    q('pt').textContent = fmtMin(el);
+    const diff = el - plan;
+    q('pp').textContent = `計畫 ${fmtMin(plan)}　${diff > 1 ? '落後 ' + fmtMin(diff) : diff < -1 ? '超前 ' + fmtMin(-diff) : '準時'}`;
+    q('pb').style.width = ((Deck.cur + 1) / Deck.slides.length * 100) + '%';
+    q('pm').innerHTML = notesHTML(s);
+  }
+  Deck.openPresenter = openPresenter;
+
+  function renderOverview() {
+    const total = cumMinutes(Deck.slides.length);
+    let html = `<div class="ot">全場 ${Deck.slides.length} 頁 · 預估 ${fmtMin(total)} · 點擊跳頁 · Esc 關閉</div>`;
+    let part = null;
+    Deck.slides.forEach((s, i) => {
+      if (s.part !== part) {
+        if (part !== null) html += '</div>';
+        part = s.part;
+        const pm = Deck.slides.filter(x => x.part === part).reduce((a, x) => a + (x.minutes || 0), 0);
+        html += `<h3>${PARTS[part]} · ${fmtMin(pm)}</h3><div class="og">`;
+      }
+      html += `<div class="oc ${i === Deck.cur ? 'cur' : ''}" data-i="${i}"><span class="i">${i + 1}</span><span>${String(s.short || s.title).replace(/<[^>]+>/g, '')}</span><span class="m">${s.minutes || 0}′</span></div>`;
+    });
+    html += '</div>';
+    overviewEl.innerHTML = html;
+  }
+
+  function toggle(el, force) {
+    el.hidden = force === undefined ? !el.hidden : !force;
+  }
+
+  Deck.start = function () {
+    stage = document.getElementById('stage');
+    progress = document.getElementById('progress');
+    hudNum = document.getElementById('hud-num');
+    notesEl = document.getElementById('notes');
+    overviewEl = document.getElementById('overview');
+    fit();
+    // 視窗大小改變（例如按 F 全螢幕）：canvas 解析度是進頁時決定的，縮放差超過一成就重建當頁，避免畫面變糊
+    let rsT = null;
+    window.addEventListener('resize', () => {
+      fit(); clearTimeout(rsT);
+      rsT = setTimeout(() => { if (Math.abs(Deck.scale / (Deck._builtScale || Deck.scale) - 1) > 0.1) { Deck.go(Deck.cur, { force: true, from: Deck._back, keep: true }); } }, 300);
+    });
+
+    document.addEventListener('keydown', e => {
+      const t = e.target;
+      const isRange = t && t.tagName === 'INPUT' && t.type === 'range';
+      const typing = t && !isRange && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA');
+      if (typing && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) return;
+      // 滑桿：上下鍵調整數值，左右鍵照常翻頁（講者拖完滑桿直接按 → 就能換頁）
+      if (isRange && ['ArrowUp', 'ArrowDown'].includes(e.key)) return;
+      if (isRange && ['ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', ' '].includes(e.key)) t.blur();
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      switch (e.key) {
+        case 'ArrowRight': case 'PageDown': case ' ': Deck.go(Deck.cur + 1); e.preventDefault(); break;
+        case 'ArrowLeft': case 'PageUp': Deck.go(Deck.cur - 1); e.preventDefault(); break;
+        case 'Home': Deck.go(0); break;
+        case 'End': Deck.go(Deck.slides.length - 1); break;
+        case 'n': case 'N': toggle(notesEl); renderNotes(); break;
+        case 'o': case 'O': toggle(overviewEl); if (!overviewEl.hidden) renderOverview(); break;
+        case 'Escape': toggle(overviewEl, false); break;
+        case 't': case 'T': startTime = Date.now(); planBase = Deck.cur; renderNotes(); renderPresenter(); break;
+        case 'p': case 'P': openPresenter(); break;
+        case 'b': case 'B': Deck.goBack(); break;
+        case 'f': case 'F':
+          if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});
+          else document.exitFullscreen?.();
+          break;
+      }
+    });
+    // 全螢幕時的醒目游標：紅色光暈跟著滑鼠，點擊有波紋；停 3 秒淡出；L 鍵開關
+    const ptr = document.createElement('div'); ptr.id = 'ptr-halo'; document.body.appendChild(ptr);
+    let ptrOn = true, ptrIdle = null;
+    const ptrShow = () => { ptr.classList.toggle('on', ptrOn && !!document.fullscreenElement); };
+    document.addEventListener('mousemove', e => {
+      ptr.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+      ptrShow(); ptr.classList.remove('idle');
+      clearTimeout(ptrIdle); ptrIdle = setTimeout(() => ptr.classList.add('idle'), 3000);
+    }, { passive: true });
+    document.addEventListener('mousedown', e => {
+      if (!ptrOn || !document.fullscreenElement) return;
+      const r = document.createElement('div'); r.className = 'ptr-ripple';
+      r.style.left = e.clientX + 'px'; r.style.top = e.clientY + 'px';
+      document.body.appendChild(r); setTimeout(() => r.remove(), 650);
+    });
+    document.addEventListener('fullscreenchange', ptrShow);
+    document.addEventListener('keydown', e => {
+      if ((e.key === 'l' || e.key === 'L') && !e.metaKey && !e.ctrlKey && !e.altKey && !(e.target && e.target.tagName === 'INPUT' && e.target.type !== 'range')) { ptrOn = !ptrOn; ptrShow(); }
+    });
+
+    overviewEl.addEventListener('click', e => {
+      const c = e.target.closest('.oc'); if (!c) return;
+      toggle(overviewEl, false); Deck.go(+c.dataset.i);
+    });
+    document.getElementById('btn-prev').onclick = () => Deck.go(Deck.cur - 1);
+    document.getElementById('btn-next').onclick = () => Deck.go(Deck.cur + 1);
+    document.getElementById('btn-notes').onclick = () => { toggle(notesEl); renderNotes(); };
+    document.getElementById('btn-ov').onclick = () => { toggle(overviewEl); if (!overviewEl.hidden) renderOverview(); };
+
+    // 觸控滑動
+    let tx = null;
+    document.addEventListener('touchstart', e => { if (e.target.tagName !== 'INPUT') tx = e.touches[0].clientX; }, { passive: true });
+    document.addEventListener('touchend', e => {
+      if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; tx = null;
+      if (Math.abs(dx) > 60) Deck.go(Deck.cur + (dx < 0 ? 1 : -1));
+    });
+
+    setInterval(() => { const e = document.getElementById('elapsed'); if (e && startTime) e.textContent = fmtMin((Date.now() - startTime) / 60000); renderPresenter(); }, 1000);
+    const bpv = document.getElementById('btn-pv'); if (bpv) bpv.onclick = openPresenter;
+    startTime = Date.now();
+    const h = parseInt((location.hash || '').replace('#', ''), 10);
+    Deck.go(isNaN(h) ? 0 : h - 1, { force: true });
+  };
+})();
+</script>
+<script>/* 共用互動元件輔助函式 */
+(function () {
+  const NS = 'http://www.w3.org/2000/svg';
+  const U = {};
+  window.U = U;
+
+  U.$ = (el, sel) => el.querySelector(sel);
+  U.$$ = (el, sel) => Array.from(el.querySelectorAll(sel));
+  U.clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  U.lerp = (a, b, t) => a + (b - a) * t;
+  U.ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+  /* 材料顏色（和 CSS 變數同步） */
+  const MAT = {
+    si: '#a9bcd0', siDark: '#7f97b0', ox: '#f1e3a8', nit: '#8fc1b5', pr: '#e39ac2', prExp: '#f6d3e6',
+    poly: '#c2a878', hk: '#9d80d6', metal: '#7b8794', cu: '#c9793b', sige: '#b8c85a', n: '#5b8fd9', p: '#d9765b',
+    w: '#5e6770', ru: '#6f86a8', mask: '#2b3440', air: '#ffffff', lowk: '#d9e7c4', tin: '#6e5f4b', bond: '#c8cdd4',
+    accent: '#1f4fb5', accent2: '#b3541e', ink: '#17202b', ink2: '#3e4b5b', ink3: '#6a7888', line: '#d3dbe4', good: '#1f7a4d', bad: '#b3261e', warn: '#a8660a'
+  };
+  U.MAT = MAT;
+  /* 粒子顏色（全場統一）：電子＝藍色實心、電洞＝紅色空心、出問題的電子（漏電、穿隧）＝藍點加紅框 */
+  U.PC = { e: '#1f4fb5', h: '#c0392b', bad: '#b3261e' };
+  U.electron = (c, x, y, r, bad) => {
+    c.fillStyle = U.PC.e; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+    if (bad) { c.strokeStyle = U.PC.bad; c.lineWidth = 1.8; c.beginPath(); c.arc(x, y, r + 1.6, 0, 7); c.stroke(); }
+  };
+  U.hole = (c, x, y, r) => { c.fillStyle = '#fff'; c.strokeStyle = U.PC.h; c.lineWidth = 2; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); c.stroke(); };
+  /* 圖角的小圖例：kinds 取自 'e'（電子）、'h'（電洞）、'bad'（漏電的電子） */
+  U.pLegend = (c, x, y, kinds) => {
+    const lab = { e: '電子', h: '電洞', bad: '漏電／穿隧的電子' }, w0 = kinds.reduce((a, k) => a + 26 + lab[k].length * 14, 0) + 10;
+    c.fillStyle = 'rgba(255,255,255,.92)'; c.fillRect(x, y, w0, 24); c.strokeStyle = '#d3dbe4'; c.lineWidth = 1; c.strokeRect(x + .5, y + .5, w0 - 1, 23);
+    let xx = x + 12;
+    kinds.forEach(k => {
+      if (k === 'h') U.hole(c, xx, y + 12, 4.5); else U.electron(c, xx, y + 12, 4.5, k === 'bad');
+      c.font = '500 13px "PingFang TC","Noto Sans TC",sans-serif'; c.fillStyle = '#3e4b5b'; c.textBaseline = 'middle'; c.fillText(lab[k], xx + 9, y + 13); c.textBaseline = 'alphabetic';
+      xx += 26 + lab[k].length * 14;
+    });
+  };
+  U.MAT_NAME = {
+    si: '矽 Si', ox: '氧化矽 SiO₂', nit: '氮化矽 SiN', pr: '光阻 PR', prExp: '已曝光光阻', poly: '多晶矽 Poly-Si', hk: '高介電 HfO₂',
+    metal: '金屬閘極', cu: '銅 Cu', sige: '矽鍺 SiGe', n: 'n 型摻雜區', p: 'p 型摻雜區', w: '鎢 W', ru: '釕 Ru', mask: '光罩鉻層', lowk: 'low-k 介電', tin: '阻障層（TaN/Ta）'
+  };
+
+  /* ---------- SVG ---------- */
+  U.svg = function (tag, attrs, parent) {
+    const e = document.createElementNS(NS, tag);
+    if (attrs) for (const k in attrs) {
+      if (k === 'text') e.textContent = attrs[k];
+      else if (attrs[k] !== undefined && attrs[k] !== null) e.setAttribute(k, attrs[k]);
+    }
+    if (tag === 'text' && attrs && attrs.fill) e.style.fill = attrs.fill;
+    if (parent) parent.appendChild(e);
+    return e;
+  };
+  /* 讓 SVG 的 viewBox 等於實際像素大小（舞台固定 1600×900，clientWidth 不受縮放影響） */
+  U.fit = function (svg) {
+    const r = svg.parentElement;
+    const w = r.clientWidth || 600, h = r.clientHeight || 400;
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    return { w, h };
+  };
+  U.clear = el => { while (el.firstChild) el.removeChild(el.firstChild); };
+
+  U.lin = (d0, d1, r0, r1) => { const f = v => r0 + (v - d0) / (d1 - d0) * (r1 - r0); f.inv = p => d0 + (p - r0) / (r1 - r0) * (d1 - d0); return f; };
+  U.log = (d0, d1, r0, r1) => { const a = Math.log10(d0), b = Math.log10(d1); const f = v => r0 + (Math.log10(Math.max(v, 1e-300)) - a) / (b - a) * (r1 - r0); return f; };
+  U.pathD = pts => pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('');
+
+  /* 座標軸：回傳 {x, y, g, plot} */
+  U.axes = function (svg, o) {
+    const { w, h } = o.size || U.fit(svg);
+    const m = Object.assign({ l: 62, r: 16, t: 14, b: 46 }, o.m || {});
+    const X = (o.xlog ? U.log : U.lin)(o.x[0], o.x[1], m.l, w - m.r);
+    const Y = (o.ylog ? U.log : U.lin)(o.y[0], o.y[1], h - m.b, m.t);
+    const g = U.svg('g', {}, svg);
+    const grid = U.svg('g', { class: 'grid' }, g);
+    const ax = U.svg('g', { class: 'axis' }, g);
+    const xt = o.xticks || [], yt = o.yticks || [];
+    xt.forEach(v => {
+      const px = X(v);
+      U.svg('line', { x1: px, x2: px, y1: m.t, y2: h - m.b }, grid);
+      U.svg('text', { x: px, y: h - m.b + 18, 'text-anchor': 'middle', class: 'lbl-s mono', text: o.fx ? o.fx(v) : v }, ax);
+    });
+    yt.forEach(v => {
+      const py = Y(v);
+      U.svg('line', { x1: m.l, x2: w - m.r, y1: py, y2: py }, grid);
+      U.svg('text', { x: m.l - 7, y: py + 4, 'text-anchor': 'end', class: 'lbl-s mono', text: o.fy ? o.fy(v) : v }, ax);
+    });
+    U.svg('line', { x1: m.l, x2: w - m.r, y1: h - m.b, y2: h - m.b }, ax);
+    U.svg('line', { x1: m.l, x2: m.l, y1: m.t, y2: h - m.b }, ax);
+    if (o.xlabel) U.svg('text', { x: (m.l + w - m.r) / 2, y: h - 8, 'text-anchor': 'middle', class: 'lbl', text: o.xlabel }, ax);
+    if (o.ylabel) U.svg('text', { x: 16, y: (m.t + h - m.b) / 2, 'text-anchor': 'middle', class: 'lbl', transform: `rotate(-90 16 ${(m.t + h - m.b) / 2})`, text: o.ylabel }, ax);
+    const plot = U.svg('g', {}, svg);
+    return { x: X, y: Y, g, plot, w, h, m };
+  };
+
+  /* ---------- 控制元件 HTML ---------- */
+  U.range = (id, label, min, max, step, val, unit) =>
+    `<div class="ctl"><label for="${id}">${label}<output id="${id}-o"></output></label><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}" data-unit="${unit || ''}"></div>`;
+  /* 綁定滑桿；fmt 可自訂顯示 */
+  U.bind = function (el, id, fn, fmt) {
+    const inp = U.$(el, '#' + id), out = U.$(el, '#' + id + '-o');
+    const upd = () => { const v = parseFloat(inp.value); out.textContent = fmt ? fmt(v) : v + (inp.dataset.unit || ''); fn && fn(v); };
+    inp.addEventListener('input', upd);
+    upd();
+    return { get: () => parseFloat(inp.value), set: v => { inp.value = v; upd(); }, el: inp, refresh: upd };
+  };
+  U.seg = (id, items, on = 0) =>
+    `<div class="seg" id="${id}" role="group">${items.map((t, i) => `<button type="button" data-i="${i}" class="${i === on ? 'on' : ''}">${t}</button>`).join('')}</div>`;
+  U.onSeg = function (el, id, fn) {
+    const box = U.$(el, '#' + id);
+    const set = i => { U.$$(box, 'button').forEach((b, k) => b.classList.toggle('on', k === i)); fn(i); };
+    box.addEventListener('click', e => { const b = e.target.closest('button'); if (b) set(+b.dataset.i); });
+    const cur = U.$$(box, 'button').findIndex(b => b.classList.contains('on'));
+    fn(cur < 0 ? 0 : cur);
+    return { set };
+  };
+
+  /* ---------- 逐步播放器 ----------
+     host 內需有 .stepper 容器與 .step-text；steps = [{t:'標題', d:'說明'}]；draw(i) 繪製第 i 步 */
+  U.stepperHTML = (id) => `<div class="stepper" id="${id}"><button class="btn" data-a="prev" type="button">◀ 上一步</button><button class="btn primary" data-a="next" type="button">下一步 ▶</button><button class="btn" data-a="play" type="button">▶ 自動播放</button><span class="dots"></span></div><div class="step-text" id="${id}-t"></div>`;
+  U.stepper = function (el, id, steps, draw, ctx, opts) {
+    const box = U.$(el, '#' + id), txt = U.$(el, '#' + id + '-t');
+    const dots = U.$(box, '.dots');
+    dots.innerHTML = steps.map((_, i) => `<i data-i="${i}" title="${steps[i].t}"></i>`).join('');
+    let i = 0, playing = null;
+    const show = k => {
+      i = U.clamp(k, 0, steps.length - 1);
+      U.$$(dots, 'i').forEach((d, j) => { d.className = j === i ? 'on' : j < i ? 'done' : ''; });
+      txt.innerHTML = `<b>${i + 1}. ${steps[i].t}</b>　${steps[i].d || ''}`;
+      draw(i);
+    };
+    const stop = () => { if (playing) { clearInterval(playing); playing = null; U.$(box, '[data-a=play]').textContent = '▶ 自動播放'; } };
+    box.addEventListener('click', e => {
+      const b = e.target.closest('[data-a]'), d = e.target.closest('i[data-i]');
+      if (d) { stop(); show(+d.dataset.i); return; }
+      if (!b) return;
+      if (b.dataset.a === 'prev') { stop(); show(i - 1); }
+      if (b.dataset.a === 'next') { stop(); show(i + 1); }
+      if (b.dataset.a === 'play') {
+        if (playing) { stop(); return; }
+        if (i >= steps.length - 1) show(0);
+        b.textContent = '❚❚ 暫停';
+        playing = setInterval(() => { if (i >= steps.length - 1) stop(); else show(i + 1); }, (opts && opts.interval) || 1800);
+      }
+    });
+    ctx && ctx.onCleanup(stop);
+    show((opts && opts.start) || 0);
+    return { show, get: () => i };
+  };
+
+  /* ---------- Canvas ---------- */
+  U.canvas = function (cv) {
+    const r = cv.parentElement;
+    const w = r.clientWidth || 600, h = r.clientHeight || 400, dpr = Math.min(2, window.devicePixelRatio || 1) * Math.max(1, (window.Deck && Deck.scale) || 1);
+    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+    const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { c, w, h };
+  };
+
+  /* ---------- 剖面繪圖：以材料矩形與多邊形描述狀態 ----------
+     shapes: [{m:'si', x,y,w,h} | {m, pts:[[x,y],...]} | {label:'文字', x,y, anchor}] */
+  U.drawShapes = function (g, shapes) {
+    U.clear(g);
+    shapes.forEach(s => {
+      if (!s) return;
+      if (s.label !== undefined) {
+        U.svg('text', { x: s.x, y: s.y, 'text-anchor': s.anchor || 'start', class: s.cls || 'lbl', fill: s.fill, text: s.label }, g);
+        return;
+      }
+      if (s.line) { U.svg('line', { x1: s.line[0], y1: s.line[1], x2: s.line[2], y2: s.line[3], stroke: s.stroke || MAT.ink2, 'stroke-width': s.sw || 1.2, 'stroke-dasharray': s.dash, 'marker-end': s.arrow ? 'url(#arrow)' : null }, g); return; }
+      const fill = MAT[s.m] || s.m;
+      const common = { fill, stroke: s.stroke || 'rgba(20,30,45,.35)', 'stroke-width': s.sw || .8, opacity: s.op, class: s.cls };
+      if (s.pts) U.svg('polygon', Object.assign({ points: s.pts.map(p => p.join(',')).join(' ') }, common), g);
+      else if (s.r) U.svg('circle', Object.assign({ cx: s.x, cy: s.y, r: s.r }, common), g);
+      else U.svg('rect', Object.assign({ x: s.x, y: s.y, width: Math.max(0, s.w), height: Math.max(0, s.h), rx: s.rx || 0 }, common), g);
+    });
+  };
+  U.arrowDefs = function (svg, color) {
+    const d = U.svg('defs', {}, svg);
+    const mk = U.svg('marker', { id: 'arrow', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, d);
+    U.svg('path', { d: 'M0,0 L10,5 L0,10 z', fill: color || MAT.ink2 }, mk);
+    return d;
+  };
+  U.legendHTML = keys => `<div class="legend">${keys.map(k => `<span><i style="background:${MAT[k]}"></i>${U.MAT_NAME[k] || k}</span>`).join('')}</div>`;
+
+  U.fmt = (v, d = 1) => Number(v).toFixed(d);
+  U.sci = v => { if (v === 0) return '0'; const e = Math.floor(Math.log10(Math.abs(v))); const m = v / Math.pow(10, e); return `${m.toFixed(1)}×10${U.sup(e)}`; };
+  U.sup = n => String(n).split('').map(c => '⁰¹²³⁴⁵⁶⁷⁸⁹'['0123456789'.indexOf(c)] || (c === '-' ? '⁻' : c)).join('');
+  U.gauss = (x, mu, s) => Math.exp(-((x - mu) ** 2) / (2 * s * s));
+})();
+</script>
+<script>/* 簡單版共用：側欄（重點＋比喻卡＋一句話數字）、量條、圖示、粒子 */
+(function () {
+  const S = 'fill="none" stroke="#b3541e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"';
+  const ICON = {
+    faucet: `<path d="M6 14h14a6 6 0 0 1 6 6v3" ${S}/><path d="M13 14V9m-4 0h8" ${S}/><path d="M26 28v0m0 5v0" ${S}/><path d="M6 12v6" ${S}/>`,
+    film: `<rect x="6" y="9" width="28" height="22" rx="2" ${S}/><path d="M6 14h28M6 26h28M11 9v5m6-5v5m6-5v5m6-5v5M11 26v5m6-5v5m6-5v5m6-5v5" ${S}/>`,
+    paint: `<rect x="8" y="8" width="18" height="10" rx="2" ${S}/><path d="M26 13h4v8H17v5" ${S}/><rect x="14" y="26" width="6" height="8" rx="1" ${S}/>`,
+    sand: `<rect x="6" y="22" width="28" height="8" rx="2" ${S}/><path d="M10 22c2-6 18-6 20 0" ${S}/><path d="M12 34l2-4m6 4l2-4m6 4l2-4" ${S}/>`,
+    onion: `<path d="M20 6c6 6 12 10 12 18a12 12 0 0 1-24 0c0-8 6-12 12-18z" ${S}/><path d="M20 12c3 4 6 7 6 12a6 6 0 0 1-12 0c0-5 3-8 6-12z" ${S}/>`,
+    bullet: `<path d="M6 20h18l8-4v8l-8-4" ${S}/><path d="M6 16v8" ${S}/><path d="M34 12l2-2m-2 18l2 2" ${S}/>`,
+    seed: `<path d="M20 34V20" ${S}/><path d="M20 22c-6 0-9-4-9-9 6 0 9 4 9 9zm0-2c0-6 3-10 9-10 0 6-3 10-9 10z" ${S}/><path d="M8 34h24" ${S}/>`,
+    lego: `<rect x="6" y="18" width="28" height="14" rx="1" ${S}/><rect x="10" y="12" width="7" height="6" ${S}/><rect x="23" y="12" width="7" height="6" ${S}/>`,
+    road: `<path d="M12 34L16 6m12 28L24 6" ${S}/><path d="M20 10v4m0 6v4m0 6v4" ${S}/>`,
+    pen: `<path d="M8 32l4-12L26 6l6 6-14 14z" ${S}/><path d="M12 20l6 6" ${S}/>`,
+    camera: `<rect x="6" y="12" width="28" height="18" rx="3" ${S}/><circle cx="20" cy="21" r="6" ${S}/><path d="M14 12l2-4h8l2 4" ${S}/>`,
+    rain: `<path d="M10 16a8 8 0 0 1 15-4 6 6 0 0 1 5 10H11a6 6 0 0 1-1-6z" ${S}/><path d="M13 27l-2 5m8-5l-2 5m8-5l-2 5" ${S}/>`,
+    wall: `<rect x="6" y="8" width="28" height="24" ${S}/><path d="M6 16h28M6 24h28M14 8v8m10 0v8m-6 0v8m10-24v8" ${S}/>`,
+    fire: `<path d="M20 34a9 9 0 0 1-9-9c0-7 6-9 7-17 4 4 11 9 11 17a9 9 0 0 1-9 9z" ${S}/><path d="M20 34a4 4 0 0 1-4-4c0-3 2-4 4-8 2 4 4 5 4 8a4 4 0 0 1-4 4z" ${S}/>`,
+    ruler: `<rect x="4" y="14" width="32" height="12" rx="1" ${S}/><path d="M9 14v5m5-5v3m5-3v5m5-5v3m5-5v5" ${S}/>`,
+    tile: `<rect x="6" y="6" width="12" height="12" ${S}/><rect x="22" y="6" width="12" height="12" ${S}/><rect x="6" y="22" width="12" height="12" ${S}/><rect x="22" y="22" width="12" height="12" ${S}/>`,
+    stack: `<path d="M20 6l14 7-14 7-14-7z" ${S}/><path d="M6 20l14 7 14-7M6 27l14 7 14-7" ${S}/>`,
+    chip: `<rect x="11" y="11" width="18" height="18" rx="2" ${S}/><path d="M15 11V6m5 5V6m5 5V6M15 34v-5m5 5v-5m5 5v-5M11 15H6m5 5H6m5 5H6M34 15h-5m5 5h-5m5 5h-5" ${S}/>`,
+    gate: `<path d="M8 32V14l12-6 12 6v18" ${S}/><path d="M14 32V20h12v12" ${S}/>`,
+    shovel: `<path d="M26 8l6 6-12 12-6-6z" ${S}/><path d="M14 20l-8 8 6 6 8-8" ${S}/>`,
+    stairs: `<path d="M6 32h7v-7h7v-7h7v-7h7" ${S}/>`,
+    money: `<circle cx="20" cy="20" r="13" ${S}/><path d="M24 15c-1-2-7-3-8 0s8 3 8 7-7 3-8 0M20 11v18" ${S}/>`,
+    eye: `<path d="M4 20s6-10 16-10 16 10 16 10-6 10-16 10S4 20 4 20z" ${S}/><circle cx="20" cy="20" r="5" ${S}/>`,
+    sponge: `<rect x="6" y="12" width="28" height="16" rx="3" ${S}/><circle cx="13" cy="18" r="1.5" ${S}/><circle cx="21" cy="22" r="1.5" ${S}/><circle cx="28" cy="17" r="1.5" ${S}/>`,
+    bread: `<path d="M8 30V18a8 6 0 0 1 8-6h8a8 6 0 0 1 8 6v12z" ${S}/><path d="M13 20v4m7-6v4m7-2v4" ${S}/>`,
+    target: `<circle cx="20" cy="20" r="13" ${S}/><circle cx="20" cy="20" r="7" ${S}/><circle cx="20" cy="20" r="1.5" ${S}/>`
+  };
+  U.icon = k => `<svg viewBox="0 0 40 40" aria-hidden="true">${ICON[k] || ICON.chip}</svg>`;
+
+  U.meterHTML = (id, label) => `<div class="meter"><span>${label}</span><span class="bar"><i id="${id}"></i></span><span class="val" id="${id}-v"></span></div>`;
+  U.setMeter = (el, id, frac, text, cls) => {
+    const i = U.$(el, '#' + id); if (!i) return;
+    i.style.width = (U.clamp(frac, 0, 1) * 100).toFixed(1) + '%';
+    i.className = cls || '';
+    const v = U.$(el, '#' + id + '-v'); if (v) v.textContent = text ?? '';
+  };
+
+  /* 側欄：points（≤3 點短句）、analogy {icon, t, p}、fact {v, d}、meters [[id,label]]、extra（任意 HTML） */
+  U.side = o => `<div class="col">
+    ${o.top || ''}
+    ${o.points ? `<ul class="points simple">${o.points.map(p => `<li>${p}</li>`).join('')}</ul>` : ''}
+    ${o.meters ? `<div class="meters">${o.meters.map(m => U.meterHTML(m[0], m[1])).join('')}</div>` : ''}
+    ${o.extra || ''}
+    ${o.fact ? `<div class="fact"><div class="v">${o.fact.v}</div><div class="d">${o.fact.d}</div></div>` : ''}
+    ${o.analogy ? `<div class="analogy" style="margin-top:auto"><div class="ic">${U.icon(o.analogy.icon)}</div><div><h4>${o.analogy.t || '比喻'}</h4><p>${o.analogy.p}</p></div></div>` : ''}
+  </div>`;
+
+
+  /* 主區圖框 */
+  U.figHTML = (id, title, right, kind) => `<div class="fig grow"><div class="fig-title"><span>${title || ''}</span><span id="${id}-r">${right || ''}</span></div><div class="fig-canvas">${kind === 'svg' ? `<svg id="${id}"></svg>` : `<canvas id="${id}"></canvas>`}</div></div>`;
+
+  // 步驟動畫是教學內容，不跟系統「減少動態效果」（Windows 關掉動畫效果時會只剩最終畫面）；換頁淡入仍由 CSS 尊重該設定
+  U.reduced = () => false;
+
+  /* 畫布小工具 */
+  U.rrect = (c, x, y, w, h, r) => { c.beginPath(); c.roundRect ? c.roundRect(x, y, w, h, r) : c.rect(x, y, w, h); };
+  U.txt = (c, s, x, y, o) => {
+    o = o || {}; c.save(); c.font = `${o.w || 500} ${o.size || 15}px "PingFang TC","Noto Sans TC",sans-serif`;
+    c.fillStyle = o.color || '#3e4b5b'; c.textAlign = o.align || 'left'; c.textBaseline = o.base || 'alphabetic';
+    if (o.bg) { const m = c.measureText(s); const w = m.width + 10, hh = (o.size || 15) + 8; const x0 = o.align === 'center' ? x - w / 2 : o.align === 'right' ? x - w : x - 5; c.fillStyle = o.bg; c.fillRect(x0, y - hh + 5, w, hh); c.fillStyle = o.color || '#3e4b5b'; }
+    c.fillText(s, x, y); c.restore();
+  };
+  U.dot = (c, x, y, r, col) => { c.fillStyle = col; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); };
+  U.rand = (a, b) => a + Math.random() * (b - a);
+})();
+
+/* 逐步動畫播放器：steps = [{t, d, draw(c, w, h, p, time)}]，p 在進入該步時由 0 平滑跑到 1 */
+(function () {
+  U.animSteps = function (el, ctx, o) {
+    const { c, w, h } = U.canvas(U.$(el, '#' + o.canvas));
+    let cur = 0, p = 1;
+    const st = U.stepper(el, o.stepper, o.steps, i => { cur = i; p = U.reduced() ? 1 : 0; o.onStep && o.onStep(i); }, ctx, { interval: o.interval || 2600, start: o.start || 0 });
+    ctx.raf((dt, t) => {
+      p = Math.min(1, p + dt / (o.dur || 1.2));
+      c.clearRect(0, 0, w, h);
+      o.steps[cur].draw(c, w, h, U.ease(p), t);
+    });
+    return st;
+  };
+
+  /* 通用剖面畫法（canvas）：以材料名稱畫矩形，附帶標籤 */
+  U.box = (c, m, x, y, w, h, o) => {
+    if (w <= 0 || h <= 0) return;
+    c.fillStyle = U.MAT[m] || m; c.globalAlpha = o && o.a !== undefined ? o.a : 1;
+    c.fillRect(x, y, w, h); c.globalAlpha = 1;
+    if (!o || o.stroke !== false) { c.strokeStyle = 'rgba(20,30,45,.3)'; c.lineWidth = 1; c.strokeRect(x + .5, y + .5, w - 1, h - 1); }
+  };
+  U.tag = (c, s, x, y, o) => U.txt(c, s, x, y, Object.assign({ size: 15, bg: 'rgba(255,255,255,.88)', color: '#17202b', w: 600 }, o || {}));
+  U.arrow = (c, x1, y1, x2, y2, col, wd) => {
+    c.strokeStyle = col || '#b3541e'; c.fillStyle = col || '#b3541e'; c.lineWidth = wd || 2;
+    c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+    const a = Math.atan2(y2 - y1, x2 - x1), s = 8 + (wd || 2);
+    c.beginPath(); c.moveTo(x2, y2); c.lineTo(x2 - s * Math.cos(a - .4), y2 - s * Math.sin(a - .4)); c.lineTo(x2 - s * Math.cos(a + .4), y2 - s * Math.sin(a + .4)); c.fill();
+  };
+})();
+</script>
+<script>/* 開場：封面、議程 */
+(function () {
+  const A = Deck.add.bind(Deck);
+
+  /* 1. 封面：右側是一筆知識從傳承者流到新人、再從新人的問題流回來的示意圖 */
+  A({
+    id: 'cover', part: 0, raw: true, cls: 'cover', minutes: 1, short: '封面',
+    title: '知識傳承框架',
+    render: () => `
+      <div class="cover-grid">
+        <div class="cover-left">
+          <div>
+            <div class="s-eyebrow">KNOWLEDGE INHERITANCE FRAMEWORK · 2026</div>
+            <h1>知識傳承框架</h1>
+            <div class="sub">老手的經驗，變成新人看得懂的手冊和簡報；<br>增刪修改，跟 Agent 說就好</div>
+          </div>
+          <div class="cards" style="margin-top:28px;grid-template-columns:repeat(2,1fr)">
+            <div class="card"><h4>第一部分</h4><p><b>為什麼、給誰</b><br>知識只在人腦袋裡、給主管的總覽、四種角色與使用情境、全景圖</p></div>
+            <div class="card"><h4>第二部分</h4><p><b>怎麼運作</b><br>五章：知識怎麼存、新增、修改與刪除、檢查與審核、新人怎麼學</p></div>
+            <div class="card"><h4>第三部分</h4><p><b>跟 Git 主機結合</b><br>對到 Git 上、誰能合併、待回答與勘誤</p></div>
+            <div class="card"><h4>第四部分</h4><p><b>怎麼開始</b><br>技術選擇、skill 設計、搬半導體、新增知識庫</p></div>
+          </div>
+          <div class="meta">設計說明 · 2026-10-24 討論結果 · 25 頁，約 51 分鐘<br>每頁左邊的互動元件都可以操作；對話、數字與情境皆為示意</div>
+        </div>
+        <div class="cover-right">
+          <div style="position:absolute;left:50px;right:50px;top:50px;bottom:200px"><canvas id="cv-cover" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas></div>
+          <div style="position:absolute;left:50px;right:50px;bottom:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+            <div class="card key"><h4>放在哪</h4><div class="big" style="font-size:28px">1 個 repo</div><p style="margin:0;font-size:14px">全公司都能看</p></div>
+            <div class="card key"><h4>標準答案</h4><div class="big" style="font-size:28px">手冊</div><p style="margin:0;font-size:14px">是正本，簡報以它為準</p></div>
+            <div class="card key"><h4>怎麼改</h4><div class="big" style="font-size:28px">跟 Agent 說</div><p style="margin:0;font-size:14px">維護者核准才算數</p></div>
+          </div>
+        </div>
+      </div>`,
+    init(el, ctx) {
+      const { c, w, h } = U.canvas(U.$(el, '#cv-cover'));
+      const A0 = [w * .13, h * .36], B0 = [w * .43, h * .36], C0 = [w * .71, h * .36];
+      const L = [[w * .91, h * .14], [w * .91, h * .36], [w * .91, h * .58]];
+      const lerp2 = (p, q, u) => [U.lerp(p[0], q[0], u), U.lerp(p[1], q[1], u)];
+      const bz = [[L[2][0], L[2][1] + 24], [w * .96, h * .99], [w * .08, h * .99], [A0[0], A0[1] + 34]];
+      const bez = u => { const m = 1 - u; return [0, 1].map(k => m * m * m * bz[0][k] + 3 * m * m * u * bz[1][k] + 3 * m * u * u * bz[2][k] + u * u * u * bz[3][k]); };
+      const node = (p, t1, t2, bw, col) => {
+        const bh = t2 ? 62 : 44;
+        c.fillStyle = '#fff'; c.strokeStyle = col; c.lineWidth = 2;
+        U.rrect(c, p[0] - bw / 2, p[1] - bh / 2, bw, bh, 8); c.fill(); c.stroke();
+        U.txt(c, t1, p[0], p[1] + (t2 ? -4 : 7), { align: 'center', size: 19, w: 700, color: '#17202b' });
+        if (t2) U.txt(c, t2, p[0], p[1] + 20, { align: 'center', size: 13.5, color: '#6a7888' });
+      };
+      const seg = (p, q) => { c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); };
+      const dots = Array.from({ length: 27 }, (_, k) => ({ ph: k / 27, lane: k % 3 }));
+      ctx.raf((dt, t) => {
+        c.clearRect(0, 0, w, h);
+        c.strokeStyle = '#c3cdd8'; c.lineWidth = 2.5;
+        seg(A0, B0); seg(B0, C0); L.forEach(p => seg(C0, p));
+        c.save(); c.setLineDash([7, 7]); c.strokeStyle = '#d9a17f'; c.lineWidth = 2.5;
+        c.beginPath(); c.moveTo(bz[0][0], bz[0][1]); c.bezierCurveTo(bz[1][0], bz[1][1], bz[2][0], bz[2][1], bz[3][0], bz[3][1]); c.stroke(); c.restore();
+        const g = lerp2(B0, C0, .5);
+        c.fillStyle = '#1f7a4d'; c.fillRect(g[0] - 3, g[1] - 24, 6, 48);
+        U.txt(c, '維護者核准', g[0], g[1] - 32, { align: 'center', size: 14, w: 600, color: '#1f7a4d' });
+        dots.forEach(d => {
+          const s = (d.ph + t * .08) % 1; let p;
+          if (s < .34) p = lerp2(A0, B0, s / .34);
+          else if (s < .67) p = lerp2(B0, C0, (s - .34) / .33);
+          else p = lerp2(C0, L[d.lane], (s - .67) / .33);
+          U.dot(c, p[0], p[1], 5.5, '#1f4fb5');
+        });
+        for (let k = 0; k < 5; k++) { const p = bez((k / 5 + t * .06) % 1); U.dot(c, p[0], p[1], 5, '#b3541e'); }
+        U.txt(c, '待回答：新人問倒了手冊，就變成下一筆要補的知識', w * .52, h * .9, { align: 'center', size: 15, w: 600, color: '#b3541e', bg: 'rgba(242,245,248,.94)' });
+        node(A0, '傳承者', '老手的經驗', 140, '#b3541e');
+        node(B0, 'Agent', '研究・整理・訪談', 160, '#1f4fb5');
+        node(C0, '手冊', '正本', 120, '#17202b');
+        L.forEach(p => node(p, '新人', '', 96, '#1f4fb5'));
+      });
+    },
+    notes: `大家好，今天介紹「知識傳承框架」：讓 Agent 幫忙，把各領域老手的經驗整理成新人看得懂的手冊和簡報。
+
+右邊這張圖就是整件事。藍點是知識，從傳承者出發，經過 Agent 整理、維護者核准，進到手冊，再流到新人身上。橘點反過來走：新人問倒了手冊，問題回到傳承者手上，變成下一筆要補的知識。
+
+今天分四部分：為什麼、怎麼運作、怎麼跟 Git 主機結合、怎麼開始。這份簡報用的是半導體範例的引擎，每頁左邊都可以動手操作。`
+  });
+
+  /* 2. 議程 */
+  A({
+    id: 'agenda', part: 0, minutes: 1, short: '議程',
+    title: '今天的路線：從為什麼講到第一步',
+    thesis: '主角是<b>新人</b>；增刪修改知識，是讓新人一直學得到東西的手段。',
+    render: () => {
+      const parts = [
+        { n: '1', t: '為什麼、給誰', m: '約 12 分', to: 'why', items: ['知識只在人腦袋裡', '給主管的總覽', '四種角色與使用情境', '全景圖'] },
+        { n: '2', t: '怎麼運作', m: '約 19 分', to: 'struct', items: ['① 知識怎麼存　② 新增', '③ 修改與刪除', '④ 檢查與審核', '⑤ 新人怎麼學'] },
+        { n: '3', t: '跟 Git 主機結合', m: '約 6 分', to: 'gitmap', items: ['對到 Git 上', '誰能合併', '待回答與勘誤'] },
+        { n: '4', t: '怎麼開始', m: '約 11 分', to: 'tools', items: ['技術選擇', '要設計的 skill 與參考', '把半導體搬進來', '新增一個知識庫'] }
+      ];
+      return `<div class="s-body three" style="grid-template-columns:repeat(4,1fr)">${parts.map(p => `
+        <div class="fig" style="cursor:pointer" data-go="${p.to}">
+          <div class="fig-title"><span>PART ${p.n}</span><span>${p.m}</span></div>
+          <div style="font-size:28px;font-weight:700;line-height:1.3">${p.t}</div>
+          <ul class="points">${p.items.map(i => `<li>${i}</li>`).join('')}</ul>
+          <div style="margin-top:auto" class="caption">點一下跳到這個部分 →</div>
+        </div>`).join('')}</div>`;
+    },
+    init(el) { U.$$(el, '[data-go]').forEach(c => c.onclick = () => Deck.goId(c.dataset.go)); },
+    notes: `今天分四部分。第一部分講為什麼需要這套框架、誰會用它，最後用一張全景圖串起來。第二部分是重點，分五章講它怎麼運作。
+
+第三部分講怎麼跟 GitHub 或 GitLab 結合；第四部分講技術選擇、要設計的 skill，和第一步要做什麼。點任何一張卡片可以直接跳過去。`
+  });
+})();
+</script>
+<script>/* 第一部分：為什麼、給誰 */
+(function () {
+  const A = Deck.add.bind(Deck);
+
+  /* 知識只在人腦袋裡：切換「沒有框架／有框架」，拖時間看老手調走之後新人還拿不拿得到 */
+  A({
+    id: 'why', part: 1, minutes: 2, short: '知識只在人腦袋裡',
+    title: '為什麼：知識只在人腦袋裡，人一調走就沒了', en: 'Why',
+    thesis: '把經驗寫成<b>有版本紀錄的手冊</b>，人換了，知識還在。',
+    render: () => `<div class="s-body">
+      <div class="col"><div class="controls">${U.seg('w-m', ['沒有框架', '有框架'], 0)}</div>
+        ${U.figHTML('w-cv', '一位老手、三位新人', '藍點＝知識')}
+        <div class="controls">${U.range('w-t', '時間（往右拖）', 0, 100, 1, 20, '')}</div></div>
+      ${U.side({
+        meters: [['w-m1', '新人拿得到']],
+        points: ['經驗散在<b>腦袋、個人筆記、舊簡報</b>裡', '新人不知道從哪看起，也不知道問誰', '寫成<b>手冊</b>：人調走了，知識留下來'],
+        fact: { v: '版本紀錄', d: '每次修改都記一筆，誰改了什麼都查得到' },
+        analogy: { icon: 'bread', t: '比喻', p: '阿嬤的拿手菜：只靠口述，阿嬤不在就失傳；寫成食譜本，每次改良記一筆，孫子照著做也做得出來。' }
+      })}</div>`,
+    init(el, ctx) {
+      const { c, w, h } = U.canvas(U.$(el, '#w-cv'));
+      let mode = 0, tt = .2;
+      U.onSeg(el, 'w-m', i => mode = i);
+      U.bind(el, 'w-t', v => tt = v / 100, v => v < 50 ? '老手還在' : '老手調走了');
+      const S = [w * .15, h * .42], H = [w * .5, h * .42], NW = [[w * .85, h * .17], [w * .85, h * .45], [w * .85, h * .73]];
+      const K = 18;
+      const person = (p, a, col, lab) => {
+        c.save(); c.globalAlpha = a; c.fillStyle = col;
+        c.beginPath(); c.arc(p[0], p[1] - 24, 15, 0, 7); c.fill();
+        U.rrect(c, p[0] - 21, p[1] - 5, 42, 34, 10); c.fill(); c.restore();
+        U.txt(c, lab, p[0], p[1] + 50, { align: 'center', size: 15, w: 600, color: '#3e4b5b' });
+      };
+      ctx.raf((dt, t) => {
+        c.clearRect(0, 0, w, h);
+        const gone = tt >= .5, sA = gone ? Math.max(.12, 1 - (tt - .5) * 5) : 1;
+        if (mode) {
+          c.fillStyle = '#e3ebfa'; c.strokeStyle = '#1f4fb5'; c.lineWidth = 2;
+          U.rrect(c, H[0] - 72, H[1] - 92, 144, 184, 8); c.fill(); c.stroke();
+          U.txt(c, '手冊', H[0], H[1] - 102, { align: 'center', size: 17, w: 700, color: '#1f4fb5' });
+          U.txt(c, '有版本紀錄', H[0], H[1] + 116, { align: 'center', size: 14, color: '#3e4b5b' });
+          [['v1', .12], ['v2', .32], ['v3 新人補了一題', .7]].forEach(([s, at], k) => { if (tt > at) U.tag(c, s, H[0] + 84, H[1] - 66 + k * 30, { size: 13 }); });
+        } else {
+          [[-58, 6, -8], [-6, -32, 6], [44, 18, -4], [2, 58, 10]].forEach(([dx, dy, r]) => {
+            c.save(); c.translate(H[0] + dx, H[1] + dy + 30); c.rotate(r * Math.PI / 180); c.globalAlpha = gone ? .35 : .9;
+            c.fillStyle = '#fff'; c.strokeStyle = '#9aa8b8'; c.lineWidth = 1.2; c.fillRect(-26, -18, 52, 36); c.strokeRect(-26, -18, 52, 36);
+            c.strokeStyle = '#d3dbe4'; c.beginPath(); c.moveTo(-18, -6); c.lineTo(18, -6); c.moveTo(-18, 4); c.lineTo(10, 4); c.stroke(); c.restore();
+          });
+          U.txt(c, '散落的筆記、舊簡報', H[0], H[1] + 116, { align: 'center', size: 14, color: '#6a7888' });
+          if (gone) U.txt(c, '放在哪？誰知道？', H[0], H[1] - 56, { align: 'center', size: 16, w: 600, color: '#a8660a' });
+        }
+        for (let k = 0; k < K; k++) {
+          const ang = k / K * Math.PI * 2 + t * .6;
+          const orb = [S[0] + Math.cos(ang) * 64, S[1] - 6 + Math.sin(ang) * 64];
+          let p = orb, a = 1;
+          if (mode) {
+            const tau = .04 + k / K * .4;
+            if (tt > tau) {
+              const u = U.ease(U.clamp((tt - tau) / .06, 0, 1));
+              const slot = [H[0] - 45 + (k % 4) * 30, H[1] - 62 + Math.floor(k / 4) * 28];
+              p = [U.lerp(orb[0], slot[0], u), U.lerp(orb[1], slot[1], u)];
+            }
+          } else if (gone) a = Math.max(0, 1 - (tt - .5) * 4);
+          c.globalAlpha = a; U.dot(c, p[0], p[1], 6, '#1f4fb5'); c.globalAlpha = 1;
+        }
+        person(S, sA, '#b3541e', gone ? '老手調走了' : '老手');
+        const got = mode ? U.clamp(.15 + tt * 1.2, 0, .95) : (gone ? .22 : .1 + tt * .5);
+        const src = mode ? H : S, on = mode ? tt > .1 : !gone;
+        if (on) NW.forEach((p, k) => { for (let j = 0; j < 3; j++) { const u = (t * .5 + j / 3 + k * .17) % 1; U.dot(c, U.lerp(src[0] + 50, p[0] - 32, u), U.lerp(src[1], p[1], u), 3.5, mode ? '#1f4fb5' : '#b3541e'); } });
+        NW.forEach(p => {
+          person(p, 1, '#1f4fb5', '新人');
+          c.fillStyle = '#e8edf3'; c.fillRect(p[0] - 40, p[1] + 60, 80, 8);
+          c.fillStyle = got > .6 ? '#1f7a4d' : got > .35 ? '#a8660a' : '#b3261e'; c.fillRect(p[0] - 40, p[1] + 60, 80 * got, 8);
+        });
+        U.setMeter(el, 'w-m1', got, got > .6 ? '多' : got > .35 ? '中' : '少', got > .6 ? 'good' : got > .35 ? 'warn' : 'bad');
+      });
+    },
+    notes: `左邊預設是「沒有框架」：知識繞在老手身上，旁邊是散落的筆記和舊簡報。把時間往右拖，過了一半老手調走，他身上的知識跟著消失；筆記還在，但沒人知道放在哪、哪份才對。
+
+切到「有框架」再拖一次：知識一點一點寫進手冊，老手調走之後，新人照樣拿得到。手冊旁邊的 v1、v2、v3 是版本紀錄，最後一版是新人自己補的一題。
+
+【提示】數字和互動元件都是示意，重點是把知識從人身上搬到有版本紀錄的地方。`
+  });
+
+  /* 四種角色 */
+  const ROLES = [
+    { n: '新人', does: ['主要看簡報，沒有簡報就看手冊網站', '先看全景圖和速覽，再進細節', '看不懂就請 Agent 查找或帶讀', '手冊沒寫或寫錯，跟 Agent 說一聲'], say: ['打開半導體的簡報', 'OPC 是什麼？跟光罩有什麼關係？', 'hk1 這一句好像寫錯了'], cmd: '/kb-learn' },
+    { n: '傳承者', does: ['開工時看待回答和勘誤，認領要回答的題目', '用研究、整理、訪談新增知識', '修改、刪除或合併小節', '維護者留意見時，請 Agent 照意見改'], say: ['有什麼待回答是我可以回答的？', '我來回答 #12', '幫我研究 High-NA EUV，放進微影那章'], cmd: '/kb-add、/kb-change、/kb-new' },
+    { n: '維護者', does: ['每個知識庫至少一位，名單寫在 README', '審核變更提案：核准，或退回並附上意見', '自己的提案自己審', '來歷是「研究」的提案要特別仔細看'], say: ['幫我審這個變更提案', '第二段說錯了，請他修改並附上意見'], cmd: '/kb-review' },
+    { n: '框架維護者', does: ['一開始就是建立框架的人', '核准規則、範本、引擎的修改', '核准新知識庫的建立', '先看到錯誤，才決定要不要加規則'], say: ['阿哲想開「電腦視覺」知識庫，幫我看骨架', '這個錯出現第二次了，要不要加規則？'], cmd: '/kb-review' }
+  ];
+  A({
+    id: 'roles', part: 1, minutes: 2, short: '四種角色',
+    title: '四種角色：依你當下在做的事來分', en: 'Roles',
+    thesis: '同一個人讀手冊時是<b>新人</b>，提出變更時就是<b>傳承者</b>。',
+    render: () => `<div class="s-body">
+      <div class="col"><div class="controls">${U.seg('r-seg', ROLES.map(r => r.n), 0)}</div>
+        <div class="fig grow"><div class="fig-title"><span id="r-tt"></span><span>點上面的角色，直接講中文就好</span></div><div id="r-body" style="flex:1;min-height:0"></div></div></div>
+      ${U.side({
+        points: ['<b>新人</b>：讀、問，也可以提出變更', '<b>傳承者</b>：透過 Agent 新增、修改、刪除', '<b>維護者</b>：決定哪些內容算正式', '<b>框架維護者</b>：管規則、引擎和新知識庫'],
+        fact: { v: '至少 1 位', d: '每個知識庫都有維護者；建立知識庫的人就是第一位' },
+        analogy: { icon: 'fire', t: '比喻', p: '一間廚房：學徒在旁邊學、師傅把拿手菜寫成食譜、主廚試過才上菜單，老闆管整間廚房的規矩。' }
+      })}</div>`,
+    init(el) {
+      const body = U.$(el, '#r-body'), tt = U.$(el, '#r-tt');
+      U.onSeg(el, 'r-seg', i => {
+        const r = ROLES[i];
+        tt.textContent = r.n;
+        body.innerHTML = `<div class="role-card">
+          <div><h4>你會做的事</h4><ul class="points">${r.does.map(x => `<li>${x}</li>`).join('')}</ul></div>
+          <div><h4>跟 Agent 這樣說</h4><div class="say">${r.say.map(x => `<span>「${x}」</span>`).join('')}</div>
+            <p class="gloss" style="margin-top:18px">對應的短指令：<b>${r.cmd}</b>（不用也可以）</p></div></div>`;
+      });
+    },
+    notes: `角色看的是你當下在做的事。同一個人讀手冊時是新人，提出變更時就是傳承者，所以新人發現少了一題，也可以自己補。
+
+點上面的按鈕看每個角色會做什麼、怎麼跟 Agent 說。每個角色都有對應的短指令，不用也沒關係，直接講中文，Agent 會自己挑對的流程。`
+  });
+
+  /* 全景圖：橢圓上的 11 格，逐步播放或點任一格 */
+  const FLOW = [
+    { t: '傳承者', who: '人', lane: 'in', d: '想補充或修改知識的人，包括新人，用中文跟 Agent 說。' },
+    { t: '研究・整理・訪談', who: 'Agent', lane: 'in', d: '給主題、給資料，或口述經驗。' },
+    { t: '草稿', who: 'Agent → 人', lane: 'in', d: 'Agent 寫好草稿，傳承者改到滿意才往下走。' },
+    { t: '檢查＋讀者測試', who: '程式＋Agent', lane: 'in', d: '程式擋判斷得準的錯誤；讀者測試看寫得清不清楚。' },
+    { t: '變更提案', who: 'Agent', lane: 'in', d: 'Agent 開變更提案，寫好說明和來歷。' },
+    { t: '維護者審核', who: '人＋Agent', lane: 'in', d: 'Agent 用白話整理改了什麼，維護者核准或退回。' },
+    { t: '正式內容', who: '手冊＝正本', lane: 'core', d: '核准後併入主線，就是正式內容；說法不一致時，以手冊為準。' },
+    { t: '手冊網站・簡報', who: 'CI', lane: 'out', d: '主線一更新，CI 就重新建置，放在 Git 主機上供人下載。' },
+    { t: '新人', who: '人', lane: 'out', d: '先看全景圖和速覽，再進細節。' },
+    { t: '查找・帶讀', who: 'Agent', lane: 'out', d: '查找只根據手冊回答；帶讀用白話解釋、出小題目。' },
+    { t: '待回答', who: 'Agent → 人', lane: 'out', d: '手冊沒寫到的問題開成 issue，等傳承者認領，回到第一格。' }
+  ];
+  A({
+    id: 'map', part: 1, minutes: 2.5, short: '全景圖',
+    title: '全景圖：知識怎麼寫進去，又怎麼學出來', en: 'Big Picture',
+    thesis: '上半圈<b>寫進去</b>，下半圈<b>學出來</b>，「待回答」把新人的問題送回起點。',
+    render: () => `<div class="s-body w66">
+      <div class="col"><div class="fig grow"><div class="fig-title"><span>點任一格，或按「自動播放」走一圈</span><span>虛線＝流動方向</span></div>
+        <div class="fig-canvas" id="mp-box"><svg id="mp-svg"></svg></div></div>
+        ${U.stepperHTML('mp-st')}</div>
+      ${U.side({
+        points: ['<b>寫進去</b>：傳承者 → Agent → 草稿 → 檢查 → 提案 → 審核', '<b>正式內容</b>：核准後的手冊，是唯一的標準答案', '<b>學出來</b>：手冊網站、簡報 → 新人 → 查找、帶讀'],
+        fact: { v: '4 個地方要人', d: '提問、認領、確認草稿、核准，其他交給 Agent 和 CI' },
+        analogy: { icon: 'rain', t: '比喻', p: '像水循環：海水蒸發成雲、下雨流成河，最後又回到海裡。知識也在圈裡轉，越轉越完整。' }
+      })}</div>`,
+    init(el, ctx) {
+      const box = U.$(el, '#mp-box'), svg = U.$(el, '#mp-svg');
+      const { w, h } = U.fit(svg);
+      const cx = w / 2, cy = h / 2, rx = w * .40, ry = h * .37;
+      const step = Math.PI * 2 / FLOW.length, th0 = -6 * step;
+      U.svg('ellipse', { cx, cy, rx, ry, fill: 'none', stroke: '#e8edf3', 'stroke-width': 10 }, svg);
+      const flow = U.svg('ellipse', { cx, cy, rx, ry, fill: 'none', stroke: '#1f4fb5', 'stroke-width': 3, 'stroke-dasharray': '3 15', 'stroke-linecap': 'round', opacity: .7 }, svg);
+      FLOW.forEach((_, k) => {
+        const th = th0 + (k + .5) * step, x = cx + rx * Math.cos(th), y = cy + ry * Math.sin(th);
+        const a = Math.atan2(ry * Math.cos(th), -rx * Math.sin(th)) * 180 / Math.PI;
+        U.svg('path', { d: 'M-7,-7 L5,0 L-7,7', fill: 'none', stroke: '#6a7888', 'stroke-width': 2.5, 'stroke-linecap': 'round', transform: `translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${a.toFixed(1)})` }, svg);
+      });
+      [['寫進去', cx, cy - ry * .5], ['學出來', cx, cy + ry * .5]].forEach(([t, x, y]) => { const d = document.createElement('div'); d.className = 'lane-lbl'; d.style.left = x + 'px'; d.style.top = y + 'px'; d.textContent = t; box.appendChild(d); });
+      const nodes = FLOW.map((n, k) => {
+        const th = th0 + k * step, b = document.createElement('button');
+        b.type = 'button'; b.className = 'node ' + n.lane;
+        b.style.left = (cx + rx * Math.cos(th)) + 'px'; b.style.top = (cy + ry * Math.sin(th)) + 'px';
+        b.innerHTML = `${n.t}<span class="w">${n.who}</span>`;
+        box.appendChild(b); return b;
+      });
+      const st = U.stepper(el, 'mp-st', FLOW.map(n => ({ t: n.t, d: n.d })), i => nodes.forEach((b, k) => b.classList.toggle('on', k === i)), ctx, { interval: 2200 });
+      nodes.forEach((b, k) => b.onclick = () => st.show(k));
+      ctx.raf((dt, t) => flow.setAttribute('stroke-dashoffset', String(-t * 30)));
+    },
+    notes: `這張全景圖把整件事畫成一個圈。上半圈是寫進去：傳承者跟 Agent 說，Agent 寫草稿，傳承者確認，跑過檢查和讀者測試，開變更提案，等維護者審核。核准後就是右邊的正式內容，也就是手冊。
+
+下半圈是學出來：CI 把手冊建置成手冊網站和簡報，新人來讀，不懂就請 Agent 查找或帶讀。手冊沒寫到的問題記成待回答，回到起點等傳承者補。每一站後面都會細講，先按「自動播放」走一圈。`
+  });
+})();
+</script>
+<script>/* 第一部分：各角色的使用情境與結果（一頁，接在「四種角色」後面）；每個情境下方附 Git 圖示 */
+(function () {
+  const ROWS = [['情境', ''], ['你說', 'me'], ['Agent 做什麼', 'ai'], ['結果', 'ok']];
+  const STEPS = [{ t: '情境', d: '先看是什麼情況。' }, { t: '你說', d: '用中文跟 Agent 說，不用記指令。' }, { t: 'Agent 做什麼', d: 'Agent 和程式在背後做的事；下面的圖是 Git 主機上的變化。' }, { t: '結果', d: '最後得到什麼。' }];
+
+  /* Git 圖示的狀態：issues（issue 卡片）、br（分支上的修改數）、pr（變更提案）、merged、release、dl（新人下載）、read（只讀主線）、kbList、ciAll、note */
+  const I12 = (st, who) => ({ no: 12, lab: '待回答', st, who });
+  const I15 = (st, who) => ({ no: 15, lab: '勘誤', st, who });
+  const PR = (o, rv) => Object.assign({}, o, { rv });
+  const P31 = { no: 31, closes: 12, tags: ['訪談'], ci: 'ok' }, P32 = { no: 32, tags: ['研究'], ci: 'ok' }, P33 = { no: 33, who: '小陳', tags: ['整理'], ci: 'ok' };
+  const UC = [
+    { n: '新人', person: '小美，製程整合部新人', cases: [
+      { n: '第一天', r: ['小美剛進製程整合部，主管請她先熟悉半導體。', '「打開半導體的簡報。」或從首頁的知識庫清單下載。', '從 Git 主機拿 CI 建好的簡報；沒有的話，Agent 現場建置後打開。', '先看全景圖和每章速覽，兩小時內抓到全貌；看不懂的術語查術語表。'],
+        g: [{}, {}, { release: 1, dl: 1, note: 'CI 在主線更新後建好簡報，放在 Release' }, { release: 1, dl: 1, note: '小美下載單一 HTML，離線也能看' }] },
+      { n: '看不懂', r: ['讀到 OPC，看不懂它跟光罩有什麼關係。', '「OPC 是什麼？跟光罩有什麼關係？」', '只根據手冊回答，附上出處：微影 › litho6；要的話接著帶讀，出一題小題目。', '懂了，也知道要回哪一節再看一次。'],
+        g: [{ read: 1, note: '這個情境不動 Git' }, { read: 1, note: '這個情境不動 Git' }, { read: 1, note: 'Agent 只讀主線上的手冊來回答' }, { read: 1, note: '這個情境不動 Git' }] },
+      { n: '手冊沒寫', r: ['想知道機台保養多久做一次，手冊沒寫。', '「機台保養（PM）多久做一次？」接著說「好，記下來」。', '直說手冊沒寫、不自己編；查過沒有一樣的題目，開成 issue，標上待回答和 kb:semiconductor。', '傳承者認領回答，合併後小美收到通知，常見問題多了一題。'],
+        g: [{ read: 1, note: 'Agent 先讀主線上的手冊：沒有寫' }, { read: 1, note: 'Agent 先讀主線上的手冊：沒有寫' }, { issues: [I12('open')], note: '開 issue #12，標上待回答和 kb:semiconductor' }, { issues: [I12('closed', '老王')], br: 2, pr: PR(P31, 'ok'), merged: 1, release: 1, note: '老王回答、合併後，#12 自動關閉' }] },
+      { n: '覺得寫錯', r: ['hk1 寫漏電多 10 倍，小美看到另一份資料寫 5 倍。', '「hk1 這一句好像寫錯了。」', '開成勘誤 issue，附上是哪一節、哪一句、為什麼覺得不對。', '傳承者認領修正，出處一起補上；小美不用自己改。'],
+        g: [{ read: 1, note: '小美讀的是主線上的手冊' }, { read: 1, note: '小美讀的是主線上的手冊' }, { issues: [I15('open')], note: '開 issue #15，標上勘誤和 kb:semiconductor' }, { issues: [I15('closed', '老王')], br: 1, pr: PR({ no: 35, closes: 15, tags: ['研究'], ci: 'ok' }, 'ok'), merged: 1, release: 1, note: '修正合併後，#15 自動關閉' }] }] },
+    { n: '傳承者', person: '老王，資深製程工程師', cases: [
+      { n: '開工', r: ['老王早上打開 Claude Code。', '「有什麼待回答是我可以回答的？」', '列出他關心的知識庫的 issue：#12 機台保養多久做一次、#15 勘誤 hk1。', '老王說「我來回答 #12」，issue 指派給他。'],
+        g: [{ issues: [I12('open'), I15('open')] }, { issues: [I12('open'), I15('open')] }, { issues: [I12('open'), I15('open')], note: 'Agent 用標籤 kb:semiconductor 篩出待回答和勘誤' }, { issues: [I12('open', '老王'), I15('open')], note: '#12 指派給老王' }] },
+      { n: '回答待回答', r: ['#12 只有老王知道，沒有任何文件寫過。', '口述：「保養週期要看機台類型，例如……」', '用訪談反問三題，寫成常見問題的一題，出處寫「老王（製程整合）口述，2026-10」；跑檢查和讀者測試，開變更提案連到 #12，貼上「訪談」。', '維護者核准合併，#12 自動關閉，小美收到通知。'],
+        g: [{ issues: [I12('open', '老王')] }, { issues: [I12('open', '老王')], br: 1, note: 'Agent 開一個分支，開始寫' }, { issues: [I12('open', '老王')], br: 2, pr: PR(P31, 'wait'), note: '變更提案連到 #12；CI 檢查通過，等維護者審' }, { issues: [I12('closed', '老王')], br: 2, pr: PR(P31, 'ok'), merged: 1, release: 1, note: '合併後 #12 自動關閉，CI 重新建置' }] },
+      { n: '研究新主題', r: ['主管希望大家了解 High-NA EUV。', '「幫我研究 High-NA EUV，放進微影那章。」', '用自己的知識和找到的資料寫草稿，數字附出處；老王確認後開變更提案，貼上「研究」。', '維護者特別仔細審；核准後成為正式內容，對應的簡報頁被點名要重看。'],
+        g: [{}, { br: 1, note: 'Agent 開一個分支，開始寫' }, { br: 2, pr: PR(P32, 'wait'), note: '變更提案貼上「研究」；CI 檢查通過' }, { br: 2, pr: PR(P32, 'ok'), merged: 1, release: 1, note: '核准合併，成為正式內容' }] },
+      { n: '被要求修改', r: ['維護者在提案上留意見：「第二段的數字要補出處。」', '「照維護者的意見改。」', '讀提案上的意見，補上出處，重新跑檢查，推上去。', '維護者核准合併。'],
+        g: [{ br: 2, pr: PR(P32, 'chg'), note: '維護者要求修改，附上意見' }, { br: 2, pr: PR(P32, 'chg'), note: '維護者要求修改，附上意見' }, { br: 3, pr: PR(P32, 'wait'), note: '補上出處，再推一次，CI 重跑' }, { br: 3, pr: PR(P32, 'ok'), merged: 1, release: 1, note: '核准合併' }] }] },
+    { n: '維護者', person: '老王，半導體製程的維護者', cases: [
+      { n: '審別人的提案', r: ['小陳開了一個變更提案，主機請老王審。', '「幫我審這個變更提案。」', '用白話整理改了什麼、來歷是整理、影響哪幾頁簡報和哪幾題常見問題；CI 檢查已經通過。', '老王核准、合併；CI 重新建置手冊網站和簡報。'],
+        g: [{ br: 2, pr: PR(P33, 'wait'), note: '主機請維護者審' }, { br: 2, pr: PR(P33, 'wait'), note: '主機請維護者審' }, { br: 2, pr: PR(P33, 'wait'), note: 'Agent 用白話整理這個提案' }, { br: 2, pr: PR(P33, 'ok'), merged: 1, release: 1, note: '核准合併，CI 重新建置' }] },
+      { n: '研究來的提案', r: ['這個提案貼著「研究」標籤。', '「把研究來的段落列給我看。」', '逐段列出 Agent 自己寫的說法和出處，標出沒有出處的數字。', '老王發現一個數字不對，要求修改並附上意見。'],
+        g: [{ br: 2, pr: PR(P32, 'wait') }, { br: 2, pr: PR(P32, 'wait') }, { br: 2, pr: PR(P32, 'wait'), note: '逐段看研究來的說法和出處' }, { br: 2, pr: PR(P32, 'chg'), note: '要求修改，附上意見' }] },
+      { n: '自己的提案', r: ['老王自己補了一節。', '「開變更提案，檢查過了就合併。」', '開提案、CI 檢查通過；再把研究來的段落列出來，讓他多看一眼。', '自己合併，不用等別人。'],
+        g: [{ br: 1, note: '老王的分支' }, { br: 2, pr: PR({ no: 34, tags: ['整理'], ci: 'run' }, 'self'), note: '開變更提案，CI 檢查中' }, { br: 2, pr: PR({ no: 34, tags: ['整理'], ci: 'ok' }, 'self'), note: 'CI 檢查通過' }, { br: 2, pr: PR({ no: 34, tags: ['整理'], ci: 'ok' }, 'self'), merged: 1, release: 1, note: '檢查過了，自己合併' }] }] },
+    { n: '框架維護者', person: '你，框架維護者', cases: [
+      { n: '核准新知識庫', r: ['阿哲想開「電腦視覺」知識庫，骨架已經建好。', '「幫我看 CV 的骨架提案。」', '整理骨架：部分和章、維護者、全景圖草稿、術語表；檢查已經通過。', '核准合併，CV 知識庫成立，首頁的知識庫清單自動多一列。'],
+        g: [{ br: 1, pr: PR({ no: 40, title: 'CV 骨架', tags: ['kb:cv'], ci: 'ok' }, 'wait') }, { br: 1, pr: PR({ no: 40, title: 'CV 骨架', tags: ['kb:cv'], ci: 'ok' }, 'wait') }, { br: 1, pr: PR({ no: 40, title: 'CV 骨架', tags: ['kb:cv'], ci: 'ok' }, 'wait'), note: 'Agent 整理骨架的內容' }, { br: 1, pr: PR({ no: 40, title: 'CV 骨架', tags: ['kb:cv'], ci: 'ok' }, 'ok'), merged: 1, kbList: 1, note: 'CV 成立，首頁清單多一列' }] },
+      { n: '改引擎', r: ['有人想讓簡報引擎支援影片。', '「這個修改會影響哪些知識庫？」', 'CI 把每個知識庫的手冊網站和簡報都建置一次，列出結果。', '全部建置成功才核准，不會弄壞別的知識庫。'],
+        g: [{ br: 1, pr: PR({ no: 41, title: '引擎支援影片', ci: 'run' }, 'wait') }, { br: 1, pr: PR({ no: 41, title: '引擎支援影片', ci: 'run' }, 'wait') }, { br: 1, pr: PR({ no: 41, title: '引擎支援影片', ci: 'ok' }, 'wait'), ciAll: 1, note: 'CI 把每個知識庫都建置一次' }, { br: 1, pr: PR({ no: 41, title: '引擎支援影片', ci: 'ok' }, 'ok'), ciAll: 1, merged: 1, release: 1, note: '全部成功才核准合併' }] },
+      { n: '要不要加規則', r: ['同一個錯出現第二次：有人又把常見問題寫成一大段。', '「這個錯出現第二次了，要不要加規則？」', '先看能不能用程式檢查；能，就加進檢查程式，不能，才寫進 AGENTS.md。', '只加這一條；還沒發生過的錯，不預先加規則。'],
+        g: [{}, {}, { br: 1, pr: PR({ no: 42, title: '檢查程式加一條規則', ci: 'ok' }, 'wait'), note: '修改的是框架，由框架維護者審' }, { br: 1, pr: PR({ no: 42, title: '檢查程式加一條規則', ci: 'ok' }, 'ok'), merged: 1, note: '合併後，每次檢查都會跑這條規則' }] }] }
+  ];
+
+  /* 畫 Git 圖示 */
+  const C = { ink: '#17202b', ink2: '#3e4b5b', ink3: '#6a7888', line: '#c3cdd8', acc: '#1f4fb5', acc2: '#b3541e', good: '#1f7a4d', bad: '#b3261e', warn: '#a8660a', closed: '#6a4bb5' };
+  function tagw(c, s) { c.font = '600 12.5px "PingFang TC","Noto Sans TC",sans-serif'; return c.measureText(s).width + 14; }
+  function tag(c, s, x, y, col) {
+    const w = tagw(c, s);
+    c.fillStyle = col + '22'; c.strokeStyle = col; c.lineWidth = 1; U.rrect(c, x, y - 13, w, 19, 9); c.fill(); c.stroke();
+    U.txt(c, s, x + 7, y + 1, { size: 12.5, w: 600, color: col }); return w;
+  }
+  function gdraw(c, w, h, s) {
+    c.clearRect(0, 0, w, h);
+    // 左：issue
+    U.txt(c, 'ISSUE', 4, 16, { size: 12, w: 600, color: C.ink3 });
+    const iss = s.issues || [];
+    if (!iss.length) { c.save(); c.setLineDash([5, 5]); c.strokeStyle = C.line; U.rrect(c, 2, 28, 214, 62, 6); c.stroke(); c.restore(); U.txt(c, '（沒有 issue）', 109, 64, { align: 'center', size: 13.5, color: C.ink3 }); }
+    iss.forEach((it, k) => {
+      const y = 28 + k * 74, closed = it.st === 'closed';
+      c.fillStyle = closed ? '#f3f0fa' : '#fff'; c.strokeStyle = closed ? C.closed : C.line; c.lineWidth = 1.5; U.rrect(c, 2, y, 214, 66, 6); c.fill(); c.stroke();
+      U.dot(c, 16, y + 17, 5, closed ? C.closed : C.good);
+      U.txt(c, `#${it.no} ${closed ? '已關閉' : '開啟中'}`, 28, y + 22, { size: 14.5, w: 700, color: C.ink });
+      let x = 10; x += tag(c, it.lab, x, y + 43, it.lab === '勘誤' ? C.bad : C.warn) + 5; tag(c, 'kb:semiconductor', x, y + 43, C.acc);
+      U.txt(c, it.who ? '負責：' + it.who : '還沒人認領', 210, y + 22, { align: 'right', size: 12.5, w: 600, color: it.who ? C.acc : C.warn });
+    });
+    // 中：主線與分支
+    const gx0 = 250, gx1 = w - 180, my = h - 62, by = h - 132;
+    c.strokeStyle = s.read ? C.acc : C.ink3; c.lineWidth = s.read ? 5 : 3; c.beginPath(); c.moveTo(gx0, my); c.lineTo(gx1, my); c.stroke();
+    U.txt(c, 'main（正式內容）', gx0, my + 26, { size: 13, w: 600, color: s.read ? C.acc : C.ink3 });
+    if (s.read) U.txt(c, '← Agent 讀這裡的手冊', gx0 + 150, my + 26, { size: 13, w: 700, color: C.acc });
+    [0, 60, 120].forEach(dx => { U.dot(c, gx0 + 20 + dx, my, 7, C.ink3); });
+    const bx0 = gx0 + 140, bx1 = gx1 - 70;
+    if (s.br) {
+      c.strokeStyle = C.acc2; c.lineWidth = 3; c.beginPath(); c.moveTo(bx0, my); c.bezierCurveTo(bx0 + 30, my, bx0 + 20, by, bx0 + 60, by); c.lineTo(bx1, by); c.stroke();
+      for (let k = 0; k < s.br; k++) U.dot(c, bx0 + 90 + k * 45, by, 7, C.acc2);
+      U.txt(c, '分支', bx0 + 8, by - 8, { size: 13, w: 600, color: C.acc2 });
+    }
+    if (s.pr) {
+      const p = s.pr, py = by - 66;
+      const title = `PR #${p.no}${p.closes ? ' · Closes #' + p.closes : ''}${p.title ? ' · ' + p.title : ''}${p.who ? ' · ' + p.who + '提的' : ''}`;
+      c.fillStyle = '#fff'; c.strokeStyle = C.acc; c.lineWidth = 1.5; U.rrect(c, bx0 + 60, py, bx1 - bx0 - 40, 50, 6); c.fill(); c.stroke();
+      U.txt(c, title, bx0 + 72, py + 20, { size: 13.5, w: 700, color: C.ink });
+      let x = bx0 + 72; (p.tags || []).forEach(t => { x += (t.startsWith('kb:') ? tag(c, t, x, py + 42, C.acc) : tag(c, '來歷：' + t, x, py + 42, C.acc2)) + 5; });
+      const ci = p.ci === 'ok' ? ['CI ✓', C.good] : p.ci === 'fail' ? ['CI ✗', C.bad] : ['CI 檢查中', C.warn];
+      x += tag(c, ci[0], x, py + 42, ci[1]) + 5;
+      const rv = { wait: ['等維護者審', C.warn], chg: ['要求修改', C.bad], ok: ['已核准', C.good], self: ['自己合併', C.acc] }[p.rv];
+      if (rv) tag(c, rv[0], x, py + 42, rv[1]);
+      c.strokeStyle = C.acc; c.lineWidth = 1; c.setLineDash([3, 3]); c.beginPath(); c.moveTo(bx0 + 120, py + 50); c.lineTo(bx0 + 120, by - 8); c.stroke(); c.setLineDash([]);
+    }
+    if (s.merged) {
+      c.strokeStyle = C.acc2; c.lineWidth = 3; c.beginPath(); c.moveTo(bx1, by); c.bezierCurveTo(bx1 + 30, by, bx1 + 20, my, gx1 - 20, my); c.stroke();
+      U.dot(c, gx1 - 20, my, 10, C.good); U.txt(c, '合併', gx1 - 20, my - 16, { align: 'center', size: 13, w: 700, color: C.good });
+    }
+    if (s.ciAll) {
+      const y0 = by - 66, x0 = gx0;
+      U.txt(c, 'CI 建置每個知識庫：', x0, y0 + 14, { size: 13, w: 700, color: C.ink2 });
+      let x = x0; ['半導體 ✓', 'CV ✓'].forEach(t => { x += tag(c, t, x, y0 + 38, C.good) + 5; });
+    }
+    // 右：Release 與下載
+    const rx = w - 160;
+    if (s.release || s.kbList) {
+      c.strokeStyle = C.ink3; c.lineWidth = 2; U.arrow(c, gx1, my, rx - 4, my, C.ink3, 2);
+      c.fillStyle = '#fff'; c.strokeStyle = C.good; c.lineWidth = 1.5; U.rrect(c, rx, my - 34, 156, 64, 6); c.fill(); c.stroke();
+      U.txt(c, s.kbList ? '首頁知識庫清單' : 'Release', rx + 78, my - 10, { align: 'center', size: 14.5, w: 700, color: C.ink });
+      U.txt(c, s.kbList ? '多了一列：CV' : '手冊網站、簡報', rx + 78, my + 14, { align: 'center', size: 13, color: C.ink2 });
+    }
+    if (s.dl) { U.arrow(c, rx + 78, my + 32, rx + 78, h - 10, C.acc, 2); U.txt(c, '小美下載', rx + 70, h - 14, { align: 'right', size: 13, w: 700, color: C.acc }); }
+    if (s.note) U.txt(c, s.note, gx0, 18, { size: 14.5, w: 600, color: C.ink, bg: 'rgba(242,245,248,.95)' });
+  }
+
+  Deck.add({
+    id: 'usecases', part: 1, minutes: 2.5, short: '各角色的使用情境',
+    title: '各角色的使用情境：說了什麼，得到什麼', en: 'Use Cases',
+    thesis: '四種角色都只要<b>跟 Agent 說話</b>：新人看和問，傳承者寫，維護者判斷內容，框架維護者管規矩。',
+    render: () => `<div class="s-body w66">
+      <div class="col"><div class="controls">${U.seg('uc-role', UC.map(u => u.n), 0)}<span id="uc-scbox"></span></div>
+        <div class="fig grow"><div class="fig-title"><span id="uc-who"></span><span id="uc-person"></span></div>
+          <div class="ritems" id="uc-rows" style="gap:6px"></div>
+          <div style="position:relative;height:240px;flex:none;border-top:1px dashed var(--line);margin-top:2px"><canvas id="uc-git" style="position:absolute;inset:8px 0 0 0;width:100%;height:calc(100% - 8px);display:block"></canvas></div></div>
+        ${U.stepperHTML('uc-st')}</div>
+      ${U.side({
+        points: ['<b>新人</b>：看、問、記下問題、回報錯誤', '<b>傳承者</b>：用說的新增，只花時間確認草稿', '<b>維護者</b>：只判斷內容對不對，不對就退回附意見', '<b>框架維護者</b>：管新知識庫、引擎和規則'],
+        fact: { v: '只要說話', d: '四種角色都不用記 Git 指令，下面的圖由 Agent 代勞' },
+        analogy: { icon: 'film', t: '比喻', p: '像一齣戲：同一個舞台，每個角色只要知道自己什麼時候上場、說什麼台詞。' }
+      })}</div>`,
+    init(el, ctx) {
+      let role = 0, sc = 0, step = 0, st = null;
+      const box = U.$(el, '#uc-rows');
+      const cv = U.$(el, '#uc-git'), r = cv.parentElement;
+      const gw = r.clientWidth, gh = r.clientHeight - 8, dpr = Math.min(2, window.devicePixelRatio || 1) * Math.max(1, Deck.scale || 1);
+      cv.width = Math.round(gw * dpr); cv.height = Math.round(gh * dpr);
+      const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const draw = () => {
+        const u = UC[role], k = u.cases[sc];
+        U.$(el, '#uc-who').textContent = `${u.n}｜情境：${k.n}`;
+        U.$(el, '#uc-person').textContent = u.person;
+        box.innerHTML = ROWS.map(([lab, kk], i) => {
+          const bg = kk === 'me' ? 'var(--accent-soft)' : kk === 'ok' ? '#dcefe4' : '#fff';
+          const bd = kk === 'me' ? '#bfcfee' : kk === 'ok' ? '#a7d3b9' : 'var(--line)';
+          return `<div style="display:grid;grid-template-columns:104px 1fr;gap:10px;align-items:start;padding:6px 12px;border:1px solid ${bd};background:${bg};border-radius:6px;transition:opacity .3s;opacity:${i <= step ? 1 : .12}">
+            <span class="lbl4" style="margin:0;padding-top:2px">${lab}</span><span style="font-size:17px;line-height:1.45">${k.r[i]}</span></div>`;
+        }).join('');
+        gdraw(c, gw, gh, k.g[step] || {});
+      };
+      const restart = () => { if (st) st.show(0); else draw(); };
+      U.onSeg(el, 'uc-role', i => {
+        role = i; sc = 0;
+        U.$(el, '#uc-scbox').innerHTML = U.seg('uc-sc', UC[i].cases.map(x => x.n), 0);
+        U.onSeg(el, 'uc-sc', j => { sc = j; restart(); });
+      });
+      st = U.stepper(el, 'uc-st', STEPS, i => { step = i; draw(); }, ctx, { interval: 2000 });
+    },
+    notes: `這一頁用情境看四種角色實際怎麼用。上面先選角色、再選情境，按「下一步」依序看：情境、你說什麼、Agent 做什麼、最後的結果。下方的圖是 Git 主機上同時發生的事：左邊是 issue，中間是主線和分支、變更提案、CI 和審核，右邊是 CI 建好的 Release。
+
+新人小美：第一天從 Release 下載簡報；看不懂就問，Agent 只讀主線上的手冊；手冊沒寫就開 issue #12；覺得寫錯就開勘誤 #15。傳承者老王：開工時認領 #12，開分支、開變更提案連到 #12，合併後 issue 自動關閉。維護者：審別人的提案，研究來的逐段看，自己的提案自己合併。框架維護者：核准新知識庫、看引擎修改有沒有弄壞別的知識庫、同一個錯出現第二次才加規則。
+
+圖上的 Git 操作全部由 Agent 代勞，四種角色都只要跟 Agent 說話。`
+  });
+
+  /* 放到「四種角色」後面 */
+  Deck.move('usecases', 'roles');
+})();
+</script>
+<script>/* 第二部分 ①② 知識怎麼存、新增 */
+(function () {
+  const A = Deck.add.bind(Deck);
+  const C1 = { chap: 1, eyebrow: '第二部分 · ① 知識怎麼存' };
+  const C2 = { chap: 2, eyebrow: '第二部分 · ② 新增' };
+
+  /* ① 檔案結構：點左邊的檔案看內容 */
+  const FILES = [
+    { label: 'Knowledge_Inheritance_Framework/', d: 0, note: '整個框架和所有知識庫都在這一個 repo，全公司都能看（ADR-0003）。', code: `Knowledge_Inheritance_Framework/
+├─ AGENTS.md         所有 Agent 共用的核心規則
+├─ CLAUDE.md         只有一行：@AGENTS.md
+├─ README.md         第一天指南、知識庫清單、框架維護者
+├─ GLOSSARY.md       用語表
+├─ docs/adr/         決策紀錄
+├─ .claude/skills/   kb-add、kb-change、kb-learn、kb-review、kb-new
+├─ framework/        共用引擎、範本、check.py、build.py
+├─ CI 設定           GitHub Actions 或 GitLab CI：檢查、建置、發布
+└─ kb/
+   └─ semiconductor/
+      ├─ README.md   介紹、維護者、全景圖
+      ├─ terms.md    術語表
+      ├─ handbook/   部分 → 章 → 小節
+      ├─ widgets/    互動元件
+      ├─ assets/     圖片＋SOURCES.md
+      ├─ deck/       order.md、slides/、presenter-guide.md
+      └─ dist/       建置結果，不進版控` },
+    { label: 'kb/semiconductor/README.md', d: 1, note: '知識庫的首頁：介紹、維護者名單，以及全景圖（建議有）。', code: `# 半導體製程
+
+給半導體新人的知識庫：從電晶體結構演進、
+十章製程與量產，到先進封裝與背面供電。
+
+## 維護者
+- （維護者名字）
+
+## 全景圖
+\`\`\`mermaid
+flowchart LR
+  A[演進與現況] --> B[製造：從電晶體到量產]
+  B --> C[突破摩爾定律]
+\`\`\`
+部分和章的方塊由程式從資料夾自動產生，
+人只補上「章和章之間的關係」。` },
+    { label: 'handbook/2-manufacturing/', d: 1, note: '部分就是一個資料夾，只用來分組；資料夾名稱前的數字決定順序，沒有程度高低。', code: `handbook/
+├─ 1-evolution/          演進與現況
+├─ 2-manufacturing/      製造：從電晶體到量產
+│  ├─ README.md          這個部分的簡介
+│  ├─ 01-litho.md        微影
+│  ├─ 02-etch.md         蝕刻
+│  ├─ …
+│  └─ 05-gate.md         閘極
+└─ 3-beyond-moore/       突破摩爾定律` },
+    { label: '05-gate.md', d: 2, note: '一章一個檔案：速覽（建議有）、小節、常見問題（有題目才建）。小節內容格式自由。', code: `# 閘極
+
+> 速覽：閘極隔著一道很薄的絕緣牆，用電場開關電晶體。
+> 這章講牆為什麼不能再薄，換成 High-k 之後怎麼兩全。
+
+<a name="hk1"></a>
+## 閘極絕緣層
+
+牆要薄，電場才夠強；太薄，電子會直接穿過去
+（量子穿隧，Quantum Tunneling）。
+牆每薄 0.2 nm，漏電大約多 10 倍[^hk1-1]。
+
+<!-- 元件: gate-leakage -->
+
+[^hk1-1]: 出處（論文、文件位置或網址）
+
+## 常見問題
+
+<details>
+<summary>電晶體會壞嗎？可以用多久？</summary>
+正常使用可以用十年以上……
+相關：hk1、wat
+</details>` },
+    { label: 'deck/order.md', d: 1, note: '簡報自己的頁序：由上到下就是播放順序，每頁記錄對應的小節和指紋。', code: `# 頁序（格式示意）
+
+## 第一場（約 2 小時）
+- cover
+- mosfet   → mosfet@3fa2, nfetpfet@91c0
+- hk1      → hk1@7d4e
+
+## 第二場
+- ocd      → ocd@b12a
+- ocdb     → ocd@b12a, tem@44f1
+- refs
+
+@ 後面是小節文字的指紋，由程式產生，人不用管。` },
+    { label: 'assets/SOURCES.md', d: 1, note: '圖片清單：每張圖片的說明和出處；不在清單上的圖片不能用。', code: `# 圖片清單
+
+| 檔名             | 說明         | 出處           |
+|------------------|--------------|----------------|
+| wafer-12inch.jpg | 12 吋晶圓    | 網址           |
+| tem-gaa.jpg      | 環繞式 TEM   | 論文、第幾張圖 |
+
+只寫出處，不用寫授權（框架只在公司內部使用）。` }
+  ];
+  A(Object.assign({
+    id: 'struct', part: 2, minutes: 2, short: '知識怎麼存',
+    title: '知識怎麼存：部分 → 章 → 小節', en: 'Structure',
+    thesis: '小節內容<b>格式自由</b>，固定的只有 id、常見問題的格式和數字的出處註腳。',
+    render: () => `<div class="s-body w66">
+      <div class="col"><div class="fig grow"><div class="fig-title"><span>點左邊的檔案看內容</span><span>路徑英文、內容繁中</span></div>
+        <div style="flex:1;min-height:0;display:grid;grid-template-columns:290px 1fr;gap:14px">
+          <div class="tree" id="st-tree">${FILES.map((f, i) => `<button type="button" class="d${f.d}" data-i="${i}">${f.label}</button>`).join('')}</div>
+          <div style="display:flex;flex-direction:column;gap:8px;min-height:0;min-width:0"><p class="caption" id="st-note" style="margin:0;font-size:16px"></p><pre class="code" id="st-code" style="flex:1;min-height:0"></pre></div>
+        </div></div></div>
+      ${U.side({
+        points: ['<b>一個 repo</b> 放所有知識庫，全公司都能看', '小節 id 用短英文（hk1），<b>建立後不改名</b>', '數字用註腳附出處；圖片要列進<b>圖片清單</b>'],
+        fact: { v: '3 層', d: '部分是資料夾、章是檔案、小節是一個概念' },
+        analogy: { icon: 'tile', t: '比喻', p: '像一座書架：一層放一個部分，一本書是一章，書裡每一節都有固定的頁籤，別人引用時說「第幾節」就找得到。' }
+      })}</div>`,
+    init(el) {
+      const btns = U.$$(el, '#st-tree button');
+      const show = i => { btns.forEach((b, k) => b.classList.toggle('on', k === i)); U.$(el, '#st-note').textContent = FILES[i].note; U.$(el, '#st-code').textContent = FILES[i].code; };
+      btns.forEach((b, i) => b.onclick = () => show(i));
+      show(3);
+    },
+    notes: `第一章，知識怎麼存。框架和所有知識庫都放在同一個 repo，每個知識庫是 kb 底下的一個資料夾。手冊分三層：部分是資料夾，只用來分組；章是檔案；小節是一個概念。
+
+點左邊的 05-gate.md 看一章的樣子：開頭是速覽，中間是小節，最後是常見問題。小節 id 寫在標題前一行，建立之後就不改名。內容格式自由，固定的只有 id、常見問題的格式和出處註腳；路徑用英文，內容用繁體中文。`
+  }, C1));
+
+  /* ① 正本與指紋 */
+  const CN_SECS = [{ id: 'hk1', t: '閘極絕緣層', fp: '7d4e' }, { id: 'ocd', t: 'OCD 光學量測', fp: 'b12a', fp2: 'c9e0' }, { id: 'tem', t: 'TEM 電子顯微鏡', fp: '44f1' }];
+  const CN_PAGES = [{ id: 'cover', s: [] }, { id: 'hk1', s: ['hk1'] }, { id: 'ocd', s: ['ocd'] }, { id: 'ocdf', s: ['ocd'] }, { id: 'ocdb', s: ['ocd', 'tem'] }, { id: 'tem', s: ['tem'] }];
+  A(Object.assign({
+    id: 'canon', part: 2, minutes: 2, short: '手冊是正本',
+    title: '手冊是正本：簡報可以自己寫，但要跟得上', en: 'Source of Truth',
+    thesis: '簡報可以改寫講法，<b>說法以手冊為準</b>；小節一改，檢查程式用<b>指紋</b>點名要重看的簡報頁。',
+    render: () => `<div class="s-body">
+      <div class="col"><div class="controls">${U.seg('cn-seg', ['原本', '改了小節 ocd', 'Agent 跟上了'], 0)}</div>
+        <div class="fig grow"><div class="fig-title"><span>手冊小節 ⇄ 簡報頁序（@ 後面是指紋）</span><span></span></div>
+          <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1.3fr;gap:16px">
+            <div class="rcol"><h4>手冊的小節（正本）</h4><div class="ritems" id="cn-secs"></div></div>
+            <div class="rcol"><h4>簡報頁序 deck/order.md</h4><div class="ritems" id="cn-pages"></div></div>
+          </div>
+          <div class="card" id="cn-res" style="font-size:18px"></div></div></div>
+      ${U.side({
+        points: ['說法不一致時，<b>聽手冊的</b>', '一頁可以對應好幾個小節，一個小節也能出現在好幾頁', '指紋對不上就<b>不能開變更提案</b>，人不用記'],
+        fact: { v: '指紋', d: '小節文字的短雜湊值，記在頁序裡' },
+        analogy: { icon: 'pen', t: '比喻', p: '原文和譯本：原文改了一段，翻譯就得回頭對照譯本的那幾頁。指紋就是幫你標出「哪幾頁要對照」的書籤。' }
+      })}</div>`,
+    init(el) {
+      U.onSeg(el, 'cn-seg', st => {
+        const fpNow = s => st >= 1 && s.fp2 ? s.fp2 : s.fp;
+        U.$(el, '#cn-secs').innerHTML = CN_SECS.map(s => `<div class="ritem ${st === 1 && s.fp2 ? 'hit' : ''}">${s.t}<span class="ids">${s.id} · 指紋 ${fpNow(s)}${st >= 1 && s.fp2 ? '（內容改了）' : ''}</span></div>`).join('');
+        let bad = [];
+        U.$(el, '#cn-pages').innerHTML = CN_PAGES.map(p => {
+          const parts = p.s.map(id => { const s = CN_SECS.find(x => x.id === id); const rec = st === 2 || !s.fp2 ? fpNow(s) : s.fp; return { id, rec, ok: rec === fpNow(s) }; });
+          const off = parts.some(x => !x.ok); if (off) bad.push(p.id);
+          const cls = off ? 'hit del' : st === 2 && p.s.includes('ocd') ? 'ok' : '';
+          return `<div class="ritem ${cls}">${p.id}<span class="ids">${parts.length ? '→ ' + parts.map(x => `${x.id}@${x.rec}`).join(', ') : '（不對應小節）'}${off ? '　≠ 現在的指紋，要重看' : st === 2 && p.s.includes('ocd') ? '　已更新' : ''}</span></div>`;
+        }).join('');
+        U.$(el, '#cn-res').innerHTML = st === 0 ? '<b style="color:var(--good)">✓ 全部對得上</b>：手冊和簡報說的是同一件事。'
+          : st === 1 ? `<b style="color:var(--bad)">✗ ${bad.length} 頁簡報要重看：${bad.join('、')}</b>。檢查沒過，還不能開變更提案。`
+          : '<b style="color:var(--good)">✓ 對得上了</b>：Agent 改好或確認過這 3 頁，再更新指紋，可以開變更提案。';
+      });
+    },
+    notes: `簡報可以有自己的文字，因為上台要配合互動元件重新編排，講法也和閱讀時不同。說法不一致時，一律以手冊為準。
+
+改了手冊，誰記得改簡報？這件事交給檢查程式：頁序裡每一頁都記下對應小節的指紋。切到「改了小節 ocd」：指紋變了，記著舊指紋的三頁被點名，檢查不過。切到「Agent 跟上了」：Agent 改好或確認過這三頁，更新指紋，就能開變更提案。`
+  }, C1));
+
+  /* ② 三種新增方式：對話逐句出現 */
+  const MODES = [
+    { n: '研究', me: '傳承者', chat: [['me', '幫我研究 High-NA EUV，放進微影那章。'], ['ai', '好。我會用自己的知識和找到的資料，整理它和現在的 EUV 差在哪、為什麼要做、代價是什麼。數字一定附出處，找不到出處的就不寫。'], ['ai', '草稿好了，放在「微影」那章的最後，小節 id 我建議用 litho9。你看看哪裡要改？']] },
+    { n: '整理', me: '傳承者', chat: [['me', '參考這份《黃光區新人 SOP》第 3–8 頁，整理進微影那章。'], ['ai', '這幾頁有 5 個步驟和 2 個常見錯誤。我會改寫成白話、補一個比喻。原檔不放進知識庫，出處寫「黃光區新人 SOP，第 3–8 頁」加上它的存放位置。'], ['ai', '草稿好了。第 6 頁有一個數字我看不懂單位，請你確認一下。']] },
+    { n: '訪談', me: '老王（傳承者）', chat: [['me', '我想講一下光罩為什麼怕汙染。'], ['ai', '先問三題：一、汙染通常是什麼東西？二、出事時產線最先看到什麼？三、新人最常誤會哪一點？沒空當面講，我也可以先把問題寫下來，你有空再回。'], ['me', '最怕的是微粒，一顆很小的粒子就可能讓整批重做……'], ['ai', '了解。這段的出處會寫成「老王（製程整合）口述，2026-10」。草稿好了，你看看有沒有說錯？']] }
+  ];
+  A(Object.assign({
+    id: 'modes', part: 2, minutes: 2, short: '三種新增方式',
+    title: '三種新增方式：研究、整理、訪談', en: 'Add',
+    thesis: '給主題、給資料或直接口述都可以，<b>後半段流程都一樣</b>。',
+    render: () => `<div class="s-body">
+      <div class="col"><div class="controls">${U.seg('md-seg', MODES.map(m => m.n), 0)}<button class="btn" id="md-replay" type="button">↻ 重播</button></div>
+        <div class="fig grow"><div class="fig-title"><span id="md-tt"></span><span></span></div>
+          <div class="chat" id="md-chat" style="flex:1;min-height:0;overflow:auto;padding:4px"></div></div></div>
+      ${U.side({
+        points: ['<b>研究</b>：只給主題，Agent 寫；數字要附出處', '<b>整理</b>：給參考資料，Agent 改寫成白話；原檔不放進知識庫', '<b>訪談</b>：口述經驗，Agent 反問到懂了才寫'],
+        fact: { v: '訪談', d: '是唯一能收進「只在人腦袋裡」的知識的方式' },
+        analogy: { icon: 'camera', t: '比喻', p: '像記者寫報導：可以自己查資料、讀別人給的文件，也可以直接找當事人問。' }
+      })}</div>`,
+    init(el, ctx) {
+      const box = U.$(el, '#md-chat'); let timers = [], cur = 0;
+      const clearT = () => { timers.forEach(clearTimeout); timers = []; };
+      ctx.onCleanup(clearT);
+      const play = i => {
+        cur = i; clearT(); box.innerHTML = '';
+        const m = MODES[i]; U.$(el, '#md-tt').textContent = '方式：' + m.n;
+        m.chat.forEach(([who, t], k) => timers.push(setTimeout(() => {
+          const d = document.createElement('div'); d.className = 'bub show ' + who;
+          d.innerHTML = `<span class="by">${who === 'me' ? m.me : 'Agent'}</span>${t}`; box.appendChild(d); box.scrollTop = box.scrollHeight;
+        }, 250 + k * 1300)));
+      };
+      U.onSeg(el, 'md-seg', play);
+      U.$(el, '#md-replay').onclick = () => play(cur);
+    },
+    notes: `第二章，新增。切上面的按鈕看三種方式的對話。研究是只給主題，Agent 用自己的知識和找到的資料寫，數字一定附出處。整理是給一份參考資料，Agent 改寫成白話，原檔不放進知識庫，只寫明它在哪裡。
+
+訪談是口述經驗，Agent 反問到自己懂了才寫，出處就是誰口述、哪一天。這是唯一能收進只在人腦袋裡的知識的方式。三種方式的後半段都一樣，下一頁來看。`
+  }, C2));
+
+  /* ② 一筆知識的旅程：逐步播放 */
+  const ST = [
+    { n: '寫草稿', who: 'Agent', col: '#1f4fb5', d: '依新增方式寫成小節，建議比喻和圖解；術語第一次出現附英文。' },
+    { n: '傳承者確認', who: '人', col: '#1f7a4d', d: '看草稿、改到滿意，確認之前不會往下走。' },
+    { n: '自動檢查', who: '程式', col: '#b3541e', d: '每改一次就自動跑，沒過就擋；開變更提案後 CI 再跑一次。' },
+    { n: '讀者測試', who: 'Agent', col: '#1f4fb5', d: '沒有背景知識的 Agent 只讀這一章，答不出來就回去改寫。' },
+    { n: '變更提案', who: 'Agent', col: '#1f4fb5', d: '開變更提案，連到要回答的 issue，寫一行來歷：研究、整理或訪談。' },
+    { n: '維護者審核', who: '人＋Agent', col: '#1f7a4d', d: 'Agent 用白話整理改了什麼，維護者核准或留意見。' },
+    { n: '正式內容', who: '手冊', col: '#17202b', d: '併進手冊，新人看得到了；CI 重新建置手冊網站和簡報。' }
+  ];
+  function doc(c, x, y, i, p) {
+    const bw = 250, bh = 128;
+    c.save(); c.fillStyle = '#fff'; c.strokeStyle = '#9aa8b8'; c.lineWidth = 1.5;
+    c.shadowColor = 'rgba(20,30,45,.12)'; c.shadowBlur = 12; U.rrect(c, x - bw / 2, y - bh / 2, bw, bh, 6); c.fill(); c.shadowBlur = 0; c.stroke(); c.restore();
+    U.txt(c, '小節 litho9：High-NA EUV', x - bw / 2 + 14, y - bh / 2 + 24, { size: 15, w: 700, color: '#17202b' });
+    const lines = i === 0 ? Math.round(p * 4) : 4;
+    for (let k = 0; k < lines; k++) { c.fillStyle = '#d3dbe4'; c.fillRect(x - bw / 2 + 14, y - bh / 2 + 40 + k * 14, [200, 170, 190, 120][k], 6); }
+    const note = (s, col) => U.txt(c, s, x - bw / 2 + 14, y + bh / 2 - 14, { size: 14, w: 600, color: col });
+    if (i === 1) note('✎ 傳承者：改了兩處', '#1f7a4d');
+    if (i === 2) p < .55 ? note('✗ id litho9 已經被用了', '#b3261e') : note('✓ 改成 litho10，檢查通過', '#1f7a4d');
+    if (i === 3) note('✓ 沒有背景的 Agent：3 題答對 3 題', '#1f7a4d');
+    if (i === 4) note('來歷：研究（請仔細審）', '#b3541e');
+    if (i >= 5) {
+      c.save(); c.translate(x + 70, y - 8); c.rotate(-.2); c.scale(i === 5 ? .6 + .4 * p : 1, i === 5 ? .6 + .4 * p : 1); c.globalAlpha = i === 5 ? p : 1;
+      c.strokeStyle = '#1f7a4d'; c.lineWidth = 3; U.rrect(c, -44, -20, 88, 40, 6); c.stroke();
+      U.txt(c, '核准', 0, 8, { align: 'center', size: 22, w: 700, color: '#1f7a4d' }); c.restore();
+    }
+  }
+  function drawPipe(c, w, h, i, p) {
+    const y = h * .3, x0 = w * .07, x1 = w * .93, xs = ST.map((_, k) => U.lerp(x0, x1, k / (ST.length - 1)));
+    c.strokeStyle = '#e8edf3'; c.lineWidth = 6; c.beginPath(); c.moveTo(x0, y); c.lineTo(x1, y); c.stroke();
+    const head = i === 0 ? x0 : U.lerp(xs[i - 1], xs[i], p);
+    c.strokeStyle = '#9fb5e3'; c.beginPath(); c.moveTo(x0, y); c.lineTo(head, y); c.stroke();
+    ST.forEach((s, k) => {
+      const on = k === i, done = k < i;
+      c.fillStyle = on ? s.col : '#fff'; c.strokeStyle = s.col; c.lineWidth = on ? 4 : 2;
+      c.beginPath(); c.arc(xs[k], y, on ? 20 : 15, 0, 7); c.fill(); c.stroke();
+      if (done) U.txt(c, '✓', xs[k], y + 6, { align: 'center', size: 17, w: 700, color: s.col });
+      U.txt(c, s.n, xs[k], y - 36, { align: 'center', size: on ? 18 : 15, w: on ? 700 : 500, color: on ? '#17202b' : '#6a7888' });
+      U.txt(c, s.who, xs[k], y + 44, { align: 'center', size: 13.5, w: 600, color: s.col });
+    });
+    if (i === 6) {
+      c.fillStyle = '#e3ebfa'; c.strokeStyle = '#1f4fb5'; c.lineWidth = 2; U.rrect(c, w * .66, h * .55, w * .3, h * .4, 8); c.fill(); c.stroke();
+      U.txt(c, '手冊（正式內容）', w * .81, h * .55 + 26, { align: 'center', size: 16, w: 700, color: '#1f4fb5' });
+      U.txt(c, '新人看得到了', w * .81, h * .95 - 14, { align: 'center', size: 14, color: '#3e4b5b' });
+    }
+    const target = i === 6 ? [w * .81, h * .76] : [U.clamp(xs[i], 140, w - 140), h * .7];
+    const prev = i === 0 ? [U.clamp(xs[0], 140, w - 140), h * .7] : [U.clamp(xs[i - 1], 140, w - 140), h * .7];
+    const u = U.ease(p);
+    doc(c, U.lerp(prev[0], target[0], u), U.lerp(prev[1], target[1], u), i, p);
+  }
+  A(Object.assign({
+    id: 'pipeline', part: 2, minutes: 2, short: '一筆知識的旅程',
+    title: '一筆知識的旅程：從草稿到正式內容', en: 'Pipeline',
+    thesis: '<b>傳承者確認、維護者核准</b>之前，什麼都不會變成正式內容。',
+    render: () => `<div class="s-body w66">
+      <div class="col">${U.figHTML('pp-cv', '研究 High-NA EUV 的一筆知識', '')}${U.stepperHTML('pp-st')}</div>
+      ${U.side({
+        points: ['<b>藍色</b>是 Agent、<b>綠色</b>是人、<b>橘色</b>是程式', '檢查沒過，錯誤直接交給 Agent 修', '來歷是「研究」的提案，維護者要特別仔細看'],
+        fact: { v: '7 站', d: '從草稿到正式內容，每站都有人或程式把關' },
+        analogy: { icon: 'stairs', t: '比喻', p: '像出版一本書：寫稿、自己校對、排版檢查、找人試讀，再送編輯審，通過才印。' }
+      })}</div>`,
+    init(el, ctx) {
+      U.animSteps(el, ctx, { canvas: 'pp-cv', stepper: 'pp-st', dur: 1.1, interval: 2600, steps: ST.map((s, k) => ({ t: s.n, d: s.d, draw: (c, w, h, p) => drawPipe(c, w, h, k, p) })) });
+    },
+    notes: `這頁看一筆知識走過的七站，按「下一步」一站一站看，或按「自動播放」。
+
+Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞名被擋下，Agent 換一個 id 就過了。讀者測試答得出來，才開變更提案，寫一行來歷；這筆是研究，提醒維護者仔細審。
+
+維護者核准後，它就是手冊裡的正式內容。誰能合併、怎麼合併，第三部分再講。`
+  }, C2));
+})();
+</script>
+<script>/* 第二部分 ③④⑤ 修改與刪除、檢查與審核、新人怎麼學 */
+(function () {
+  const A = Deck.add.bind(Deck);
+  const C3 = { chap: 3, eyebrow: '第二部分 · ③ 修改與刪除' };
+  const C4 = { chap: 4, eyebrow: '第二部分 · ④ 檢查與審核' };
+  const C5 = { chap: 5, eyebrow: '第二部分 · ⑤ 新人怎麼學' };
+
+  /* ③ 引用：改一節、刪一節會牽動哪些地方 */
+  const SECS = [{ id: 'litho6', t: 'OPC 光學鄰近校正', ch: '微影' }, { id: 'hk1', t: '閘極絕緣層', ch: '閘極' }, { id: 'ocd', t: 'OCD 光學量測', ch: '檢測量測' }, { id: 'tem', t: 'TEM 電子顯微鏡', ch: '檢測量測' }, { id: 'wat', t: 'WAT 電性測試', ch: '檢測量測' }];
+  const PAGES = [{ id: 'litho6', s: ['litho6'] }, { id: 'hk1', s: ['hk1'] }, { id: 'tem', s: ['tem'] }, { id: 'ocd', s: ['ocd'] }, { id: 'ocdf', s: ['ocd'] }, { id: 'ocdb', s: ['ocd', 'tem'] }, { id: 'wat', s: ['wat'] }];
+  const FAQS = [{ q: '電晶體會壞嗎？可以用多久？', s: ['hk1', 'wat'] }, { q: 'OCD 量到的就是真的尺寸嗎？', s: ['ocd', 'tem'] }, { q: 'OPC 是什麼？跟光罩有什麼關係？', s: ['litho6'] }];
+  A(Object.assign({
+    id: 'refs', part: 2, minutes: 2, short: '修改與刪除',
+    title: '修改與刪除：引用在同一個提案裡一起改', en: 'Edit & Remove',
+    thesis: 'Agent 列出所有<b>引用</b>，在<b>同一個變更提案</b>裡處理完，不留舊 id。',
+    render: () => `<div class="s-body">
+      <div class="col"><div class="controls">${U.seg('rf-act', ['修改', '刪除'], 0)}</div>
+        <div class="fig grow"><div class="fig-title"><span>點一個小節</span><span></span></div>
+          <div style="flex:1;min-height:0;display:grid;grid-template-columns:1.25fr 1fr 1.15fr;gap:14px">
+            <div class="rcol"><h4>手冊的小節</h4><div class="ritems" id="rf-secs"></div></div>
+            <div class="rcol"><h4>簡報頁（頁序）</h4><div class="ritems" id="rf-pages"></div></div>
+            <div class="rcol"><h4>常見問題</h4><div class="ritems" id="rf-faqs"></div></div>
+          </div>
+          <div class="card" id="rf-res" style="font-size:18px"></div></div></div>
+      ${U.side({
+        points: ['<b>修改</b>：對應的簡報頁和常見問題一起確認', '<b>刪除、合併</b>：所有引用在同一個提案裡改掉', '刪掉的內容，Git 歷史找得回來'],
+        fact: { v: '0 個舊 id', d: '全部在同一個 repo，引用都看得到，直接改掉' },
+        analogy: { icon: 'gate', t: '比喻', p: '像搬家改地址：把所有會寄信給你的人都通知一遍，舊地址就不用留了。' }
+      })}</div>`,
+    init(el) {
+      let act = 0, picked = 'ocd';
+      const render = () => {
+        U.$(el, '#rf-secs').innerHTML = SECS.map(s => `<button type="button" class="ritem click ${s.id === picked ? 'sel' : ''}" data-id="${s.id}">${s.t}<span class="ids">${s.ch} › ${s.id}</span></button>`).join('');
+        const hc = act ? 'ritem hit del' : 'ritem hit';
+        const hp = PAGES.filter(p => p.s.includes(picked)), hf = FAQS.filter(f => f.s.includes(picked));
+        U.$(el, '#rf-pages').innerHTML = PAGES.map(p => `<div class="${p.s.includes(picked) ? hc : 'ritem'}">${p.id}<span class="ids">→ ${p.s.join(', ')}</span></div>`).join('');
+        U.$(el, '#rf-faqs').innerHTML = FAQS.map(f => `<div class="${f.s.includes(picked) ? hc : 'ritem'}">${f.q}<span class="ids">相關：${f.s.join('、')}</span></div>`).join('');
+        const s = SECS.find(x => x.id === picked), list = hp.map(p => p.id).join('、') || '無', shared = hp.filter(p => p.s.length > 1).map(p => p.id);
+        U.$(el, '#rf-res').innerHTML = !act
+          ? `<b>修改「${s.t}」</b>：${hp.length} 頁簡報要重看（${list}），${hf.length} 題常見問題的答案也一起確認，都在同一個提案裡。`
+          : `<b>刪除「${s.t}」</b>：${hp.length} 頁簡報（${list}）和 ${hf.length} 題常見問題，在同一個提案裡改指向、一起刪掉，或合併。${shared.length ? `其中 ${shared.join('、')} 還對應其他小節，拿掉這個對應就好。` : ''}`;
+        U.$$(el, '#rf-secs [data-id]').forEach(b => b.onclick = () => { picked = b.dataset.id; render(); });
+      };
+      U.onSeg(el, 'rf-act', i => { act = i; render(); });
+    },
+    notes: `第三章，修改和刪除。先選動作，再點左邊一個小節。修改 ocd 時，對應的三頁簡報要重看，指向它的常見問題也要確認。
+
+切到「刪除」：Agent 先列出所有引用，包括簡報頁、常見問題和別的知識庫，在同一個提案裡改指向、一起刪或合併。因為全在同一個 repo，引用都看得到，所以不留舊 id。刪掉的內容，Git 歷史隨時找得回來。`
+  }, C3));
+
+  /* ④ 誰把關：丟一個問題進篩子，看它在哪一層被抓到 */
+  const LAY = [['程式擋', '本機每次修改＋CI；沒過不能合併', '#b3261e', '負責：傳承者照錯誤修正（Agent 代勞）'], ['程式提醒', '判斷不準，只提醒、不擋', '#a8660a', '負責：維護者決定補出處或拿掉'], ['讀者測試', 'Agent 看寫得清不清楚', '#1f4fb5', '負責：傳承者改寫到答得出來'], ['維護者審核', '人決定內容對不對', '#1f7a4d', '負責：維護者核准或要求修改']];
+  const PB = [
+    { n: 'id 重複', stop: 0, msg: '<b>程式擋下</b>：小節 id 不能重複。Agent 換一個 id 再跑一次檢查。' },
+    { n: '引用找不到', stop: 0, msg: '<b>程式擋下</b>：常見問題指向的小節不存在。Agent 修正引用。' },
+    { n: '簡報頁沒跟上', stop: 0, msg: '<b>程式擋下</b>：頁序裡的指紋對不上，點名要重看的簡報頁。' },
+    { n: '數字沒附出處', stop: 3, flag: true, msg: '<b>程式提醒、不擋</b>：這個數字看起來沒有出處。到了<b>維護者審核</b>，決定補出處還是拿掉。' },
+    { n: '寫得太難懂', stop: 2, msg: '<b>讀者測試抓到</b>：沒有背景的 Agent 答不出這章的常見問題，回去改寫。' },
+    { n: '內容說錯了', stop: 3, msg: '<b>維護者審核抓到</b>：內容對不對，最後由人判斷。退回並附上意見。' }
+  ];
+  A(Object.assign({
+    id: 'gates', part: 2, minutes: 2, short: '誰把關什麼',
+    title: '誰把關什麼：一層一層篩，每層都有人負責', en: 'Checks',
+    thesis: '<b>判斷得準的交給程式擋</b>，寫得清不清楚交給讀者測試，內容對不對由維護者決定。',
+    render: () => `<div class="s-body">
+      <div class="col">${U.figHTML('gt-cv', '點下面一個問題，看它在哪一層被抓到、由誰處理', '')}
+        <div class="controls" id="gt-btns">${PB.map((q, i) => `<button class="btn" type="button" data-i="${i}">${q.n}</button>`).join('')}</div>
+        <div class="step-text" id="gt-msg">先點一個問題。</div></div>
+      ${U.side({
+        points: ['<b>傳承者</b>：修正檢查擋下的錯，改寫到讀者測試通過', '<b>維護者</b>：決定沒出處的數字，判斷內容對不對', '<b>框架維護者</b>：維護檢查程式和規則', '<b>Agent</b>：自動跑檢查、做讀者測試、照錯誤修正'],
+        fact: { v: '先看到錯誤', d: '才新增規則，避免規則越疊越重' },
+        analogy: { icon: 'sand', t: '比喻', p: '像一疊篩子：粗的石頭第一層就擋下，細沙才流到下一層，最後由人用眼睛挑。' }
+      })}</div>`,
+    init(el, ctx) {
+      const { c, w, h } = U.canvas(U.$(el, '#gt-cv'));
+      const LY = k => h * (.2 + k * .21);
+      let ball = null;
+      U.$$(el, '#gt-btns button').forEach(b => b.onclick = () => {
+        U.$$(el, '#gt-btns button').forEach(x => x.classList.toggle('on', x === b));
+        ball = { y: 14, vy: 0, q: PB[+b.dataset.i], flagged: false, done: false };
+        U.$(el, '#gt-msg').textContent = '往下掉……';
+      });
+      ctx.raf(dt => {
+        c.clearRect(0, 0, w, h);
+        const bx = w * .66, r = 16;
+        LAY.forEach(([n, d, col, who], k) => {
+          const y = LY(k), hit = ball && ball.done && ball.q.stop === k, fl = ball && ball.flagged && k === 1;
+          c.fillStyle = hit ? col : fl ? '#e9b45a' : '#d3dbe4';
+          for (let x = w * .34; x < w * .97; x += 28) c.fillRect(x, y - 4, 20, 8);
+          U.txt(c, n, w * .03, y + 4, { size: 20, w: 700, color: col });
+          U.txt(c, d, w * .03, y + 28, { size: 14, color: '#6a7888' });
+          U.txt(c, who, w * .03, y + 50, { size: 14, w: 700, color: hit ? col : '#3e4b5b' });
+        });
+        if (!ball) { U.txt(c, '↓', bx, LY(0) - 40, { align: 'center', size: 30, color: '#9aa8b8' }); return; }
+        if (!ball.done) {
+          ball.vy += 1900 * dt; ball.y += ball.vy * dt;
+          if (ball.q.flag && !ball.flagged && ball.y >= LY(1)) ball.flagged = true;
+          const ty = LY(ball.q.stop) - 4 - r;
+          if (ball.y >= ty) {
+            ball.y = ty;
+            if (Math.abs(ball.vy) < 140) { ball.done = true; U.$(el, '#gt-msg').innerHTML = ball.q.msg; }
+            else ball.vy = -ball.vy * .32;
+          }
+        }
+        if (ball.done) { c.fillStyle = LAY[ball.q.stop][2]; c.fillRect(w * .34, LY(ball.q.stop) - 4, w * .63, 8); }
+        c.fillStyle = ball.done ? LAY[ball.q.stop][2] : ball.flagged ? '#a8660a' : '#3e4b5b';
+        c.beginPath(); c.arc(bx, ball.y, r, 0, 7); c.fill();
+        U.txt(c, ball.q.n, bx + 26, ball.y + 6, { size: 16, w: 700, color: '#17202b', bg: 'rgba(255,255,255,.92)' });
+        if (ball.flagged) U.txt(c, '⚑ 提醒', bx - 26, LY(1) - 12, { align: 'right', size: 14, w: 700, color: '#a8660a' });
+      });
+    },
+    notes: `第四章，檢查和審核。每一層都標出由誰負責：程式擋下的錯，由傳承者請 Agent 修正；程式提醒的數字，由維護者決定補出處還是拿掉；讀者測試沒過，由傳承者改寫；內容對不對，由維護者決定。檢查程式和規則本身，由框架維護者維護。
+
+研究時查到：寫在規則檔裡的指示，Agent 不保證每次都遵守。所以一定要成立的規則，交給程式來擋。
+
+點下面一個問題，看它掉到哪一層。id 重複、引用找不到、簡報頁沒跟上，第一層就擋下。數字沒附出處只提醒，由維護者決定；寫得太難懂由讀者測試抓到；內容說錯了，只有人看得出來。
+
+右邊的元規則：先實際看到某個錯誤，才新增對應的規則。`
+  }, C4));
+
+  /* ④ 讀者測試：改寫前後的對比 */
+  const RT = [
+    { ex: '換成 HfO₂ 之後，<span class="term">EOT</span> 可以維持在 1 nm 以下，<span class="term">Vt</span> 由 <span class="term">WFM</span> 決定。', qa: [[0, '為什麼要換掉二氧化矽？', '這章沒有說原因，我答不出來。'], [0, 'EOT 是什麼？', '這章沒有解釋 EOT，我答不出來。'], [0, '換了材料，牆是變厚還是變薄？', '這章沒有提到厚度怎麼變。']] },
+    { ex: '牆太薄，電子會直接穿過去（漏電）。換成二氧化鉿（HfO₂，High-k）之後，<span class="fix">牆可以做厚，電場照樣過得去</span>。<span class="fix">「等效厚度」（EOT）就是：這道新牆的效果，相當於多厚的二氧化矽。</span>', qa: [[1, '為什麼要換掉二氧化矽？', '因為牆太薄，電子會穿過去漏電。'], [1, 'EOT 是什麼？', '新牆的效果相當於多厚的二氧化矽。'], [1, '換了材料，牆是變厚還是變薄？', '變厚，電場照樣過得去。']] }
+  ];
+  A(Object.assign({
+    id: 'reader', part: 2, minutes: 2, short: '讀者測試',
+    title: '讀者測試：讓一個外行人讀讀看', en: 'Reader Test',
+    thesis: '沒有背景知識的 Agent <b>只讀這一章</b>，答不出來的地方就要改寫。',
+    render: () => `<div class="s-body">
+      <div class="col"><div class="controls">${U.seg('rt-seg', ['改寫前', '改寫後'], 0)}</div>
+        <div class="fig grow"><div class="fig-title"><span>改過的那一章（節錄）</span><span id="rt-score"></span></div>
+          <div class="excerpt" id="rt-ex"></div>
+          <div class="lbl4" style="margin-top:6px">沒有背景的 Agent 只讀上面這些，回答常見問題：</div>
+          <div class="ritems" id="rt-qa"></div></div></div>
+      ${U.side({
+        points: ['只能根據這一章回答，<b>不能用自己的知識</b>', '答不出來 → 回去改寫，再測一次', 'ELI5 是方向：先白話、再術語、能比喻就比喻'],
+        fact: { v: '1 個測試', d: '取代一長串寫作原則清單' },
+        analogy: { icon: 'eye', t: '比喻', p: '請一位完全外行的朋友讀一遍：他問「這是什麼意思？」的地方，就是你要改的地方。' }
+      })}</div>`,
+    init(el) {
+      U.onSeg(el, 'rt-seg', i => {
+        const r = RT[i], ok = r.qa.filter(x => x[0]).length;
+        U.$(el, '#rt-ex').innerHTML = r.ex;
+        U.$(el, '#rt-qa').innerHTML = r.qa.map(([y, q, a]) => `<div class="qa-row"><span class="mk ${y ? 'y' : 'n'}">${y ? '✓' : '✗'}</span><div><div class="q">${q}</div><div class="a">${a}</div></div></div>`).join('');
+        U.$(el, '#rt-score').textContent = `答對 ${ok} / ${r.qa.length}`;
+      });
+    },
+    notes: `以前想列一長串寫作原則，現在改成一個測試：讓沒有背景知識的 Agent 只讀改過的那一章，回答這章的常見問題。
+
+看「改寫前」：EOT、Vt、WFM 三個縮寫都沒解釋，三題都答不出來。切到「改寫後」：先講白話，再解釋等效厚度，三題都答得出來。這個 Agent 只能根據這一章回答，和查找是同一條規則。`
+  }, C4));
+
+  /* ⑤ 新人看到的樣子：手冊網站、簡報的一頁、簡報的整份結構 */
+  const DECK_RULE = {
+    head: ['標題列', '眉標寫部分和章；右上角是章節列，點了可以跳章；標題下面一句話講結論。'],
+    widget: ['互動元件（建議）', '建議放可以操作的模擬，不強制。新的互動元件一開始就寫成共用元件，手冊網站也能用。'],
+    points: ['重點', '三到四點短句，每點一個重點。'],
+    fact: ['數字卡', '一句話數字，出自對應的小節；沒有好數字時，同一個位置改放一句話重點。'],
+    analogy: ['比喻卡', '用生活經驗解釋這頁的概念。'],
+    notes: ['講稿', '每頁給講者看的講法（按 N），只存在簡報，不進手冊。整份另附講者須知，例如被追問數字時怎麼回答。']
+  };
+  const DECK_FLOW = [['封面', ''], ['議程', ''], ['章節頁', '每個部分開頭，大數字'], ['內容頁 × N', '每頁一個概念'], ['參考資料頁', '由出處和圖片清單產生'], ['常見問題附錄', '最後一頁，由各章常見問題產生，可跳回相關頁']];
+  A(Object.assign({
+    id: 'learn', part: 2, minutes: 2.5, short: '新人看到的樣子',
+    title: '新人看到的樣子：手冊網站和簡報', en: 'Learn',
+    thesis: '新人主要看<b>簡報</b>，沒有簡報就看<b>手冊網站</b>；兩個都是離線能開的單一 HTML 檔。',
+    render: () => `<div class="s-body">
+      <div class="col"><div class="controls">${U.seg('ln-seg', ['手冊網站', '簡報：一頁', '簡報：整份'], 0)}</div>
+        <div class="mock" id="ln-mock"></div></div>
+      ${U.side({
+        points: ['先看<b>全景圖</b>和<b>速覽</b>，再進細節（建議有，不強制）', '常見問題的<b>答案先收起來</b>，自己想過再打開', '簡報是選配，有做就照<b>半導體範例</b>的樣子', '主線一更新，CI 就重新建置；也可以請 Agent 現場建置'],
+        fact: { v: '單一 HTML', d: '離線就能打開，看的人不用裝任何東西' },
+        analogy: { icon: 'onion', t: '比喻', p: '像剝洋蔥：先看最外層的全貌，再一層一層往裡看細節，不會一開始就迷路。' }
+      })}</div>`,
+    init(el) {
+      const mock = U.$(el, '#ln-mock');
+      const site = `<div class="mbar"><i></i><i></i><i></i><span>kb/semiconductor · 手冊網站</span></div>
+        <div class="pg">
+          <div class="lbl4" style="margin:0">全景圖</div>
+          <div class="chips"><span>演進與現況</span><span class="ar">→</span><span>製造：從電晶體到量產</span><span class="ar">→</span><span>突破摩爾定律</span></div>
+          <div style="font-size:24px;font-weight:700;margin-top:4px">閘極</div>
+          <div class="ov-box"><b>速覽</b>　閘極隔著一道很薄的絕緣牆，用電場開關電晶體。這章講牆為什麼不能再薄，換成 High-k 之後怎麼兩全。</div>
+          <div style="font-size:19px;font-weight:700">閘極絕緣層 <span class="tag">hk1</span></div>
+          <p style="margin:0;font-size:17px">牆要薄，電場才夠強；太薄，電子會直接穿過去（量子穿隧，Quantum Tunneling）。<span class="tag a">互動元件：拖動厚度看漏電</span></p>
+          <div class="lbl4" style="margin:4px 0 0">常見問題（點開看答案）</div>
+          <details class="faqi"><summary>電晶體會壞嗎？可以用多久？</summary><p>正常使用可以用十年以上。長期高溫、高電壓會讓絕緣層慢慢劣化。</p><div class="rel">相關：hk1、wat</div></details>
+          <details class="faqi"><summary>【深入】介面層為什麼還要留著？</summary><p>給有業界經驗的人的題目，放在常見問題的最後。</p><div class="rel">相關：hk1</div></details>
+        </div>`;
+      const b = (k, style, inner) => `<button type="button" class="ritem click" data-k="${k}" style="${style}">${inner}</button>`;
+      const one = `${b('head', 'padding:10px 14px', '<span class="ids">03 第二部分 · ⑤ 閘極　　［① ② ③ ④ ⑤ 章節列］</span><b style="font-size:20px">絕緣牆的兩難：電場要過得去，電子不要過去</b><span class="ids">一句話講結論……</span>')}
+        <div style="flex:1;min-height:0;display:grid;grid-template-columns:58fr 42fr;gap:10px">
+          ${b('widget', 'display:grid;place-items:center;font-size:20px;font-weight:700', '左：互動元件<br><span class="ids">拖動厚度，看漏電怎麼變</span>')}
+          <div style="display:flex;flex-direction:column;gap:8px">${b('points', 'flex:1', '<b>重點</b><span class="ids">• 牆越薄，控制力越強<br>• 太薄，電子穿過去</span>')}${b('fact', '', '<b>數字卡</b><span class="ids">約 1.2 nm：只剩約 5 層原子</span>')}${b('analogy', '', '<b>比喻卡</b><span class="ids">隔著牆用磁鐵吸鐵片</span>')}</div>
+        </div>${b('notes', 'padding:6px 14px', '<span class="ids">講稿（按 N 打開）</span>')}`;
+      const whole = `<div class="flowrow" style="margin-top:6px">${DECK_FLOW.map(([t, d]) => `<div class="st core" style="font-size:16px">${t}${d ? `<br><span class="gloss" style="font-size:13px;font-weight:400">${d}</span>` : ''}</div>`).join('<span class="ar">→</span>')}</div>`;
+      const frame = (bar, inner) => `<div class="mbar"><i></i><i></i><i></i><span>${bar}</span></div>
+        <div class="pg" style="flex:1;min-height:0"><div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:10px">${inner}</div><div class="card key" id="ln-rule" style="font-size:18px"></div></div>`;
+      const pick = k => { U.$$(mock, '[data-k]').forEach(x => x.classList.toggle('sel', x.dataset.k === k)); U.$(mock, '#ln-rule').innerHTML = `<b>${DECK_RULE[k][0]}</b>：${DECK_RULE[k][1]}`; };
+      U.onSeg(el, 'ln-seg', i => {
+        if (i === 0) { mock.innerHTML = site; return; }
+        mock.innerHTML = frame(i === 1 ? 'kb/semiconductor · 簡報的一頁（點一個區塊看規則）' : 'kb/semiconductor · 簡報的整份結構', i === 1 ? one : whole);
+        if (i === 1) { U.$$(mock, '[data-k]').forEach(x => x.onclick = () => pick(x.dataset.k)); pick('widget'); }
+        else U.$(mock, '#ln-rule').innerHTML = '<b>部分和章</b>預設照手冊；上台需要重新編排時，才在頁序裡自己定，也可以分成好幾個場次。<b>常見問題附錄</b>和<b>參考資料頁</b>由程式產生，不用手寫。';
+      });
+    },
+    notes: `第五章，新人怎麼學。新人主要看簡報，沒有簡報就看手冊網站。手冊網站最上面是全景圖，每章開頭有速覽，最後是常見問題，答案先收起來，讓新人自己先想。
+
+切到「簡報：一頁」，點各個區塊看規則：右邊固定是重點、數字卡、比喻卡，左邊建議放互動元件。簡報是選配，有做就照半導體範例的樣子，這份簡報的每一頁也是這樣做的。「簡報：整份」看整份的結構，常見問題附錄和參考資料頁由程式產生。`
+  }, C5));
+
+  /* ⑤ 查找與帶讀 */
+  const LOOK = [
+    { q: 'OPC 是什麼？跟光罩有什麼關係？', a: 'OPC（光學鄰近校正，Optical Proximity Correction）是先把光罩上的圖形「故意改形狀」，抵消曝光時光造成的變形，讓印在晶圓上的線條接近設計。所以 OPC 改的就是光罩本身。', cite: '出處：半導體製程 › 微影 › litho6' },
+    { q: '機台保養（PM）多久做一次？', a: '手冊裡沒有寫到這件事，我不自己編答案。要記成「待回答」嗎？', gap: true }
+  ];
+  const QZ = [['牆可以做厚一點，電場照樣過得去', 1], ['牆可以做薄一點，電子更容易通過', 0], ['牆變成導體，閘極直接接上通道', 0]];
+  A(Object.assign({
+    id: 'ask', part: 2, minutes: 2, short: '查找與帶讀',
+    title: '查找與帶讀：不懂就問 Agent', en: 'Lookup & Guided Reading',
+    thesis: '<b>查找</b>只根據手冊回答，沒寫就直說；<b>帶讀</b>用白話解釋、出小題目確認懂了。',
+    render: () => `<div class="s-body">
+      <div class="col">
+        <div class="fig grow"><div class="fig-title"><span>查找：點一題</span><span></span></div>
+          <div class="controls">${LOOK.map((x, i) => `<button class="btn" type="button" data-i="${i}">${x.q}</button>`).join('')}</div>
+          <div class="chat" id="ak-chat" style="flex:1;min-height:0;overflow:auto"></div></div>
+        <div class="fig"><div class="fig-title"><span>帶讀：小題目</span><span>選項長度差不多</span></div>
+          <p style="margin:0;font-size:19px">把閘極的絕緣牆從二氧化矽換成二氧化鉿（High-k），主要是為了什麼？</p>
+          <div class="quiz" id="ak-quiz">${QZ.map(([t], i) => `<button type="button" data-i="${i}">${t}</button>`).join('')}</div>
+          <div class="fb" id="ak-fb"></div></div>
+      </div>
+      ${U.side({
+        points: ['<b>查找</b>：只根據手冊回答，附上出處小節', '沒寫到的問題，可以記成<b>待回答</b>', '<b>帶讀</b>：用 ELI5 解釋、反問、出小題目，最後指回小節'],
+        fact: { v: '只看手冊', d: '手冊沒寫就說沒寫，不自己編答案' },
+        analogy: { icon: 'stack', t: '比喻', p: '好的圖書館員：只拿館藏回答你，找不到就老實說，再登記成要採購的書。' }
+      })}</div>`,
+    init(el) {
+      const box = U.$(el, '#ak-chat');
+      const ask = i => {
+        const x = LOOK[i]; box.innerHTML = '';
+        U.$$(el, '.controls [data-i]').forEach(b => b.classList.toggle('on', +b.dataset.i === i));
+        box.insertAdjacentHTML('beforeend', `<div class="bub me show"><span class="by">新人</span>${x.q}</div>`);
+        box.insertAdjacentHTML('beforeend', `<div class="bub ai show"><span class="by">Agent</span>${x.a}${x.cite ? `<br><span class="cite">${x.cite}</span>` : ''}${x.gap ? '<br><button class="btn" type="button" id="ak-gap" style="margin-top:8px">好，記成待回答</button>' : ''}</div>`);
+        const g = U.$(el, '#ak-gap');
+        if (g) g.onclick = () => {
+          g.remove();
+          box.insertAdjacentHTML('beforeend', '<div class="bub me show"><span class="by">新人</span>好，記成待回答</div>');
+          box.insertAdjacentHTML('beforeend', '<div class="bub ai show"><span class="by">Agent</span>已經開成 issue #12，傳承者開工時會看到；答完你會收到通知。</div>');
+          box.scrollTop = box.scrollHeight;
+        };
+      };
+      U.$$(el, '.controls [data-i]').forEach(b => b.onclick = () => ask(+b.dataset.i));
+      ask(0);
+      const qb = U.$$(el, '#ak-quiz button');
+      qb.forEach(b => b.onclick = () => {
+        const ok = QZ[+b.dataset.i][1];
+        qb.forEach(x => x.classList.remove('right', 'wrong')); b.classList.add(ok ? 'right' : 'wrong');
+        U.$(el, '#ak-fb').innerHTML = ok ? '答對了。二氧化鉿傳電場的能力比較強，牆做厚、電子穿不過去，閘極照樣控制得住。<span class="cite">回到小節：閘極 › hk1</span>'
+          : '再想想：牆太薄，電子會直接穿過去。換材料是想要「厚」還是「薄」？<span class="cite">回到小節：閘極 › hk1</span>';
+      });
+    },
+    notes: `看不懂時，新人可以請 Agent 查找或帶讀。點第一題：Agent 只根據手冊回答，最後附上出處小節。點第二題：手冊沒寫，Agent 就直說，不自己編，再問要不要記成待回答；待回答怎麼處理，第三部分再講。
+
+左下是帶讀：Agent 陪新人讀，反問、出小題目。三個選項長度差不多，不會從格式猜到答案；答完一樣指回小節。`
+  }, C5));
+})();
+</script>
+<script>/* 第三部分：跟 Git 主機結合（ADR-0005） */
+(function () {
+  const A = Deck.add.bind(Deck);
+
+  /* 對到 Git 上 */
+  const GM = [
+    ['變更提案', 'PR', 'MR', '推上分支，產生訊息貼給維護者'],
+    ['審核、退回', 'PR 審查：核准或要求修改', 'MR 審查：核准或留意見', '維護者看完訊息後合併'],
+    ['待回答', 'issue（標籤：待回答）', 'issue（標籤：待回答）', '寫進常見問題，標成【待回答】'],
+    ['勘誤', 'issue（標籤：勘誤）', 'issue（標籤：勘誤）', '直接開變更提案'],
+    ['檢查', '本機 hook＋GitHub Actions', '本機 hook＋GitLab CI', '只有本機 hook'],
+    ['手冊網站、簡報', 'CI 建置，放在 Release 下載', 'CI 建置，放在 Release 下載', '請 Agent 現場建置'],
+    ['標籤', '種類、kb:知識庫、來歷', '種類、kb:知識庫、來歷', '（不用）'],
+    ['Agent 用的指令', 'gh', 'glab', 'git']
+  ];
+  A({
+    id: 'gitmap', part: 3, minutes: 2, short: '對到 Git 上',
+    title: '對到 Git 上：GitHub、GitLab，或沒有主機', en: 'Git Mapping',
+    thesis: '框架只用兩邊都有的功能，<b>Agent 依設定檔選 gh 或 glab</b>。',
+    render: () => `<div class="s-body">
+      <div class="col"><div class="controls">${U.seg('gm-seg', ['GitHub', 'GitLab', '手動模式'], 0)}</div>
+        <div class="fig grow"><div class="fig-title"><span>框架的說法 → 實際用到的東西</span><span>正式內容＝主線</span></div>
+          <table class="t" style="font-size:18px"><thead><tr><th style="width:30%">框架</th><th id="gm-h">GitHub</th></tr></thead><tbody id="gm-b"></tbody></table></div></div>
+      ${U.side({
+        points: ['只用 issue、PR／MR、標籤、指派、CI 這些<b>兩邊都有</b>的功能', '沒有主機時退回<b>手動模式</b>，Agent 要分辨現在是哪一種', '提問和回報都透過 Agent，不另外做 issue 範本'],
+        fact: { v: 'gh／glab', d: '同一套流程，兩種主機都能用' },
+        analogy: { icon: 'lego', t: '比喻', p: '像旅行用的轉接頭：插頭不變，換個接頭就能插不同國家的插座。' }
+      })}</div>`,
+    init(el) {
+      U.onSeg(el, 'gm-seg', i => {
+        U.$(el, '#gm-h').textContent = ['GitHub', 'GitLab', '手動模式'][i];
+        U.$(el, '#gm-b').innerHTML = GM.map(r => `<tr${i === 2 && r[3] !== r[1] ? ' class="hl"' : ''}><td><b>${r[0]}</b></td><td>${r[i + 1]}</td></tr>`).join('');
+      });
+    },
+    notes: `第三部分，跟 Git 主機結合。框架裡的每個詞，在 Git 主機上都有對應的東西：變更提案是 PR 或 MR，待回答和勘誤是貼了標籤的 issue，檢查是本機 hook 加上 CI。框架只用兩邊都有的功能，公司最後用哪一個都接得上。
+
+切到「手動模式」：這是沒有 Git 主機時的備援，藍底的列和有主機時不同。提案靠貼訊息，待回答寫進常見問題，勘誤直接開變更提案。`
+  });
+
+  /* 誰能合併：主線只強制檢查，核准靠約定和 Agent 提醒 */
+  A({
+    id: 'review', part: 3, minutes: 2, short: '誰能合併',
+    title: '誰能合併：主線只強制檢查，核准靠約定', en: 'Merging',
+    thesis: '主線只強制 <b>CI 檢查要過</b>；別人的提案要等維護者核准，這一點靠<b>約定和 Agent 提醒</b>。',
+    render: () => `<div class="s-body">
+      <div class="col"><div class="controls">${U.seg('rv-who', ['維護者自己的提案', '別人的提案'], 1)}${U.seg('rv-ck', ['檢查通過', '檢查沒過'], 0)}</div>
+        <div class="fig grow"><div class="fig-title"><span>一個變更提案怎麼進到主線</span><span></span></div>
+          <div class="flowrow" id="rv-flow" style="margin-top:14px"></div>
+          <div class="card" id="rv-note" style="font-size:18px;margin-top:18px"></div>
+          <div class="cards" style="margin-top:auto">
+            <div class="card"><h4>主線規則</h4><p>只強制「CI 檢查要過」；誰能合併不另外限制。設定簡單，GitHub、GitLab 用哪種方案都一樣。</p></div>
+            <div class="card"><h4>維護者不在</h4><p>不特別處理，提案就等著；維護者離職時，再由框架維護者找人接手。</p></div>
+          </div></div></div>
+      ${U.side({
+        points: ['<b>自己的提案</b>：檢查過了，自己合併', '<b>別人的提案</b>：Agent 請維護者審，核准後才合併', 'Git 主機不擋「沒核准就合併」，合併前 Agent 會提醒'],
+        fact: { v: '只強制檢查', d: '誰能合併不另外限制；核准靠約定和 Agent 提醒' },
+        analogy: { icon: 'road', t: '比喻', p: '像開車：闖紅燈有照相機一定抓（CI 檢查）；路口禮讓行人靠大家自覺，路邊的標誌（Agent）提醒你。' }
+      })}</div>`,
+    init(el) {
+      let who = 1, ok = 0;
+      const upd = () => {
+        const st = (t, k, x) => `<div class="st ${k}${x ? ' skip' : ''}">${t}</div>`;
+        const steps = [st('開變更提案', 'ag'), st(ok ? 'CI 檢查 ✗' : 'CI 檢查 ✓', 'prog')];
+        if (!ok) steps.push(...(who ? [st('Agent 請維護者審', 'ag'), st('維護者核准', 'hum'), st('合併', 'hum')] : [st('自己合併', 'hum')]), st('正式內容', 'core'));
+        else steps.push(st('不能合併', 'prog'));
+        U.$(el, '#rv-flow').innerHTML = steps.join('<span class="ar">→</span>');
+        U.$(el, '#rv-note').innerHTML = ok ? '<b style="color:var(--bad)">檢查沒過：</b>誰都不能合併。Agent 看 CI 的錯誤訊息修正，再推一次。'
+          : who ? '<b>別人的提案：</b>開提案時，Agent 請這個知識庫的維護者審；維護者看過白話整理，核准後才合併，要修改就留意見。還沒有人核准就要合併時，Agent 會提醒。'
+          : '<b>維護者自己的提案：</b>GitHub 不讓提出的人核准自己的提案，所以檢查過了就自己合併。Agent 會把研究來的內容標出來，幫忙多看一眼。';
+      };
+      U.onSeg(el, 'rv-who', i => { who = i; upd(); });
+      U.onSeg(el, 'rv-ck', i => { ok = i; upd(); });
+    },
+    notes: `我們決定維護者自己的提案自己審，但 GitHub 不讓提出的人核准自己的提案。所以主線只強制一件事：CI 檢查要過。誰能合併也不另外限制，設定最簡單，GitHub、GitLab 用哪種方案都一樣。
+
+切換看看。別人的提案：Agent 開提案時請維護者審，核准後才合併；還沒人核准就要合併，Agent 會提醒。這一點靠約定，Git 主機不會擋。自己的提案：檢查過了就自己合併。切到「檢查沒過」：誰都不能合併。`
+  });
+
+  /* 待回答與勘誤：issue 的一生 */
+  const IS = {
+    q: ['機台保養（PM）多久做一次？', '「hk1 說牆每薄 0.2 nm 漏電多 10 倍，可是我看到另一份資料寫 5 倍？」'],
+    lab: ['待回答', '勘誤'],
+    body: ['章：從設計到量產（新人猜的，傳承者可以改）', '小節：閘極 › hk1；哪一句：「牆每薄 0.2 nm…」；理由：另一份資料寫 5 倍'],
+    done: ['常見問題多了一題，附上答案和相關小節', '小節 hk1 修正了，出處一起補上'],
+    mode: ['訪談', '研究']
+  };
+  const ISTEPS = [
+    { t: '新人跟 Agent 說', d: '查找時手冊沒寫，或覺得哪裡寫錯了。' },
+    { t: '先查重複', d: '有一樣的 issue，就在那題留言「我也想知道」。' },
+    { t: '開 issue', d: 'Agent 問一句「要記下來嗎？」，新人說好就開，不用審核。' },
+    { t: '傳承者認領', d: '開工時 Agent 列出他關心的知識庫的 issue（第一次問過就記在本機）；老王說「我來回答 #12」。' },
+    { t: '變更提案連到 issue', d: '說明裡寫「Closes #12」，貼上來歷標籤；CI 檢查通過。' },
+    { t: '合併，issue 關閉', d: '維護者核准合併後，issue 自動關閉。' }
+  ];
+  A({
+    id: 'issues', part: 3, minutes: 2, short: '待回答與勘誤',
+    title: '待回答與勘誤：新人說一句，就變成 issue', en: 'Issues',
+    thesis: '新人不用懂 Git，<b>跟 Agent 說就好</b>；答案併入後 issue 自動關閉。',
+    render: () => `<div class="s-body">
+      <div class="col"><div class="controls">${U.seg('is-k', ['待回答', '勘誤'], 0)}</div>
+        <div class="fig grow"><div class="fig-title"><span>一個 issue 的一生</span><span>#12</span></div>
+          <div id="is-view" style="flex:1;min-height:0;display:flex;flex-direction:column;gap:10px"></div></div>
+        ${U.stepperHTML('is-st')}</div>
+      ${U.side({
+        points: ['Agent 先查重複，再問一句就開，<b>不用審核</b>', '傳承者開工時看到，說「我來回答」就<b>認領</b>', '<b>勘誤</b>附上哪一節、哪一句、為什麼不對', '手冊不放沒有答案的題目，手動模式例外'],
+        fact: { v: '自動關閉', d: '答案併入主線，issue 就關閉，題目變成常見問題' },
+        analogy: { icon: 'target', t: '比喻', p: '像醫院掛號：病人掛號、醫師叫號看診、看完歸檔，沒有人會在走廊上等著沒人理。' }
+      })}</div>`,
+    init(el, ctx) {
+      let k = 0, i = 0;
+      const view = U.$(el, '#is-view');
+      const draw = () => {
+        const labs = `<span class="tag ${k ? 'b' : 'w'}">${IS.lab[k]}</span> <span class="tag a">kb:semiconductor</span>`;
+        const parts = [];
+        parts.push(`<div class="bub me show" style="align-self:flex-start;max-width:100%"><span class="by">新人</span>${IS.q[k]}</div>`);
+        if (i >= 1) parts.push(`<div class="bub ai" style="max-width:100%"><span class="by">Agent</span>查過了，沒有一樣的題目。要記下來嗎？</div>`);
+        if (i >= 2) parts.push(`<div class="card" style="background:#fff;${i >= 5 ? 'opacity:.75' : ''}"><h4>issue #12 ${i >= 5 ? '· 已關閉 ✓' : '· 開啟中'}</h4><p style="font-size:18px;font-weight:600;color:var(--ink)">${k ? '勘誤：閘極 hk1 的漏電倍數' : IS.q[0]}</p><p>${labs}　${i >= 3 ? '<span class="tag g">負責人：老王</span>' : '<span class="tag">還沒人認領</span>'}</p><p>${IS.body[k]}</p></div>`);
+        if (i >= 4) parts.push(`<div class="card key"><h4>變更提案 #31 · Closes #12</h4><p><span class="tag">來歷：${IS.mode[k]}</span> <span class="tag g">CI ✓</span>${i >= 5 ? ' <span class="tag g">已合併</span>' : ''}</p></div>`);
+        if (i >= 5) parts.push(`<div class="card" style="background:#dcefe4;border-color:#a7d3b9"><p style="font-size:18px;color:var(--ink)">✓ ${IS.done[k]}</p></div>`);
+        view.innerHTML = parts.join('');
+      };
+      U.onSeg(el, 'is-k', j => { k = j; draw(); });
+      U.stepper(el, 'is-st', ISTEPS, j => { i = j; draw(); }, ctx, { interval: 2200 });
+    },
+    notes: `這頁看一個 issue 的一生，選「待回答」，再按「下一步」。新人問了手冊沒寫的問題，Agent 先查有沒有一樣的 issue，沒有就問一句要不要記下來，新人說好就開，不用審核。
+
+老王開工時看到這題，說「我來回答 #12」就認領。寫好後開變更提案，說明裡寫 Closes #12，合併後 issue 自動關閉，常見問題多了一題。切到「勘誤」：流程一樣，issue 裡附上哪一節、哪一句、為什麼覺得不對。`
+  });
+})();
+</script>
+<script>/* 第四部分：怎麼開始（技術選擇、搬半導體、新增知識庫） */
+(function () {
+  const A = Deck.add.bind(Deck);
+
+  /* 技術選擇：點一列看理由 */
+  const COLS = ['單一 HTML、離線可開', '看的人不用裝', '不用重寫現有簡報', '建置要裝'];
+  const ROWS = [
+    { n: '自寫引擎＋手冊模式', v: [['y', '✓ 可以'], ['y', '✓'], ['y', '✓'], ['', '只要 Python']], d: '沿用半導體的簡報引擎，再加上手冊模式：單一 HTML 裡內嵌 Markdown 轉換器（markdown-it），在瀏覽器裡轉。互動元件沿用現有寫法，全景圖用 Mermaid。<b>這是我們的選擇（ADR-0004）。</b>' },
+    { n: 'Quarto', v: [['m', '△ 單一文件模式才行'], ['y', '✓'], ['n', '✗ 要整份重寫'], ['', 'Quarto CLI']], d: '網站模式不能做成單一檔；單一文件＋reveal.js 可以，但 89 頁簡報要整份重寫，建置的人也要另外安裝 Quarto。列為備案。' },
+    { n: 'MkDocs Material', v: [['n', '✗ 輸出一整個資料夾'], ['y', '✓'], ['n', '✗'], ['', 'Python 套件']], d: '輸出一整個資料夾，做不成單一 HTML；而且已經進入維護模式。' },
+    { n: 'Slidev', v: [['n', '✗ 要用伺服器開'], ['m', '△ 要有人架伺服器'], ['n', '✗'], ['', 'Node.js']], d: '輸出要用伺服器開的資料夾，不能直接離線打開單一檔。' }
+  ];
+  A({
+    id: 'tools', part: 4, minutes: 2, short: '技術選擇',
+    title: '技術選擇：沿用半導體的自寫引擎', en: 'Why Our Own Engine',
+    thesis: '第一條件是<b>單一 HTML、離線能開、看的人不用裝東西</b>，研究過的主流工具都做不到。',
+    render: () => `<div class="s-body w66">
+      <div class="col"><div class="fig grow"><div class="fig-title"><span>點一列看理由</span><span>依 docs/research/existing-approaches.md</span></div>
+        <table class="t" style="font-size:17px"><thead><tr><th style="width:24%">做法</th>${COLS.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+          <tbody>${ROWS.map((r, i) => `<tr class="clickable" data-i="${i}"><td><b>${r.n}</b></td>${r.v.map(([k, t]) => `<td class="${k}">${t}</td>`).join('')}</tr>`).join('')}</tbody></table>
+        <div class="card key" id="tl-d" style="font-size:18px;margin-top:auto"></div></div></div>
+      ${U.side({
+        points: ['全景圖用 <b>Mermaid</b>：Git 主機的網頁也畫得出來', '查找用 <b>grep＋程式產生的索引</b>，不需要向量檢索', 'Agent 流程放在 repo 的 <b>.claude/skills/</b>，拿到就能用'],
+        fact: { v: '只要 Python', d: '建置只用 Python 標準函式庫，不用裝套件' },
+        analogy: { icon: 'chip', t: '比喻', p: '像寄一份 PDF：對方點開就能看，不用先裝軟體，也不用連網路。' }
+      })}</div>`,
+    init(el) {
+      const rows = U.$$(el, 'tr[data-i]');
+      const show = i => { rows.forEach((r, k) => r.classList.toggle('hl', k === i)); U.$(el, '#tl-d').innerHTML = `<b>${ROWS[i].n}</b>：${ROWS[i].d}`; };
+      rows.forEach((r, i) => r.onclick = () => show(i));
+      show(0);
+    },
+    notes: `第四部分，怎麼開始。先講技術選擇。手冊網站有一個硬條件：單一 HTML、離線能開、看的人不用裝任何東西，因為新人不一定會裝工具。
+
+點表格每一列看理由。Quarto 的單一文件模式可以，但 89 頁簡報要整份重寫，列為備案；MkDocs Material 輸出一整個資料夾；Slidev 要用伺服器開。所以沿用半導體的自寫引擎，加上手冊模式。查找也不需要向量檢索，幾百個小節用 grep 加索引就夠了。`
+  });
+
+  /* 搬半導體：逐步看檔案搬到哪裡 */
+  const LEFT = [['gen-qa.py、build-artifact.py', 1], ['js/engine.js、widgets/', 2], ['css/deck.css', 2], ['js/slides/*.js（89 頁）', 3], ['index.html 的 Deck.move', 3], ['assets/img/、js/credits.js', 3], ['docs/qa-by-topic.md（197 題）', 4]];
+  const RIGHT = [['AGENTS.md、CLAUDE.md、README.md', 1], ['framework/tools/check.py、build.py', 1], ['CI 設定（主線只強制檢查）', 1], ['framework/engine/', 2], ['kb/semiconductor/deck/slides/', 3], ['kb/semiconductor/deck/order.md', 3], ['kb/semiconductor/assets/＋SOURCES.md', 3], ['handbook/ 各章（每章一個提案）', 4], ['各章常見問題、深入題', 4], ['deck/presenter-guide.md', 4], ['.claude/skills/kb-add … kb-new', 5], ['widgets/（一個一個抽）', 6]];
+  const STEPS = [
+    { t: '建框架骨架', d: '寫 AGENTS.md 和 README（第一天指南），放上 GitHub 或 GitLab，設定 CI，主線只強制檢查要過；產生問題清單和打包的腳本，換成框架的檢查、建置程式。' },
+    { t: '抽出共用引擎', d: '把簡報引擎、互動元件工具和樣式搬進 framework/engine/，所有知識庫共用；材料配色、畫電子這類半導體專用的工具，留在 kb/semiconductor/widgets/。' },
+    { t: '搬簡報，照舊能播', d: '第一個變更提案：89 頁搬進 kb/semiconductor/deck/；Deck.move 改成頁序檔；credits.js 改成圖片清單。' },
+    { t: '每章一個提案，抽出手冊', d: '從簡報抽出手冊，一次一章給維護者審；197 題拆進各章的常見問題，給有經驗的人的題目變成深入題，上台的提醒放進講者須知。' },
+    { t: '補上五個流程', d: '寫 kb-add、kb-change、kb-learn、kb-review、kb-new 五個 skill。' },
+    { t: '之後：互動元件一個一個抽', d: '哪個元件值得在手冊網站裡操作，再用變更提案一個一個抽出來。' }
+  ];
+  A({
+    id: 'plan', part: 4, minutes: 2, short: '把半導體搬進來',
+    title: '第一步：把半導體搬成第一個知識庫', en: 'Migration',
+    thesis: '骨架和搬遷一起做，用半導體試過每一條規則，<b>每章一個變更提案</b>。',
+    render: () => `<div class="s-body w66">
+      <div class="col"><div class="fileflow">
+          <div class="fbox"><h4>Semi_Conductor_Manufactor/（現在）</h4>${LEFT.map(([t, s]) => `<div class="fchip" data-s="${s}">${t}</div>`).join('')}</div>
+          <div class="farrow">→</div>
+          <div class="fbox"><h4>Knowledge_Inheritance_Framework/（搬完）</h4>${RIGHT.map(([t, s]) => `<div class="fchip" data-r="${s}">${t}</div>`).join('')}</div>
+        </div>${U.stepperHTML('pl-st')}</div>
+      ${U.side({
+        points: ['先讓簡報<b>照舊能播</b>，再慢慢抽出手冊', '互動元件先不抽，之後一個一個來', 'GitHub 上的公開版維持現狀，不再同步', '不保留舊的 git 歷史；舊資料夾確認後才刪'],
+        fact: { v: '89 頁、197 題', d: '半導體的簡報和問題全部搬進來' },
+        analogy: { icon: 'shovel', t: '比喻', p: '像搬家：先把家具原樣搬過去，確定能住，再一間一間整理收納。' }
+      })}</div>`,
+    init(el, ctx) {
+      U.stepper(el, 'pl-st', STEPS, i => {
+        const s = i + 1;
+        U.$$(el, '[data-s]').forEach(c => { const k = +c.dataset.s; c.className = 'fchip' + (k === s ? ' now' : k < s ? ' gone' : ''); });
+        U.$$(el, '[data-r]').forEach(c => { const k = +c.dataset.r; c.className = 'fchip' + (k === s ? ' now' : k < s ? ' new' : ' wait'); });
+      }, ctx, { interval: 2400 });
+    },
+    notes: `第一步：把半導體搬成第一個知識庫。按「下一步」看檔案搬到哪裡，橘框是這一步正在動的檔案。
+
+先建框架骨架、抽出共用引擎，再把 89 頁簡報原樣搬進去，搬完要照舊能播。接著每章一個變更提案抽出手冊，一次只審一章，197 題拆進各章的常見問題。最後補上五個流程的 skill，互動元件之後再一個一個抽。
+
+GitHub 上的公開版維持現狀，不再同步；舊資料夾等搬遷確認沒問題才刪。`
+  });
+  /* 新增一個知識庫：以 CV 為例 */
+  const NK_FILES = [['kb/cv/README.md', '介紹、維護者、全景圖草稿', 2], ['kb/cv/terms.md', '術語表：CNN、mAP、IoU……', 2], ['handbook/1-basics/', '部分：影像基礎（只有章名）', 2], ['handbook/2-models/', '部分：模型（只有章名）', 2], ['01-image.md、02-conv.md……', '一章一個變更提案補內容', 4], ['deck/', '選配：要上課再做，照簡報的規範', 6]];
+  const NK_STEPS = [
+    { t: '發起人開口', d: '「我想開一個電腦視覺的知識庫。」用 /kb-new，或直接這樣說。' },
+    { t: 'Agent 訪談、建骨架', d: 'Agent 問：領域是什麼、讀者是誰、大概分哪幾個部分和章、誰當維護者、手上有沒有現成資料；問完建好骨架。' },
+    { t: '框架維護者核准', d: '骨架是一個變更提案。核准後知識庫就成立，發起人是第一位維護者，首頁的知識庫清單自動多一列。' },
+    { t: '一章一章補內容', d: '用研究、整理、訪談補上各章；有舊簡報和文件就整批整理，但還是一章一個提案。術語表跟著長。' },
+    { t: '新人開始用', d: '新人從知識庫清單挑 CV 來讀、來問；待回答和勘誤標上 kb:cv。' },
+    { t: '之後：要上課再做簡報', d: '簡報是選配；要做就照半導體範例的樣子，互動元件一開始就寫成共用元件。' }
+  ];
+  A({
+    id: 'newkb', part: 4, minutes: 2, short: '新增一個知識庫',
+    title: '新增一個知識庫：以 CV 為例，先建骨架再補內容', en: 'New Knowledge Base',
+    thesis: '「大主題」就是一個知識庫，和半導體並列；<b>/kb-new</b> 訪談、建骨架，框架維護者核准就成立。',
+    render: () => `<div class="s-body w66">
+      <div class="col"><div class="fig grow"><div class="fig-title"><span>按「下一步」看 CV 知識庫怎麼長出來</span><span>kb:cv</span></div>
+        <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="fbox"><h4>kb/cv/</h4>${NK_FILES.map(([f, n, s]) => `<div class="fchip" data-s="${s}"><b>${f}</b><br><span style="font-size:13px">${n}</span></div>`).join('')}</div>
+          <div class="fbox"><h4>首頁的知識庫清單（程式自動產生）</h4>
+            <table class="t" style="font-size:15px"><thead><tr><th>知識庫</th><th>維護者</th><th>簡報</th></tr></thead>
+            <tbody><tr><td>半導體製程</td><td>（維護者）</td><td class="y">有</td></tr><tr id="nk-row"><td><b>電腦視覺</b></td><td>（發起人）</td><td class="m">還沒有</td></tr></tbody></table></div>
+        </div></div>${U.stepperHTML('nk-st')}</div>
+      ${U.side({
+        points: ['和半導體<b>並列</b>，有自己的維護者和手冊', '先建<b>骨架</b>，框架維護者核准才成立', '內容一章一個提案；有現成資料就整批整理', '每個知識庫有自己的<b>術語表</b>'],
+        fact: { v: '1 個指令', d: '/kb-new：訪談、建骨架、開變更提案' },
+        analogy: { icon: 'seed', t: '比喻', p: '像開一家分店：先談好地點和店長、掛上招牌，總部核准開幕，菜單再一道一道上。' }
+      })}</div>`,
+    init(el, ctx) {
+      const row = U.$(el, '#nk-row');
+      U.stepper(el, 'nk-st', NK_STEPS, i => {
+        const s = i + 1;
+        U.$$(el, '[data-s]').forEach(c => { const k = +c.dataset.s; c.className = 'fchip' + (k === s ? ' now' : k < s ? ' new' : ' wait'); });
+        row.style.opacity = s >= 3 ? 1 : .15;
+        row.style.background = s === 3 ? 'var(--accent-2-soft)' : '';
+      }, ctx, { interval: 2400 });
+    },
+    notes: `第二步是之後最常發生的事：新增一個知識庫。你說的「大主題」，在框架裡就是一個知識庫，例如電腦視覺，和半導體並列，有自己的手冊、維護者和術語表。
+
+按「下一步」看它怎麼長出來。發起人說「我想開一個電腦視覺的知識庫」，Agent 先訪談：領域、讀者、大概分哪幾個部分和章、誰當維護者、有沒有現成資料。問完建好骨架，交給框架維護者核准；核准後知識庫就成立，首頁的知識庫清單自動多一列。
+
+內容之後一章一章補。CV 團隊手上的舊簡報和文件可以整批整理，但還是一章一個提案，維護者一次審一章。簡報是選配，要上課再做，照半導體範例的樣子。`
+  });
+})();
+</script>
+<script>/* 第四部分：要設計的 skill，以及可以參考的外部 skill */
+(function () {
+  const A = Deck.add.bind(Deck);
+
+  /* 五個 skill：點一列看功能和參考 */
+  const SK = [
+    { id: 'kb-add', n: '新增：研究、整理、訪談', who: '傳承者', inv: '自動判斷',
+      f: ['開工時列出待回答、勘誤 issue，說「我來回答 #12」就認領', '判斷用研究、整理還是訪談，各走自己的前半段', '寫草稿：照寫作原則，順便更新術語表', '傳承者確認 → 自動檢查 → 讀者測試', '開變更提案：連到 issue、貼來歷標籤；沒有主機時走手動模式'],
+      ref: [['grilling', 'mattpocock', '訪談：一輪問完，每題附建議答案'], ['to-questionnaire', 'mattpocock', '老手沒空當面講時，先把問題寫下來給他'], ['research', 'mattpocock', '研究：只查第一手來源，每個說法附出處'], ['doc-coauthoring', 'Anthropic', '讀者測試的做法'], ['pr', 'mattpocock', '變更提案說明的寫法']] },
+    { id: 'kb-change', n: '修改、刪除、合併', who: '傳承者', inv: '自動判斷',
+      f: ['找出小節的所有引用：常見問題、頁序、其他小節、其他知識庫', '在同一個變更提案裡改掉所有引用，不留舊 id', '指紋點名要重看的簡報頁；改好或確認後更新指紋', '修正勘誤時，提案連到那個 issue', '自動檢查 → 讀者測試 → 開變更提案'],
+      ref: [['pr', 'mattpocock', '變更提案說明的寫法'], ['gen-qa.py', '半導體範例', '引用檢查、禁止寫死頁碼的做法'], ['doc-coauthoring', 'Anthropic', '讀者測試的做法']] },
+    { id: 'kb-learn', n: '查找、帶讀、打開', who: '新人（所有人）', inv: '自動判斷',
+      f: ['第一次用：問你關心哪些知識庫，記在本機', '查找：先看索引和術語表，再找手冊；只根據手冊回答並附出處', '手冊沒寫或覺得寫錯：問一句、查重複，開待回答或勘誤 issue', '帶讀：白話解釋、反問、出小題目', '打開手冊網站或簡報：下載 Release，或現場建置'],
+      ref: [['teach', 'mattpocock', '出題：選項等長、答案位置輪換、先想再看'], ['triage', 'mattpocock', 'issue 的標籤用語和分類'], ['Explore 子 agent', 'Claude Code 內建', '要掃很多章時，交給唯讀的子 agent 找']] },
+    { id: 'kb-review', n: '檢查、審核', who: '維護者、框架維護者', inv: '只能手動叫',
+      f: ['跑檢查程式，用白話解釋錯誤', '整理提案：改了什麼、來歷、影響哪些簡報頁和常見問題', '研究來的段落逐段列出，標出沒有出處的數字', '核准就合併（自己的提案自己合併）；要修改就留意見', 'Agent 留的意見開頭標明「由 Agent 產生」'],
+      ref: [['code-review', 'mattpocock', '分兩個角度審：照不照規範、有沒有做到要求'], ['triage', 'mattpocock', 'Agent 在 issue、PR 上的留言要標明是 AI 產生']] },
+    { id: 'kb-new', n: '建立新知識庫', who: '發起人；框架維護者核准', inv: '只能手動叫',
+      f: ['訪談發起人：領域、讀者、部分和章、維護者、現有資料', '建骨架：README、術語表、部分和章的目錄、全景圖草稿', '開變更提案給框架維護者', '核准後，首頁的知識庫清單自動多一列'],
+      ref: [['grilling', 'mattpocock', '訪談發起人'], ['setup-matt-pocock-skills', 'mattpocock', '一次性設定：先看現況、提出建議，確認後才寫'], ['domain-modeling', 'mattpocock', '術語表的格式：詞、定義、避用詞']] }
+  ];
+  A({
+    id: 'skills', part: 4, minutes: 2.5, short: '要設計的 skill',
+    title: '要設計的 skill：五個流程，各有參考', en: 'Skills',
+    thesis: '五個 skill 放在 repo 的 <b>.claude/skills/</b>，拿到 repo 就能用；平常直接講中文，Agent 自己挑。',
+    render: () => `<div class="s-body w66">
+      <div class="col"><div class="fig grow"><div class="fig-title"><span>點一列看功能和參考</span><span>自動判斷＝直接講中文就會用到</span></div>
+        <table class="t" style="font-size:16px"><thead><tr><th style="width:17%">skill</th><th>做什麼</th><th style="width:24%">誰用</th><th style="width:16%">怎麼叫起來</th></tr></thead>
+          <tbody>${SK.map((s, i) => `<tr class="clickable" data-i="${i}"><td class="mono"><b>/${s.id}</b></td><td>${s.n}</td><td>${s.who}</td><td class="${s.inv === '自動判斷' ? 'y' : 'm'}">${s.inv}</td></tr>`).join('')}</tbody></table>
+        <div style="flex:1;min-height:0;display:grid;grid-template-columns:1.15fr 1fr;gap:14px">
+          <div class="card" style="background:#fff"><h4 id="sk-h">功能</h4><ol class="points num" id="sk-f" style="gap:6px"></ol></div>
+          <div class="card" style="background:#fff"><h4>參考的 skill</h4><div class="ritems" id="sk-r" style="gap:6px"></div></div>
+        </div></div></div>
+      ${U.side({
+        points: ['寫 skill 時照 <b>writing-for-agents</b> 的原則', '寫好之後用 <b>skill-creator</b> 測觸發率和效果', '自動檢查交給 <b>hook 和 CI</b>，不寫成 skill', '外部 skill 只借做法，不要求大家另外安裝'],
+        fact: { v: '5 個 skill', d: '新增、修改、學習、審核、建立知識庫' },
+        analogy: { icon: 'chip', t: '比喻', p: '像一套刀具：五把刀各有用途，切什麼拿哪一把，不用每次重新發明。' }
+      })}</div>`,
+    init(el) {
+      const rows = U.$$(el, 'tr[data-i]');
+      const show = i => {
+        const s = SK[i]; rows.forEach((r, k) => r.classList.toggle('hl', k === i));
+        U.$(el, '#sk-h').textContent = `/${s.id} 的功能`;
+        U.$(el, '#sk-f').innerHTML = s.f.map(x => `<li style="font-size:16px">${x}</li>`).join('');
+        U.$(el, '#sk-r').innerHTML = s.ref.map(([n, src, why]) => `<div class="ritem"><b class="mono">${n}</b> <span class="tag ${src === 'mattpocock' ? 'a' : src === 'Anthropic' ? 'g' : ''}">${src}</span><span class="ids" style="font-family:var(--font-cjk);font-size:14.5px">${why}</span></div>`).join('');
+      };
+      rows.forEach((r, i) => r.onclick = () => show(i));
+      show(0);
+    },
+    notes: `框架要設計五個 skill，對應五個短指令，都放在 repo 的 .claude/skills/ 底下，拿到 repo 就能用。平常不用記指令，直接講中文，Agent 會依說明自己挑；只有審核和建立知識庫要手動叫，因為那是維護者和發起人才會做的事。
+
+點表格的每一列看功能和參考。新增是最大的一個：開工認領 issue，用研究、整理或訪談寫草稿，確認、檢查、讀者測試，最後開變更提案。修改負責把所有引用一起改掉。學習給新人用：查找、帶讀、開 issue、打開簡報。審核給維護者用，Agent 的留言會標明是 Agent 產生的。建立知識庫負責訪談發起人、建骨架。
+
+右邊是寫 skill 本身的方法：照 writing-for-agents 的原則寫，寫好用 skill-creator 測試。自動檢查交給 hook 和 CI，不寫成 skill。外部 skill 只借做法，寫進我們自己的 skill 裡，不要求大家另外安裝。`
+  });
+
+  /* 外部 skill：mattpocock 系列、Anthropic 官方、其他 */
+  const EX = {
+    mattpocock: [
+      ['grilling', '改來用', '一輪問完、每題附建議答案', '新增（訪談）、建立知識庫'],
+      ['to-questionnaire', '改來用', '老手沒空當面講時，先把問題寫下來，有空再回', '新增（訪談）'],
+      ['research', '改來用', '只查第一手來源、附出處；我們另外允許用 Agent 的知識，但標來歷', '新增（研究）'],
+      ['teach', '改來用', '出題規則；不在 repo 留新人的學習紀錄', '學習（帶讀）'],
+      ['writing-for-agents', '採用', '寫 AGENTS.md 和 skill 的原則：刪掉多餘指示、每個意思只寫一次', '寫框架本身'],
+      ['domain-modeling', '採用', 'GLOSSARY、ADR、術語表的格式', '框架本身、建立知識庫'],
+      ['triage', '改來用', 'issue 標籤用語；Agent 的留言要標明是 AI 產生', '學習、審核'],
+      ['code-review', '改來用', '分兩個角度審：照不照規範、有沒有做到要求', '審核'],
+      ['pr', '改來用', '變更提案說明的寫法，用 GLOSSARY 的詞', '新增、修改'],
+      ['setup-matt-pocock-skills', '改來用', '一次性設定：先看現況、提出建議，確認後才寫', '建立知識庫'],
+      ['git-guardrails-claude-code', '改來用', '用 hook 擋危險的 git 指令；保留推分支，只擋強制推送、直接推主線、reset --hard、刪分支', '框架的 hook'],
+      ['wizard', '改來用', '一步一步帶人做只有人能做的事，例如安裝、登入主機', '第一天指南'],
+      ['tdd、to-spec、to-tickets、implement…', '不採用', '寫程式用的流程，和知識維護無關', '—']
+    ],
+    Anthropic: [
+      ['skill-creator', '採用', '評估 skill、調整說明的觸發率', '五個 skill 寫好之後'],
+      ['doc-coauthoring', '改來用', '讀者測試：沒有背景的子 agent 回答問題', '新增、修改'],
+      ['pptx、docx', '不採用', '我們用自寫引擎做單一 HTML 簡報（ADR-0004）', '—'],
+      ['web-artifacts-builder', '不採用', '要 React、Vite 一整套，比現有打包重', '—']
+    ],
+    其他: [
+      ['Claude Code hook', '採用', '每次修改自動跑檢查程式', '檢查'],
+      ['Explore 子 agent', '採用', '要掃很多章時，唯讀地找', '學習（查找）'],
+      ['Karpathy 的 LLM wiki', '改來用', '程式產生的索引，給查找先讀', '學習（查找）'],
+      ['wiki-curator（本機）', '不採用', '在背景用 bypassPermissions 寫檔，不適合共用的 repo', '—'],
+      ['andrej-karpathy-skills', '不採用', '寫程式的行為準則，不是 Karpathy 本人寫的', '—']
+    ]
+  };
+  A({
+    id: 'extskills', part: 4, minutes: 2.5, short: '外部 skill 怎麼參考',
+    title: '外部 skill：mattpocock 系列可以參考，借做法不加依賴', en: 'External Skills',
+    thesis: 'mattpocock 系列有 <b>12 個用得上</b>，大多是「改來用」；寫程式用的流程不採用。',
+    render: () => `<div class="s-body w66">
+      <div class="col"><div class="controls">${U.seg('ex-seg', Object.keys(EX).map(k => k === 'mattpocock' ? 'mattpocock 系列' : k === 'Anthropic' ? 'Anthropic 官方' : '其他'), 0)}</div>
+        <div class="fig grow"><div class="fig-title"><span>依 docs/research/existing-approaches.md，以及 GitHub 上 mattpocock/skills 的 main</span><span id="ex-n"></span></div>
+          <div style="flex:1;min-height:0;overflow:auto"><table class="t" style="font-size:15px"><thead><tr><th style="width:24%">skill</th><th style="width:10%">判斷</th><th>借用什麼／為什麼不用</th><th style="width:20%">用在哪</th></tr></thead><tbody id="ex-b"></tbody></table></div></div></div>
+      ${U.side({
+        points: ['<b>可以參考</b>：訪談、研究、出題、審核、issue、寫 skill 都有現成做法', '它的原則也適用：<b>先看到錯誤才加規則</b>、能組合就不新增 skill', '<b>git-guardrails</b> 很重要：Agent 替大家操作 Git，要擋危險指令', '寫程式用的流程（tdd、to-spec……）不採用'],
+        fact: { v: '借做法，不加依賴', d: '做法寫進我們自己的 5 個 skill，同仁不用另外安裝 mattpocock' },
+        analogy: { icon: 'bread', t: '比喻', p: '像參考別家的食譜：學他們的手法，寫進自己的菜單，不是每道菜都去他們店裡買。' }
+      })}</div>`,
+    init(el) {
+      const keys = Object.keys(EX);
+      U.onSeg(el, 'ex-seg', i => {
+        const rows = EX[keys[i]];
+        U.$(el, '#ex-n').textContent = `${rows.length} 項`;
+        U.$(el, '#ex-b').innerHTML = rows.map(([n, v, why, where]) => `<tr><td class="mono"><b>${n}</b></td><td class="${v === '採用' ? 'y' : v === '改來用' ? 'm' : 'n'}">${v}</td><td>${why}</td><td>${where}</td></tr>`).join('');
+      });
+    },
+    notes: `你問 mattpocock 這系列能不能參考：可以。我查了 GitHub 上 mattpocock/skills 的 main，和本機裝的 1.3.1 一樣。跟知識維護有關、用得上的有 12 個，大多是「改來用」。例如 grilling 用在訪談，to-questionnaire 是老手沒空時的問卷，teach 的出題規則用在帶讀，code-review 的兩個角度用在審核，triage 讓 Agent 的留言標明是 AI 產生，writing-for-agents 是我們寫 skill 的原則。
+
+特別提一個：git-guardrails。因為 Agent 會替不懂 Git 的同仁操作 Git，要用 hook 擋掉強制推送、直接推主線、reset --hard 這些危險指令；原版會擋掉所有 push，我們要改成保留推分支。
+
+切到「Anthropic 官方」和「其他」看另外兩類。原則是借做法、不加依賴：把做法寫進我們自己的 5 個 skill，同仁不用另外安裝 mattpocock。寫程式用的流程，例如 tdd、to-spec，不採用。`
+  });
+
+  /* 放在「技術選擇」後面 */
+  Deck.move('skills', 'tools'); Deck.move('extskills', 'skills');
+})();
+</script>
+<script>/* 結尾：自我檢查、帶走三句話 */
+(function () {
+  const A = Deck.add.bind(Deck);
+
+  const QS = [
+    { q: '簡報和手冊的說法不一樣時，聽誰的？', o: [['聽手冊的，因為手冊是正本', 1], ['聽簡報的，因為簡報比較新', 0], ['看誰最後修改，就聽誰的', 0]], why: '手冊是正本（ADR-0002）。小節一改，檢查程式就會點名要重看的簡報頁。' },
+    { q: '研究來的內容，維護者審核時要怎麼做？', o: [['直接核准，Agent 已經查過了', 0], ['特別仔細看，Agent 可能說錯', 1], ['一律退回，請傳承者重寫', 0]], why: '研究可以用 Agent 自己的知識，而 Agent 說錯時語氣一樣肯定。所以變更提案會寫一行來歷，提醒維護者仔細看。' },
+    { q: '合併兩個小節之後，舊的 id 怎麼辦？', o: [['舊 id 留著，自動轉到新的 id', 0], ['保留舊小節，標成已過時', 0], ['引用全部一起改掉，不留舊 id', 1]], why: '所有東西都在同一個 repo，引用全部看得到，Agent 在同一個變更提案裡一次改掉。' },
+    { q: '新人問了一題手冊沒寫的問題，會變成什麼？', o: [['Agent 自己編一個答案給他', 0], ['開成 issue，等傳承者認領回答', 1], ['直接寫進手冊的常見問題', 0]], why: '查找只根據手冊回答。手冊沒寫，Agent 問一句就開成 issue；答案併入後 issue 關閉，題目才變成常見問題。' }
+  ];
+  A({
+    id: 'check', part: 9, minutes: 1.5, short: '自我檢查',
+    title: '自我檢查：先自己想，再看答案', en: 'Self-check',
+    thesis: '常見問題和帶讀都用這個做法：<b>先想、再打開</b>。',
+    render: () => `<div class="s-body">
+      <div class="col"><div class="controls">${U.seg('ck-seg', QS.map((_, i) => `第 ${i + 1} 題`), 0)}</div>
+        <div class="fig grow"><div class="fig-title"><span id="ck-n"></span><span></span></div>
+          <p id="ck-q" style="margin:0;font-size:26px;font-weight:700"></p>
+          <div class="quiz" id="ck-o"></div>
+          <div class="fb" id="ck-fb"></div></div></div>
+      ${U.side({
+        points: ['答案先收起來，讓人先自己想', '答完一定說<b>為什麼</b>，再指回出處', '答不出來的題目，也可以記成待回答'],
+        fact: { v: '4 題', d: '正本、來歷、舊 id、待回答，各一題' },
+        analogy: { icon: 'ruler', t: '比喻', p: '像考前自己出題考自己：比再讀一遍課本，更容易發現哪裡還不懂。' }
+      })}</div>`,
+    init(el) {
+      U.onSeg(el, 'ck-seg', i => {
+        const q = QS[i];
+        U.$(el, '#ck-n').textContent = `第 ${i + 1} / ${QS.length} 題`;
+        U.$(el, '#ck-q').textContent = q.q;
+        U.$(el, '#ck-fb').textContent = '';
+        const box = U.$(el, '#ck-o');
+        box.innerHTML = q.o.map(([t], k) => `<button type="button" data-k="${k}">${t}</button>`).join('');
+        U.$$(box, 'button').forEach(b => b.onclick = () => {
+          const ok = q.o[+b.dataset.k][1];
+          U.$$(box, 'button').forEach(x => x.classList.remove('right', 'wrong')); b.classList.add(ok ? 'right' : 'wrong');
+          U.$(el, '#ck-fb').innerHTML = (ok ? '<b style="color:var(--good)">答對了。</b>' : '<b style="color:var(--bad)">再想想。</b>') + q.why;
+        });
+      });
+    },
+    notes: `最後來個自我檢查，共四題。這就是常見問題和帶讀的做法：答案先收起來，先想再打開，可以請台下先想再選。
+
+第一題，說法不一樣時聽手冊的，它是正本。第二題，研究來的內容要仔細審，Agent 說錯時語氣一樣肯定。第三題，引用全部一起改掉，不留舊 id。第四題，手冊沒寫的問題會開成 issue，等傳承者回答。`
+  });
+
+  /* 總結：給主管的一頁說明。左邊是整個框架的運作圖，右邊分頁說明 */
+  const NODES = {
+    cont: [90, 110, '傳承者', '老手的經驗', '#b3541e', 130], learn: [90, 350, '新人', '看、問', '#1f4fb5', 130],
+    agent: [300, 230, 'Agent', '寫、查、開 issue', '#1f4fb5', 160],
+    issue: [580, 80, 'issue', '待回答、勘誤', '#a8660a', 150], pr: [580, 170, '變更提案', 'PR／MR', '#1f4fb5', 150],
+    hb: [580, 260, '手冊', '正本', '#17202b', 150], ci: [580, 370, 'CI', '檢查、建置', '#b3541e', 150],
+    maint: [765, 170, '維護者', '核准', '#1f7a4d', 120], fm: [765, 265, '框架維護者', '規則、引擎', '#1f7a4d', 120],
+    out: [765, 370, '手冊網站、簡報', '單一 HTML', '#1f7a4d', 130]
+  };
+  const FLOWS = [
+    { t: '寫進去', col: '#b3541e', nodes: ['cont', 'agent', 'pr', 'hb', 'maint'], path: [['cont', 'agent'], ['agent', 'pr'], ['pr', 'hb']], side: [['maint', 'pr']], labels: [['cont', 'agent', '研究、整理、訪談'], ['agent', 'pr', '開變更提案'], ['maint', 'pr', '核准']], d: '老手用說的，Agent 寫成草稿、開變更提案；檢查通過、維護者核准後，併進手冊。' },
+    { t: '發出去', col: '#1f7a4d', nodes: ['hb', 'ci', 'out', 'learn'], path: [['hb', 'ci'], ['ci', 'out'], ['out', [765, 440]], [[765, 440], [90, 440]], [[90, 440], 'learn']], labels: [['hb', 'ci', 'CI 建置'], [[765, 440], [90, 440], '新人下載，離線就能看']], d: '主線一更新，CI 就重新建置手冊網站和簡報，新人下載單一 HTML 就能看。' },
+    { t: '學出來', col: '#1f4fb5', nodes: ['learn', 'agent', 'hb'], path: [['learn', 'agent'], ['agent', 'hb']], labels: [['learn', 'agent', '查找、帶讀'], ['agent', 'hb', '只根據手冊回答']], d: '新人看不懂就問 Agent；Agent 只根據手冊回答，一定附上出處。' },
+    { t: '問回來', col: '#a8660a', nodes: ['agent', 'issue', 'cont'], path: [['agent', 'issue'], ['issue', 'cont']], labels: [['agent', 'issue', '手冊沒寫、覺得寫錯'], ['issue', 'cont', '認領回答']], d: '問倒手冊的問題自動變成 issue，回到老手手上；答完併入，issue 自動關閉。' }
+  ];
+  const TABS = [
+    ['問題與做法', ['<b>問題</b>：經驗只在老手腦袋、個人筆記和舊簡報裡，人一調走就沒了；新人不知道從哪看起、該問誰', '<b>做法</b>：Agent 把經驗寫成手冊（正本）和互動簡報；每次修改都經過檢查和維護者審核', '新人看簡報或手冊網站，看不懂就問 Agent，答案一定附出處', '問倒手冊的問題自動變成 issue，回到老手手上']],
+    ['好處', ['老手<b>用說的</b>就能留下經驗：研究、整理、訪談三種方式', '新人自己查、自己學，不用一直打斷老手', '知識缺口變成<b>看得見的待辦清單</b>（issue）', '每次修改都有紀錄：誰改了什麼、為什麼改，都查得到', '同一套框架，半導體之後，CV 等新領域照同樣方式加進來']],
+    ['需要什麼', ['一個 Git repo，GitHub 或 GitLab 都可以，全公司可看', '會用 Claude Code 的同仁；新人只要會跟 Agent 說話', '每個知識庫至少一位<b>維護者</b>，負責審核內容', '不用架伺服器：建置只要 Python；手冊網站和簡報是單一 HTML，離線就能開']],
+    ['風險與對策', ['<b>Agent 可能說錯</b> → 研究來的內容標來歷，經過讀者測試和維護者審核', '<b>規則太多沒人遵守</b> → 判斷得準的交給程式擋；先看到錯誤才加規則', '<b>維護者忙，提案會等</b> → 目前不特別處理，看實際情況再調整', '<b>公司 Git 方案未定</b> → GitHub、GitLab 都支援；沒有主機時退回手動模式']],
+    ['下一步', ['① 建框架骨架：AGENTS.md、檢查和建置程式、CI', '② 把半導體搬成第一個知識庫：89 頁簡報、197 題，一章一個變更提案', '③ 寫五個流程：kb-add、kb-change、kb-learn、kb-review、kb-new', '④ 開放新的知識庫，例如 CV', '需要的支持：確定 Git 主機和帳號、指定各知識庫的維護者']]
+  ];
+  A({
+    id: 'summary', part: 1, minutes: 3, short: '總覽：給主管的一頁說明',
+    title: '總覽：給主管的一頁說明', en: 'Executive Summary',
+    thesis: '讓老手的經驗<b>留得下來</b>、新人<b>學得起來</b>；增刪修改都跟 Agent 說，Git 主機把每一步記下來。',
+    render: () => `<div class="s-body">
+      <div class="col">${U.figHTML('sm-cv', '整個框架怎麼運作', '四條流程，按「下一步」逐一看')}
+        ${U.stepperHTML('sm-st')}</div>
+      <div class="col">
+        <div class="controls">${U.seg('sm-tab', TABS.map(t => t[0]), 0)}</div>
+        <div class="card" style="background:#fff;flex:1;min-height:0;padding:14px 18px"><ul class="points" id="sm-body" style="gap:12px"></ul></div>
+        <div class="fact"><div class="v">89 頁、197 題</div><div class="d">第一階段：半導體的簡報和問題全部搬進來，用它驗證每一條規則</div></div>
+        <div class="analogy"><div class="ic">${U.icon('stack')}</div><div><h4>比喻</h4><p>像一座會自己長大的圖書館：老手捐書、館員審書、新人借書，借不到的書自動登記採購。</p></div></div>
+      </div></div>`,
+    init(el, ctx) {
+      U.onSeg(el, 'sm-tab', i => { U.$(el, '#sm-body').innerHTML = TABS[i][1].map(x => `<li style="font-size:18px">${x}</li>`).join(''); });
+      const { c, w, h } = U.canvas(U.$(el, '#sm-cv'));
+      const sx = w / 840, sy = h / 460;
+      const P = k => Array.isArray(k) ? [k[0] * sx, k[1] * sy] : [NODES[k][0] * sx, NODES[k][1] * sy];
+      const segs = f => f.path.map(([a, b]) => [P(a), P(b)]);
+      const lenOf = ss => ss.reduce((s, [a, b]) => s + Math.hypot(b[0] - a[0], b[1] - a[1]), 0);
+      const at = (ss, u) => { let L = lenOf(ss) * u; for (const [a, b] of ss) { const l = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L <= l) return [U.lerp(a[0], b[0], L / l), U.lerp(a[1], b[1], L / l)]; L -= l; } const z = ss[ss.length - 1][1]; return z; };
+      let cur = 0; // 0＝全貌，1..4＝各流程
+      const steps = [{ t: '全貌', d: '四條流程同時在轉：寫進去、發出去、學出來、問回來。' }].concat(FLOWS.map(f => ({ t: f.t, d: f.d })));
+      U.stepper(el, 'sm-st', steps, i => cur = i, ctx, { interval: 3000 });
+      ctx.raf((dt, t) => {
+        c.clearRect(0, 0, w, h);
+        // Git 主機框
+        const g0 = P([500, 34]), g1 = P([660, 420]);
+        c.fillStyle = '#f2f5f8'; c.strokeStyle = '#9aa8b8'; c.lineWidth = 1.5; U.rrect(c, g0[0], g0[1], g1[0] - g0[0], g1[1] - g0[1], 10); c.fill(); c.stroke();
+        U.txt(c, 'Git 主機（一個 repo）', g0[0] + 6, g0[1] - 8, { size: 13.5, w: 700, color: '#3e4b5b' });
+        // 線
+        FLOWS.forEach((f, k) => {
+          const on = cur === 0 || cur === k + 1;
+          c.strokeStyle = on ? f.col : '#d3dbe4'; c.lineWidth = cur === k + 1 ? 3.5 : 2; c.globalAlpha = on ? (cur === 0 ? .55 : 1) : .6;
+          segs(f).concat((f.side || []).map(([a, b]) => [P(a), P(b)])).forEach(([a, b]) => { c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); });
+          c.globalAlpha = 1;
+        });
+        // 粒子
+        FLOWS.forEach((f, k) => {
+          if (!(cur === 0 || cur === k + 1)) return;
+          const ss = segs(f), n = cur === 0 ? 3 : 6;
+          for (let j = 0; j < n; j++) { const p = at(ss, (t * .12 + j / n) % 1); U.dot(c, p[0], p[1], cur === 0 ? 4 : 5.5, f.col); }
+        });
+        // 節點
+        const act = cur ? FLOWS[cur - 1].nodes : null;
+        Object.entries(NODES).forEach(([k, [x, y, t1, t2, col, bw]]) => {
+          const [px, py] = P(k), W = bw * sx, H = 50, on = !act || act.includes(k);
+          c.fillStyle = '#fff'; U.rrect(c, px - W / 2, py - H / 2, W, H, 8); c.fill();
+          if (act && on) { c.fillStyle = col + '1a'; U.rrect(c, px - W / 2, py - H / 2, W, H, 8); c.fill(); }
+          c.globalAlpha = on ? 1 : .35;
+          c.strokeStyle = col; c.lineWidth = act && on ? 2.5 : 1.5;
+          U.rrect(c, px - W / 2, py - H / 2, W, H, 8); c.stroke();
+          U.txt(c, t1, px, py - 2, { align: 'center', size: 16, w: 700, color: '#17202b' });
+          U.txt(c, t2, px, py + 16, { align: 'center', size: 12.5, color: '#6a7888' });
+          c.globalAlpha = 1;
+        });
+        // 線上的說明（只在單一流程時顯示）
+        if (cur) FLOWS[cur - 1].labels.forEach(([a, b, s]) => { const pa = P(a), pb = P(b); U.txt(c, s, (pa[0] + pb[0]) / 2, (pa[1] + pb[1]) / 2 - 8, { align: 'center', size: 14, w: 700, color: FLOWS[cur - 1].col, bg: 'rgba(255,255,255,.95)' }); });
+        if (!cur) U.txt(c, '框架維護者管規則、引擎和新知識庫；維護者管各知識庫的內容', w / 2, h - 6, { align: 'center', size: 13, color: '#6a7888' });
+      });
+    },
+    notes: `這一頁是給主管的總覽，先把整件事一次講完，後面各頁再展開細節。我們要解決的問題是：經驗只在老手的腦袋、個人筆記和舊簡報裡，人一調走就沒了，新人也不知道從哪裡看起、該問誰。做法是讓 Agent 把經驗寫成手冊和互動簡報，手冊是正本，每一次修改都經過檢查和維護者審核，全部記在一個 Git repo 裡。
+
+左邊的圖有四條流程，按「下一步」逐一看。寫進去：老手用說的，Agent 寫成草稿、開變更提案，維護者核准後併入手冊。發出去：CI 自動建置手冊網站和簡報，新人下載單一 HTML 就能看。學出來：新人看不懂就問 Agent，答案只根據手冊、一定附出處。問回來：問倒手冊的問題自動變成 issue，回到老手手上，答完自動關閉。
+
+右邊分頁說明好處、需要什麼、風險和下一步。需要的資源很少：一個 Git repo、會用 Claude Code 的同仁、每個知識庫一位維護者，不用架伺服器。第一階段把半導體 89 頁簡報和 197 題搬進來，用它驗證每一條規則，之後再開放 CV 等新的知識庫。需要的支持是確定 Git 主機和帳號，以及指定各知識庫的維護者。`
+  });
+  /* 放到第 4 頁：「知識只在人腦袋裡」之後 */
+  Deck.move('summary', 'why');
+})();
+</script>
+<script>Deck.start();</script>

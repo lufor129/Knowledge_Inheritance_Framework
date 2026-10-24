@@ -1,0 +1,42 @@
+# 知識傳承框架
+
+老手的經驗，變成新人看得懂的手冊和簡報；新增、修改、查找、刪除，跟 Agent 說就好。每一次變更都記在 Git 上，經過檢查和維護者審核才算數。
+
+## 第一天
+
+1. **挑一個知識庫**：在下面的清單下載手冊網站或簡報。兩個都是單一 HTML 檔，離線就能打開。先看全景圖和各章速覽，再進細節。
+2. **想問問題、想補充知識**：
+   1. 安裝 [Claude Code](https://claude.com/claude-code) 和 [GitHub CLI](https://cli.github.com/)，登入：`gh auth login`
+   2. `gh repo clone lufor129/Knowledge_Inheritance_Framework`，在資料夾裡打開 Claude Code
+   3. 直接用中文說，例如：
+      - 「OPC 是什麼？跟光罩有什麼關係？」
+      - 「hk1 這一句好像寫錯了」
+      - 「有什麼待回答是我可以回答的？」
+      - 「幫我研究 High-NA EUV，放進微影那章」
+3. **看不懂的詞**：查那個知識庫的術語表（`kb/<名稱>/terms.md`）。
+
+## 知識庫清單
+
+<!-- 知識庫清單：由 build.py --readme 產生，請勿手改 -->
+| 知識庫 | 介紹 | 維護者 | 簡報 | 下載 |
+|---|---|---|---|---|
+| [半導體製程](kb/semiconductor/) | 給半導體新人的知識庫：從電晶體結構演進、十章製程與量產，到先進封裝與背面供電。 | lufor129 | 有 | [手冊網站](https://github.com/lufor129/Knowledge_Inheritance_Framework/releases/latest/download/semiconductor-handbook.html)・[簡報](https://github.com/lufor129/Knowledge_Inheritance_Framework/releases/latest/download/semiconductor-deck.html) |
+<!-- 知識庫清單結束 -->
+
+## 四種角色
+
+角色看你當下在做什麼，不看資歷：
+
+- **新人**：看、問、回報手冊沒寫或寫錯。
+- **傳承者**：透過 Agent 新增、修改、刪除知識。
+- **維護者**：每個知識庫至少一位，審核變更提案（`/kb-review`）。
+- **框架維護者**：管規則、引擎和新知識庫（新知識庫用 `/kb-new` 建立）。
+
+## 框架維護者
+
+- lufor129（GitHub: lufor129）
+
+## 設計文件
+
+- [設計共識](docs/design.md)、[用語表](GLOSSARY.md)、[決策紀錄](docs/adr/)
+- 互動說明簡報：`docs/design-deck/dist/index.html`
