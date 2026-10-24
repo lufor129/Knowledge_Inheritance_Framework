@@ -15,7 +15,9 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import kb as K  # noqa: E402
 
-UNIT = re.compile(r'\d(?:[\d,.]*\d)?\s*(?:nm|奈米|µm|μm|微米|mm|毫米|%|％|倍|億|萬|°C|℃|美元|台幣|小時|分鐘)')
+# 數字：12、0.9、「幾百」「數千」「上百」、「七到九」
+NUM = r'(?:\d(?:[\d,.]*\d)?|[幾數上][十百千萬]|[一二兩三四五六七八九十]+\s*到\s*[一二兩三四五六七八九十]+)'
+UNIT = re.compile(NUM + r'\s*(?:nm|奈米|µm|μm|微米|mm|毫米|吋|%|％|倍|億|萬|°C|℃|美元|台幣|小時|分鐘|V|伏特|顆|點)')
 YEAR = re.compile(r'(?:19|20)\d{2}\s*年')
 
 
@@ -87,6 +89,10 @@ def check_kb(kb, secs, r):
                 if UNIT.search(YEAR.sub('', para)) and '[^' not in para:
                     snippet = re.sub(r'\s+', ' ', para)[:40]
                     r.warn(ch.file, line, f'小節「{s.id}」這段有數字，但沒有出處註腳：「{snippet}…」')
+        for q, ans, line in faq_answers(ch):
+            if UNIT.search(YEAR.sub('', ans)) and '[^' not in ans:
+                snippet = re.sub(r'\s+', ' ', ans)[:40]
+                r.warn(ch.file, line, f'常見問題「{q}」的答案有數字，但沒有出處註腳：「{snippet}…」')
 
     check_images(kb, r)
     if (kb.dir / 'deck').exists():
@@ -112,6 +118,31 @@ def paragraphs(s):
         buf.append(l.strip())
     if buf:
         out.append((' '.join(buf), start))
+    return out
+
+
+def faq_answers(ch):
+    """常見問題的答案（跳過題目和「相關：」），回傳 (題目, 答案文字, 起始行號)。"""
+    lines = ch.text.splitlines()
+    if K.FAQ_HEAD not in lines:
+        return []
+    out, q, buf, start = [], None, [], 0
+    for i in range(lines.index(K.FAQ_HEAD) + 1, len(lines)):
+        l = lines[i]
+        sm = re.search(r'<summary>(.*?)</summary>', l)
+        if sm:
+            q, buf = sm.group(1).strip(), []
+            continue
+        if l.strip() == '</details>':
+            if q and buf:
+                out.append((q, ' '.join(buf), start))
+            q = None
+            continue
+        if q is None or not l.strip() or K.REL.match(l) or l.startswith('[^'):
+            continue
+        if not buf:
+            start = i + 1
+        buf.append(l.strip())
     return out
 
 
