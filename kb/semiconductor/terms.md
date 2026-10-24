@@ -35,3 +35,6 @@
 | 統計製程管制 | Statistical Process Control (SPC) | 用管制圖判定機台有沒有變、這批要怎麼處理 | mloop |
 | 管制線 | Control Limit | 依機台平常的變異（通常 ±3σ）算出的線，超出代表機台變了，比規格嚴 | mloop |
 | 先進製程控制 | Advanced Process Control (APC) | 依量測結果自動算出下一批要調多少 | apc |
+| 定期保養 | Preventive Maintenance (PM) | 照機台用量或天數事先排好的保養，例如清腔體、換耗材 | pm |
+| RF 運轉時數 | RF Hours | 電漿機台的射頻電源累積開了多久，蝕刻、CVD 的保養週期常照它算 | pm |
+| 復機 | Qualification (Qual) | 保養完先跑測試片確認機台回到正常，才能放回產線 | pm |
