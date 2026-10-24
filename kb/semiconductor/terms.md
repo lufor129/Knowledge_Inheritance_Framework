@@ -24,3 +24,14 @@
 | 隨機缺陷 | Stochastic Defect | EUV 光子太少、分布不均，某些洞剛好收光不足而印不開 | litho4 |
 | 多重曝光 | Multiple Patterning | 線太密時把圖案拆到兩張以上光罩、分次曝光再合起來 | mpat |
 | 光學鄰近修正 | Optical Proximity Correction (OPC) | 先把光罩圖形故意修正，抵銷光暈開造成的變形 | litho6 |
+| 量測 | Metrology | 製程中量尺寸（線寬、膜厚、疊對），回答「做得對不對」 | eyes |
+| 檢測 | Inspection | 製程中掃描整片晶圓找缺陷（微粒、刮痕、短路），回答「哪裡有缺陷」 | eyes |
+| 晶圓允收測試 | Wafer Acceptance Test (WAT) | 晶圓做完後扎切割道上的測試結構量電性，決定放行或扣住 | eyes |
+| 切割道 | Scribe Line | 晶粒之間的走道，切割時會被切掉，上面放量測靶和測試結構 | eyes |
+| 關鍵尺寸 | Critical Dimension (CD) | 量測最常量的尺寸，例如線寬 | metro |
+| 穿透式電子顯微鏡 | Transmission Electron Microscope (TEM) | 讓電子穿過超薄切片成像，看得到原子但會破壞樣品，是其他量測的參考 | metro |
+| 掃描式電子顯微鏡 | Scanning Electron Microscope (SEM) | 用電子束從上方掃描表面；產線量線寬用的是 CD-SEM | metro |
+| 光學散射量測 | Optical Critical Dimension (OCD) | 打光到週期性量測靶、量反射光譜，再用模型反推 3D 形狀 | metro |
+| 統計製程管制 | Statistical Process Control (SPC) | 用管制圖判定機台有沒有變、這批要怎麼處理 | mloop |
+| 管制線 | Control Limit | 依機台平常的變異（通常 ±3σ）算出的線，超出代表機台變了，比規格嚴 | mloop |
+| 先進製程控制 | Advanced Process Control (APC) | 依量測結果自動算出下一批要調多少 | apc |
