@@ -148,6 +148,16 @@
     return { show, get: () => i };
   };
 
+  /* ---------- 影片 ----------
+     src 寫 'assets/video/檔名.mp4'（建置時內嵌進 HTML）；預設靜音、循環、進頁自動播放，點畫面暫停／繼續
+     opts：{ loop:false, autoplay:false, controls:true, poster:'assets/img/…', alt:'說明', style:'…' } */
+  U.video = (src, opts) => {
+    const o = Object.assign({ loop: true, autoplay: true, controls: false }, opts || {});
+    const a = ['muted', 'playsinline', 'preload="auto"', o.loop ? 'loop' : '', o.autoplay ? 'data-autoplay' : '', o.controls ? 'controls' : '',
+      o.poster ? `poster="${o.poster}"` : '', o.alt ? `aria-label="${o.alt}"` : '', o.style ? `style="${o.style}"` : ''].filter(Boolean).join(' ');
+    return `<video class="vid" ${a} data-src="${src}"></video>`;
+  };
+
   /* ---------- Canvas ---------- */
   U.canvas = function (cv) {
     const r = cv.parentElement;

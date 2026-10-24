@@ -20,7 +20,8 @@ import kb as K  # noqa: E402
 
 ENGINE = K.ROOT / 'framework/engine'
 FONTS = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:ital@1&display=swap">'
-MIME = {'.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif', '.svg': 'image/svg+xml', '.webp': 'image/webp'}
+MIME = {'.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif', '.svg': 'image/svg+xml', '.webp': 'image/webp',
+        '.mp4': 'video/mp4', '.webm': 'video/webm'}
 
 
 def read(p):
@@ -32,13 +33,13 @@ def script(code):
 
 
 def inline_images(kb, text):
-    """把 assets/img/xxx 換成 data URI，單一檔案才能離線顯示圖片。"""
+    """把 assets/img/xxx、assets/video/xxx 換成 data URI，單一檔案才能離線顯示圖片、播放影片。"""
     def uri(m):
         f = kb.dir / 'assets' / m.group(1)
         if not f.exists():
             return m.group(0)
         return f'data:{MIME[f.suffix.lower()]};base64,' + base64.b64encode(f.read_bytes()).decode()
-    return re.sub(r'(?:\.\./)*assets/(img/[\w.-]+\.(?:jpe?g|png|gif|svg|webp))', uri, text)
+    return re.sub(r'(?:\.\./)*' + K.IMG.pattern, uri, text)
 
 
 def page(title, head, body):

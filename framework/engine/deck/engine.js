@@ -67,6 +67,32 @@
     st.step.forEach(([id, k]) => { const b = q(id), d = b && b.querySelectorAll('.dots i')[k]; if (d && k > 0) d.click(); });
   }
 
+  /* 影片：內嵌的 data URI 轉成 blob 網址再播（Safari 不一定能直接播 data URI 影片；同一支影片只轉一次）
+     進頁時自動播放有 data-autoplay 的影片，離頁時停掉；沒有控制列的影片點畫面暫停／繼續 */
+  const blobs = new Map();
+  function blobURL(s) {
+    if (!s.startsWith('data:')) return s;
+    if (!blobs.has(s)) {
+      const k = s.indexOf(','), mime = s.slice(5, k).split(';')[0], bin = atob(s.slice(k + 1));
+      const u = new Uint8Array(bin.length);
+      for (let j = 0; j < bin.length; j++) u[j] = bin.charCodeAt(j);
+      blobs.set(s, URL.createObjectURL(new Blob([u], { type: mime })));
+    }
+    return blobs.get(s);
+  }
+  function setupVideos(el) {
+    const vids = [...el.querySelectorAll('video')];
+    if (!vids.length) return;
+    vids.forEach(v => {
+      const s = v.dataset.src || v.getAttribute('src') || '';
+      if (s) v.src = blobURL(s);
+      v.muted = v.hasAttribute('muted'); // 用 innerHTML 放進來的 muted 屬性不會設定 muted 狀態，自動播放要靜音
+      if (!v.controls) v.addEventListener('click', () => { if (v.paused) v.play().catch(() => {}); else v.pause(); });
+      if (v.hasAttribute('data-autoplay')) v.play().catch(() => {});
+    });
+    cleanups.push(() => vids.forEach(v => { v.pause(); v.removeAttribute('src'); v.load(); }));
+  }
+
   function runCleanups() {
     cleanups.forEach(fn => { try { fn(); } catch (e) { console.error(e); } });
     cleanups = [];
@@ -91,6 +117,7 @@
     stage.innerHTML = '';
     stage.appendChild(el);
     backButton(el, s, opts);
+    setupVideos(el);
     el.querySelectorAll('.miniflow [data-chap]').forEach(sp => { if (!sp.classList.contains('on')) sp.onclick = () => Deck.goId(sp.dataset.chap); });
     if (s.hub) { // 回到章節全貌頁（全貌頁會出現「回到第 N 頁」，可以來回跳）
       const t = Deck.slides.find(x => x.id === s.hub), eb = el.querySelector('.s-eyebrow');
