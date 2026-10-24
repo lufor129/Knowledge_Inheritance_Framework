@@ -26,3 +26,12 @@ check.py 會點名「對應的小節改過了」的簡報頁。每一頁都要�
 - 講稿寫在 `notes`，只存在簡報裡。
 
 頁面寫在 `deck/slides/*.js`，用 `Deck.add({ id, part, chap, title, thesis, render, init, notes })` 註冊；版面輔助函式在 `framework/engine/widgets/core.js`（`U.side`、`U.seg`、`U.stepper`……）。加進 order.md 才會播放。
+
+## 放影片
+
+示範影片（例如物件偵測的結果）可以放在簡報頁裡，建置時會內嵌進單一 HTML，離線也能播：
+
+- 影片放在 `kb/<知識庫>/assets/video/`，格式用 mp4（H.264）或 webm；和圖片一樣要列進 `assets/SOURCES.md`，寫說明和出處。
+- 整支影片會塞進 HTML，所以只放幾秒鐘、去掉聲音、縮到需要的解析度，例如：`ffmpeg -i 原檔.mp4 -t 8 -an -vf scale=960:-2 -c:v libx264 -crf 28 -movflags +faststart assets/video/檔名.mp4`
+- 在 `render` 裡寫 `U.video('assets/video/檔名.mp4')`：預設靜音、循環、進頁自動播放，點畫面暫停／繼續，離頁自動停止。要控制列或不要循環時加選項，例如 `U.video('assets/video/檔名.mp4', { controls: true, loop: false })`；其他選項見 core.js。
+- 放進 `.fig-canvas` 會填滿主圖面板。

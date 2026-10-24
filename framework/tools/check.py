@@ -125,14 +125,18 @@ def check_images(kb, r):
         for i, l in enumerate(f.read_text(encoding='utf-8').splitlines(), 1):
             for img in K.IMG.findall(l):
                 if not (kb.dir / 'assets' / img).exists():
-                    r.err(f, i, f'圖片 assets/{img} 不存在')
+                    r.err(f, i, f'{kind(img)} assets/{img} 不存在')
                 elif img not in src:
-                    r.err(f, i, f'圖片 assets/{img} 沒有列在圖片清單 assets/SOURCES.md；不在清單上的圖片不能用')
+                    r.err(f, i, f'{kind(img)} assets/{img} 沒有列在圖片清單 assets/SOURCES.md；不在清單上的{kind(img)}不能用')
     for img, (desc, origin) in src.items():
         if not (kb.dir / 'assets' / img).exists():
             r.err(kb.dir / 'assets/SOURCES.md', 0, f'圖片清單列了 {img}，但檔案不存在')
         if not origin:
-            r.err(kb.dir / 'assets/SOURCES.md', 0, f'圖片 {img} 沒有寫出處')
+            r.err(kb.dir / 'assets/SOURCES.md', 0, f'{kind(img)} {img} 沒有寫出處')
+
+
+def kind(asset):
+    return '影片' if asset.startswith('video/') else '圖片'
 
 
 def check_deck(kb, secs, r):
