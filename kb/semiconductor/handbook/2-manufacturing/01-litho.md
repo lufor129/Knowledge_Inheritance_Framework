@@ -181,7 +181,7 @@ High-NA 是 ASML 的 EXE 系列，一般 EUV 是 NXE 系列。第一代 EXE:5000
 
 如果兩個方向都改成 8 倍，一次只剩四分之一格，ASML 估計每小時做不到 100 片；改成只有一個方向 8 倍，保住半格，每小時才做得到 150 片以上[^litho5-4]。
 
-一片晶圓要蓋的格數因此變成兩倍。為了把產量補回來，EXE 的晶圓平台和光罩平台都動得更快。Intel 在 2025 年 12 月完成 EXE:5200B 的驗收，規格是每小時 175 片晶圓、疊對 0.7 nm[^litho5-7]。產量跟曝光量有關（見[隨機缺陷](#litho4)），各機型標示產量時用的曝光量不一定一樣，所以這個數字不能直接和一般 EUV 的 220 片比。比半格還大的晶片，要分兩格印再拼起來，叫拼接（Stitching），接縫要完美對準。
+一片晶圓要蓋的格數因此變成兩倍。為了把產量補回來，EXE 的晶圓平台和光罩平台都動得更快。Intel 在 2025 年 12 月完成 EXE:5200B 的驗收，規格是每小時 175 片晶圓、疊對 0.7 nm[^litho5-7]。產量跟曝光量有關（見[隨機缺陷](#litho4)），各機型標示產量時用的曝光量不一定一樣，所以這個數字不能直接和一般 EUV 的 220 片[^litho5-9]比。比半格還大的晶片，要分兩格印再拼起來，叫拼接（Stitching），接縫要完美對準。
 
 **機台更貴。** 大約 4 億美元[^litho5-6]，是一般 EUV 的兩倍。
 
@@ -202,7 +202,8 @@ Intel 在 14A 之前，已經先在 18A 上試用。2026 年 7 月，ASML 宣布
 [^litho5-5]: 出處：SK hynix 新聞稿，SK hynix Introduces Industry's First Commercial High NA EUV（2025-09-03，PR Newswire 轉載），https://technode.global/prnasia/sk-hynix-introduces-industrys-first-commercial-high-na-euv/（網址存取 2026-10）
 [^litho5-6]: 出處：TrendForce（2026/03），imec 取得 EXE:5200，引述 Reuters 一台約 4 億美元，https://www.trendforce.com/news/2026/03/19/news-imec-secures-asmls-most-advanced-exe5200-high-na-euv-for-sub-2nm-4q26-qualification-target/（網址存取 2026-10）
 [^litho5-7]: 出處：Bits&Chips（2025-12-16），Intel completes acceptance testing of ASML's EXE:5200B high-NA EUV scanner，https://bits-chips.com/article/intel-begins-acceptance-testing-of-asmls-exe5200b-high-na-euv-scanner/（網址存取 2026-10）
-[^litho5-8]: 出處：ASML 新聞稿，High NA EUV reaches new readiness milestone with first high-volume Logic product（2026-07-15），https://www.asml.com/en/news/press-releases/2026/high-na-euv-reaches-new-readiness-milestone（網址存取 2026-10）
+[^litho5-8]: 出處：ASML 新聞稿，High NA EUV reaches new readiness milestone with first high-volume Logic product（2026-07-15），https://investor.asml.com/news-releases/news-release-details/high-na-euv-reaches-new-readiness-milestone（網址存取 2026-10）
+[^litho5-9]: 出處：ASML，TWINSCAN NXE:3800E 產品頁（220 片/小時，曝光量 30 mJ/cm²），https://www.asml.com/en/products/euv-lithography-systems/twinscan-nxe-3800e（網址存取 2026-10）
 
 <a name="litho6"></a>
 ## OPC：光罩要故意畫歪，印出來才會是正的
