@@ -45,14 +45,14 @@
 - p1sum
 - p2
 - loop
-- litho1
-- lithoL
-- litho3
-- litho3m
-- litho4
-- litho5
-- litho6
-- cmask
+- litho1 → litho1@570fa3, field@8fc9c4, reso@09ee2b
+- lithoL → litho2@6b2f76
+- litho3 → litho3@f30d0e
+- litho3m → litho3m@cdaa31
+- litho4 → litho4@a6d85f
+- litho5 → reso@09ee2b, mpat@abebb2, litho5@5fd99b
+- litho6 → litho6@310844
+- cmask → cmask@1690c6
 - etch1
 - etch3
 - etch4
