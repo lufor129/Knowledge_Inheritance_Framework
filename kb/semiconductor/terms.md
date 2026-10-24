@@ -23,6 +23,9 @@
 | 繞射 | Diffraction | 光遇到接近波長大小的開口會往兩旁散開，讓線變寬、變淡 | litho2 |
 | 隨機缺陷 | Stochastic Defect | EUV 光子太少、分布不均，某些洞剛好收光不足而印不開 | litho4 |
 | 多重曝光 | Multiple Patterning | 線太密時把圖案拆到兩張以上光罩、分次曝光再合起來 | mpat |
+| 高數值孔徑 EUV | High-NA EUV | NA 從 0.33 加大到 0.55 的 EUV 曝光機，一次能印約 8 nm，但一次只印半格 | litho5 |
+| 拼接 | Stitching | 晶片比一次曝光的範圍大時，分兩格印再把接縫對準拼起來 | litho5 |
+| 景深 | Depth of Focus | 能對準焦的深度範圍；收光角度越大，景深越淺 | litho5 |
 | 光學鄰近修正 | Optical Proximity Correction (OPC) | 先把光罩圖形故意修正，抵銷光暈開造成的變形 | litho6 |
 | 量測 | Metrology | 製程中量尺寸（線寬、膜厚、疊對），回答「做得對不對」 | eyes |
 | 檢測 | Inspection | 製程中掃描整片晶圓找缺陷（微粒、刮痕、短路），回答「哪裡有缺陷」 | eyes |

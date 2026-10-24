@@ -158,28 +158,32 @@ DUV 的光子能量小、數量多，像細霧一樣，每個洞收到的光都�
 
 台積電 2 奈米世代（N2，製程名稱見[微影](#litho1)那一節）之後，最細的幾層線，一般 EUV 一次畫不出來，只能用[多重曝光](#mpat)。下一代的 High-NA EUV 想換一個收光角度更大的鏡頭來解決，但代價很大，各家的選擇也不同。
 
-照[能畫多細](#reso)那一節的式子，NA 越大，能畫的線越細。一般 EUV 的 NA 是 0.33，一次曝光最細大約是 13–16 nm 的半間距；High-NA 把 NA 加大到 0.55，大約 8 nm。
+照[能畫多細](#reso)那一節的式子，NA 越大，能畫的線越細。一般 EUV 的 NA 是 0.33，一次曝光最細大約是 13–16 nm 的半間距；High-NA 把 NA 加大到 0.55，大約 8 nm，能印的圖形大約小 1.7 倍[^litho5-3]。圖形小 1.7 倍，同樣面積能放的電晶體大約多 2.9 倍（長寬各縮 1.7 倍，1.7 × 1.7 ≈ 2.9）[^litho5-5]。
 
-| | 一般 EUV | High-NA EUV |
+High-NA 是 ASML 的 EXE 系列，一般 EUV 是 NXE 系列。第一代 EXE:5000 是給研發用的；第二代 EXE:5200B 才是量產用的機型。
+
+| | 一般 EUV（NXE） | High-NA EUV（EXE） |
 |---|---|---|
-| 鏡頭收光（NA） | 0.33 | 0.55 |
-| 一次曝光最細半間距 | 約 13–16 nm | 約 8 nm |
+| 鏡頭收光（NA） | 0.33 | 0.55[^litho5-3] |
+| 一次曝光最細半間距 | 約 13–16 nm | 約 8 nm[^litho5-3] |
 | 最細的圖層 | 要多重曝光（圖案拆成兩張光罩） | 一次印出來 |
-| 一次曝光的範圍（曝光區） | 一整格 26 × 33 mm | 半格 26 × 16.5 mm |
-| 機台價格 | 約 2 億美元 | 約 4 億美元 |
+| 一次曝光的範圍（曝光區） | 一整格 26 × 33 mm | 半格 26 × 16.5 mm[^litho5-4] |
+| 機台價格 | 約 2 億美元 | 約 4 億美元[^litho5-6] |
 
 好處是最細的圖層不用再多重曝光，一次就印出來，步驟少，也不怕兩次對不準。代價有三個：一次只印半格、機台更貴、景深變淺。
 
-**一次只印半格。** 「格」指的是[曝光區](#field)：晶圓要一格一格蓋印章，一般 EUV 一格是 26 × 33 mm，High-NA 只剩一半。原因要從光罩那一端看：
+**一次只印半格。** 「格」指的是[曝光區](#field)：晶圓要一格一格蓋印章，一般 EUV 一格是 26 × 33 mm，High-NA 只剩一半[^litho5-4]。原因要從光罩那一端看：
 
-1. 投影鏡像一個漏斗。晶圓這端的光錐張得越開（NA 越大），光罩那端的光錐也跟著張開；因為圖案縮小 4 倍，光罩端的角度大約是晶圓端的四分之一。
+1. 投影鏡像一個漏斗。晶圓這端的光錐張得越開（NA 越大），光罩那端的光錐也跟著張開；因為圖案縮小 4 倍，光罩端的角度大約是晶圓端的四分之一[^litho5-4]。
 2. EUV 光罩是反射式的，照進去的光和反射出來的光必須斜斜地錯開，才不會撞在一起。光錐一張開，光就得斜得更厲害，而多層膜鏡面遇到太斜的光，反射率會掉很多。
 3. 解法是加大縮小倍率：縮小 8 倍時，光罩端的角度只剩晶圓端的八分之一。但光罩的大小是全業界的標準，不能跟著放大；如果兩個方向都改成 8 倍，一次只能印四分之一格，產量掉太多。
 4. 光是朝一個方向斜斜打進光罩的，只有那個方向的角度最吃緊。所以 ASML 只在那個方向改成縮小 8 倍，另一個方向維持 4 倍。結果光罩上 104 × 132 mm 的圖案區，印到晶圓上變成 26 × 16.5 mm，只剩半格。
 
-一片晶圓要蓋的格數因此變成兩倍，每小時能做的晶圓也比較少。比半格還大的晶片，要分兩格印再拼起來，叫拼接（Stitching），接縫要完美對準。
+如果兩個方向都改成 8 倍，一次只剩四分之一格，ASML 估計每小時做不到 100 片；改成只有一個方向 8 倍，保住半格，每小時才做得到 150 片以上[^litho5-4]。
 
-**機台更貴。** 大約 4 億美元，是一般 EUV 的兩倍。
+一片晶圓要蓋的格數因此變成兩倍。為了把產量補回來，EXE 的晶圓平台和光罩平台都動得更快。Intel 在 2025 年 12 月完成 EXE:5200B 的驗收，規格是每小時 175 片晶圓、疊對 0.7 nm[^litho5-7]。產量跟曝光量有關（見[隨機缺陷](#litho4)），各機型標示產量時用的曝光量不一定一樣，所以這個數字不能直接和一般 EUV 的 220 片[^litho5-9]比。比半格還大的晶片，要分兩格印再拼起來，叫拼接（Stitching），接縫要完美對準。
+
+**機台更貴。** 大約 4 億美元[^litho5-6]，是一般 EUV 的兩倍。
 
 **景深變淺。** 收光角度變大，能對準焦的深度，也就是景深（Depth of Focus）跟著變淺，光阻要更薄、晶圓表面要更平。
 
@@ -187,10 +191,19 @@ DUV 的光子能量小、數量多，像細霧一樣，每個洞收到的光都�
 
 所以各家的選擇不同。Intel 很積極，計畫把 High-NA 用在 14A 的關鍵圖層[^litho5-1]。台積電則公開表示，到 2029 年的 A12、A13 都還不需要 High-NA[^litho5-2]，判斷多曝光幾次比較划算。
 
-Intel 從 2026 年起，已經先在 18A 的部分圖層試用 High-NA，同時保留一般 EUV 的備案。
+Intel 在 14A 之前，已經先在 18A 上試用。2026 年 7 月，ASML 宣布 Intel 已經用 High-NA 印 18A 的部分圖層，做出一部分 Panther Lake 處理器出貨[^litho5-8]。這些圖層是「雙重認證」：同一層用 High-NA 或一般 EUV 都能印，良率和一般 EUV 一樣。這樣 High-NA 出狀況時，可以換回一般 EUV 照樣生產，同時累積量產的經驗。
+
+記憶體廠也在跟進。SK hynix 在 2025 年 9 月把 EXE:5200B 裝進韓國利川的 M16 廠，準備用來做下一代 DRAM[^litho5-5]。
 
 [^litho5-1]: 出處：Bits&Chips，Intel 14A 關鍵圖層採用 High-NA，https://bits-chips.com/article/intel-confirms-high-na-euv-deployment-for-14a-node/（網址存取 2026-09）
 [^litho5-2]: 出處：TrendForce（2026/04），台積電新路線圖：A12、A13 定在 2029 年、不採用 High-NA EUV，A16 延至 2027，https://www.trendforce.com/news/2026/04/23/news-tsmc-unveils-latest-roadmap-a12-a13-set-for-2029-without-high-na-euv-a16-volume-production-delayed-to-2027/（網址存取 2026-09）
+[^litho5-3]: 出處：ASML，TWINSCAN EXE:5000 產品頁（NA 0.55、解析度 8 nm、圖形比 NXE 小 1.7 倍、曝光區是 NXE 的一半），https://www.asml.com/products/euv-lithography-systems/twinscan-exe-5000（網址存取 2026-10）
+[^litho5-4]: 出處：Jan van Schoot、Kars Troost、Sascha Migura、Bernhard Kneer，Improving the resolution of extreme-UV lithography scanners，SPIE Newsroom（2016-01-12），https://spie.org/news/6259-improving-the-resolution-of-extreme-uv-lithography-scanners（網址存取 2026-10）
+[^litho5-5]: 出處：SK hynix 新聞稿，SK hynix Introduces Industry's First Commercial High NA EUV（2025-09-03，PR Newswire 轉載），https://technode.global/prnasia/sk-hynix-introduces-industrys-first-commercial-high-na-euv/（網址存取 2026-10）
+[^litho5-6]: 出處：TrendForce（2026/03），imec 取得 EXE:5200，引述 Reuters 一台約 4 億美元，https://www.trendforce.com/news/2026/03/19/news-imec-secures-asmls-most-advanced-exe5200-high-na-euv-for-sub-2nm-4q26-qualification-target/（網址存取 2026-10）
+[^litho5-7]: 出處：Bits&Chips（2025-12-16），Intel completes acceptance testing of ASML's EXE:5200B high-NA EUV scanner，https://bits-chips.com/article/intel-begins-acceptance-testing-of-asmls-exe5200b-high-na-euv-scanner/（網址存取 2026-10）
+[^litho5-8]: 出處：ASML 新聞稿，High NA EUV reaches new readiness milestone with first high-volume Logic product（2026-07-15），https://investor.asml.com/news-releases/news-release-details/high-na-euv-reaches-new-readiness-milestone（網址存取 2026-10）
+[^litho5-9]: 出處：ASML，TWINSCAN NXE:3800E 產品頁（220 片/小時，曝光量 30 mJ/cm²），https://www.asml.com/en/products/euv-lithography-systems/twinscan-nxe-3800e（網址存取 2026-10）
 
 <a name="litho6"></a>
 ## OPC：光罩要故意畫歪，印出來才會是正的
@@ -311,6 +324,12 @@ EUV 會被空氣吸收，走不到晶圓上，所以整條光路都在真空中�
 <details>
 <summary>台積電為什麼還不用 High-NA？</summary>
 機台貴、一次只印半格，產能也比較低。台積電判斷到 A13、A12（2029 年）都可以不用；Intel 則選擇先導入，計畫用在 14A 的關鍵圖層。
+相關：litho5
+</details>
+
+<details>
+<summary>High-NA EUV 現在有誰在用？</summary>
+Intel 最積極：已經用 High-NA 印 18A 的部分圖層，做出一部分 Panther Lake 處理器出貨，計畫在 14A 用在關鍵圖層。記憶體廠 SK hynix 也裝了量產型的 EXE:5200B，準備做下一代 DRAM。台積電則表示到 A13、A12 都還不需要。
 相關：litho5
 </details>
 
