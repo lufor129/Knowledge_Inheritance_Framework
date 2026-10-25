@@ -19,7 +19,8 @@
     "name": "老王",
     "watch": [
       "semiconductor"
-    ]
+    ],
+    "login": "laowang-test"
   },
   "sessions": [
     {

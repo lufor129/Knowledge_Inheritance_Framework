@@ -2,7 +2,7 @@
 
 只操作 framework/tests/sandbox.json 指定的測試 repo；指定成正式 repo（framework/config.json）會直接拒絕。
 重置時把要測的那一版框架接在測試 repo 的 main 後面推上去（一般推送，不強制），
-所以測試 repo 的歷史會一直變長，但內容每次都是乾淨的。
+所以測試 repo 的歷史會一直變長，但內容每次都是乾淨的。issue 每次全部刪掉；提案刪不掉，只會關掉。
 """
 import json
 import pathlib
@@ -63,7 +63,7 @@ def clone(dest):
 
 
 def reset(ref, work):
-    """把測試 repo 的 main 換成 ref 那一版框架，關掉所有 issue 和提案，刪掉其他分支。回傳新的 main commit。"""
+    """把測試 repo 的 main 換成 ref 那一版框架，刪掉所有 issue，關掉所有提案，刪掉其他分支。回傳新的 main commit。"""
     src = work / 'src'
     if src.exists():
         shutil.rmtree(src)
@@ -89,8 +89,9 @@ def reset(ref, work):
     sh(['git', 'push', '--quiet', 'sandbox', f'{commit}:refs/heads/main'], cwd=src)
     for n in json.loads(gh('pr', 'list', '--state', 'open', '--json', 'number', '--limit', '200') or '[]'):
         gh('pr', 'close', str(n['number']), '--delete-branch', check=False)
-    for n in json.loads(gh('issue', 'list', '--state', 'open', '--json', 'number', '--limit', '200') or '[]'):
-        gh('issue', 'close', str(n['number']), check=False)
+    # issue 全部刪掉：之前的情境留下的同一個問題，會被 Agent 當成重複的 issue（提案刪不掉，只關掉）
+    for n in json.loads(gh('issue', 'list', '--state', 'all', '--json', 'number', '--limit', '1000') or '[]'):
+        gh('issue', 'delete', str(n['number']), '--yes', check=False)
     for b in json.loads(api('branches?per_page=100') or '[]'):
         if b['name'] != 'main':
             api(f'git/refs/heads/{b["name"]}', 'DELETE', check=False)

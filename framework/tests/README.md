@@ -55,8 +55,8 @@ python3 <skill-creator>/eval-viewer/generate_review.py <iteration 資料夾> --s
 | 欄位 | 意思 |
 |---|---|
 | `setup` | 前置步驟：`issue`、`branch`（`edits` 改檔、`run` 跑指令、`pr` 開提案）、`comment`、`merge`、`wait_release` |
-| `local` | 寫進 `.kif/local.json` 的使用者偏好（扮演哪個人的電腦） |
-| `sessions` | 一段或多段對話：`first` 第一句話、`persona` 人物設定、`goal` 想完成的事、`max_turns`、`after: newest_pr`（把最新的提案編號存成 `{pr_new}`） |
+| `local` | 寫進 `.kif/local.json` 的使用者偏好（扮演哪個人的電腦）。測試只有一個 GitHub 帳號，`login` 寫成別的帳號，就是模擬「不是維護者的人」 |
+| `sessions` | 一段或多段對話：`first` 第一句話、`persona` 人物設定、`goal` 想完成的事、`max_turns`、`after: newest_pr`（把最新的提案編號存成 `{pr_new}`）、`local`（這一段換成另一個人） |
 | `checks` | 程式檢查，種類見 grade.py 的 `check()` |
 | `judge` | 交給評分模型的標準。評分模型看得到對話、測試 repo 的 issue 和提案（含 diff） |
 | `judge_context` | 評分時附上的手冊原文（正式內容的檔案路徑），用來對照「回答有沒有手冊依據」 |

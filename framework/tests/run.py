@@ -89,20 +89,28 @@ def transcript_md(turns, with_tools=True):
     return '\n'.join(out)
 
 
+def write_local(clone, data):
+    """.kif/local.json：使用者的名字、關心的知識庫，以及 login（測試只有一個 GitHub 帳號，用它模擬不同的人）。"""
+    (clone / '.kif').mkdir(exist_ok=True)
+    (clone / '.kif/local.json').write_text(json.dumps(data, ensure_ascii=False) + '\n', encoding='utf-8')
+
+
 def run_case(case, args, work, run_dir):
     vars = {}
     t0 = time.time()
     vars['reset_sha'] = S.reset(args.ref, work)
     clone = S.clone(work / 'agent')
     if case.get('local'):
-        (clone / '.kif').mkdir(exist_ok=True)
-        (clone / '.kif/local.json').write_text(json.dumps(case['local'], ensure_ascii=False) + '\n', encoding='utf-8')
+        write_local(clone, case['local'])
     start = S.latest()
     S.setup(case.get('setup', []), work, vars)
-    before = S.latest()
+    # 剛建好的提案，GitHub 的清單有時還沒列出來；前置步驟產生的編號一定不算「新開的」
+    before = max([S.latest()] + [v for k, v in vars.items() if isinstance(v, int) and not k.endswith('_commits')])
     S.sh(['git', 'pull', '--quiet', '--ff-only'], cwd=clone, check=False)
     turns, cost, tokens = [], 0.0, 0
     for sess in case['sessions']:
+        if sess.get('local'):  # 換一個人：同一台電腦，換成這個人的帳號和名字
+            write_local(clone, sess['local'])
         msg, sid = S.fill(sess['first'], vars), None
         for _ in range(sess.get('max_turns', 4)):
             turns.append({'role': 'user', 'text': msg})

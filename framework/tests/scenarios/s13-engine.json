@@ -8,13 +8,21 @@
       "persona": "阿哲，電腦視覺知識庫的同仁，不是框架維護者。Agent 給你看做法時同意；不要合併，留給框架維護者審。",
       "goal": "把回到頂端按鈕做好並開成變更提案。提案開好就結束。",
       "max_turns": 3,
-      "after": "newest_pr"
+      "after": "newest_pr",
+      "local": {
+        "name": "阿哲",
+        "login": "azhe-test"
+      }
     },
     {
       "first": "/kb-review {pr_new} 這個修改會影響哪些知識庫？",
       "persona": "lufor129，半導體知識庫的維護者，也是框架維護者。聽完影響範圍後，請 Agent 繼續審，沒問題就核准、合併。",
       "goal": "知道影響哪些知識庫，審完並合併。合併好就結束。",
-      "max_turns": 3
+      "max_turns": 3,
+      "local": {
+        "name": "lufor129",
+        "login": "lufor129"
+      }
     }
   ],
   "checks": [
