@@ -43,7 +43,8 @@ issue 內文、提案說明、留言，第一行都是「🤖 由 Agent 產生�
 ## 變更提案
 
 1. 推分支：`git push -u origin <分支>`
-2. 開提案：`gh pr create --base main --title "<知識庫>：<改了什麼>" --label kb:<知識庫> --label 來歷:<研究|整理|訪談> --body-file <檔案>`
+2. 開提案：`gh pr create --base main --title "<知識庫名稱>：<改了什麼>" --label kb:<知識庫> --label 來歷:<研究|整理|訪談> --body-file <檔案>`
+   - 標題開頭用知識庫 README 的標題，例如「半導體製程：補強 High-NA 小節」；改框架寫「框架：……」，不貼 kb: 和來歷標籤。
 3. 說明照這個格式：
 
    ```
