@@ -1,7 +1,7 @@
 ---
 name: kb-change
 description: 修改、刪除或合併手冊裡已有的小節並開變更提案，所有引用一起改。也處理修正勘誤 issue，以及照維護者在變更提案上的意見修改。使用者說某一節要改、要刪、要和另一節合併，要修正勘誤 #N，或說「照維護者的意見改」時使用。
-allowed-tools: Bash(git push:*), Bash(gh pr create:*), Bash(gh pr edit:*), Bash(gh pr comment:*), Bash(gh issue comment:*)
+allowed-tools: Bash(git push:*), Bash(gh pr create:*), Bash(gh pr edit:*), Bash(gh pr comment:*), Bash(gh issue comment:*), Bash(gh issue reopen:*)
 ---
 
 # 修改、刪除、合併
@@ -24,6 +24,7 @@ allowed-tools: Bash(git push:*), Bash(gh pr create:*), Bash(gh pr edit:*), Bash(
 1. **開分支**：`git fetch origin && git switch -c kb/<知識庫>/<簡短英文> origin/main`。修正勘誤時先讀 issue（`gh issue view <N>`），確認是哪一節、哪一句、依據是什麼。
 2. **找出要動的小節**：`python3 framework/tools/index.py <知識庫>` 和 `git grep`。說不清楚是哪一節就問使用者。
 3. **列出所有引用**：`git grep -n "<id>" -- kb/`：常見問題的「相關：」、頁序 deck/order.md、其他小節、其他知識庫（寫成 `<知識庫>/<id>`）。清單給使用者看。
+   刪除或合併時，也查這一節當初是不是為了回答某個 issue 才加的：`git log --oneline -S '<a name="<id>">' -- kb/` 找到加入它的提案（commit 訊息結尾的 #N），`gh pr view <N> --json body` 看說明有沒有 Closes。有的話，內容刪了，那個問題又沒有答案了：寫進清單，問使用者要不要重新打開（`gh issue reopen <N>`，留言說明為什麼）。刪掉常見問題時也一樣。
 4. **改**：
    - **修改**：改內容，id 不動，因為別的地方用 id 指到這一節。數字附出處；修正勘誤時，新的出處一起補上。
    - **刪除**：刪掉小節，引用一個一個處理：改指到別的小節、跟著刪、或從簡報頁拿掉這個對應。刪掉的內容 Git 歷史找得回來。
