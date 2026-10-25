@@ -10,9 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 入口網站的卡片要列出每個知識庫最近一次的變更
       - name: 檢查
         run: python3 framework/tools/check.py
-      - name: 建置每個知識庫的手冊網站和簡報
+      - name: 建置每個知識庫的手冊網站和簡報，和入口網站的壓縮檔
         run: python3 framework/tools/build.py --release-dir out
       - name: 發布到 Release（只在主線更新時）
         if: github.event_name == 'push'
@@ -20,5 +22,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="build-$(date -u +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
-          gh release create "$tag" out/*.html --target "$GITHUB_SHA" \
-            --title "手冊網站與簡報 ${GITHUB_SHA::7}" --notes "主線更新後自動建置。" --latest
+          gh release create "$tag" out/*.html out/portal.zip --target "$GITHUB_SHA" \
+            --title "入口網站、手冊網站與簡報 ${GITHUB_SHA::7}" --notes "主線更新後自動建置。新人下載 portal.zip，解開後打開 index.html。" --latest

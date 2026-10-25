@@ -45,3 +45,6 @@ body { display: grid; grid-template-columns: 280px minmax(0, 1fr); min-height: 1
   #nav { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
   #main { padding: 24px 16px 80px; }
 }
+/* 小節標題旁：連回講到它的簡報頁 */
+#main a.to-deck { display: inline-block; margin-left: 10px; padding: 1px 10px; border: 1px solid var(--accent); border-radius: 12px; font-size: 13px; font-weight: 600; text-decoration: none; vertical-align: 3px; }
+#main a.to-deck:hover { background: var(--accent); color: #fff; }

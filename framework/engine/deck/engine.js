@@ -1,5 +1,6 @@
-/* 簡報引擎（所有知識庫共用）：翻頁、縮放、講稿、總覽、章節列
-   每頁用 Deck.add({ id, part, title, minutes, render(h) -> html, init(el, ctx), notes }) 註冊 */
+/* 簡報引擎（所有知識庫共用）：翻頁、縮放、講稿和旁白、總覽、章節列
+   每頁用 Deck.add({ id, part, title, minutes, render(h) -> html, init(el, ctx), notes }) 註冊；
+   Markdown 寫的頁由 pages.js 註冊，給新人的按鈕（旁白、看詳細和出處、問 Agent）和進度在 learn.js */
 (function () {
   const W = 1600, H = 900;
   /* 由 build.py 從頁序（deck/order.md）產生：部分、章節列、浮水印 */
@@ -13,6 +14,7 @@
     cur: -1,
     _rafs: [],
     add(s) { this.slides.push(s); },
+    onGo: [],   // 換頁之後要做的事：fn(頁, 第幾頁)
     /* 檢查用：同步推進目前頁面的動畫 n 幀（背景分頁時瀏覽器會暫停動畫） */
     tick(n) { for (let k = 0; k < (n || 1); k++) { const t = performance.now() / 1000 + k * 0.05; this._rafs.forEach(f => f(0.05, t)); } },
     CHAPS, PARTS
@@ -21,6 +23,16 @@
 
   /* ---------- 版面輔助 ---------- */
   function esc(s) { return String(s); }
+  /* 頁碼引用：文字裡寫 [[頁:頁id]]，顯示時換成「第 N 頁」。頁序調整、插入自動產生的頁，頁碼都會跟著對 */
+  Deck.ref = t => String(t == null ? '' : t).replace(/\[\[頁:([A-Za-z0-9_-]+)\]\]/g, (m, id) => {
+    const k = Deck.slides.findIndex(x => x.id === id); return k >= 0 ? `第 ${k + 1} 頁` : m;
+  });
+  function fixRefs(node) {
+    if (node.nodeType === 3) { if (node.data.includes('[[頁:')) node.data = Deck.ref(node.data); return; }
+    if (node.nodeType !== 1) return;
+    const w = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+    for (let n = w.nextNode(); n; n = w.nextNode()) if (n.data.includes('[[頁:')) n.data = Deck.ref(n.data);
+  }
   Deck.head = function (s, i) {
     let flow = '';
     if (s.chap) { // 右上角的章節列：亮起目前所在的章，點名稱跳到該章第一頁
@@ -114,6 +126,7 @@
       el.innerHTML = s.raw ? s.render(i) : Deck.head(s, i) + s.render(i) + Deck.foot(s);
     } catch (e) { el.innerHTML = `<pre>${e.stack}</pre>`; console.error(e); }
     if (CFG.watermark) el.insertAdjacentHTML('beforeend', `<div class="wm">${CFG.watermark}</div>`); // 每頁上方的浮水印
+    fixRefs(el);
     stage.innerHTML = '';
     stage.appendChild(el);
     backButton(el, s, opts);
@@ -144,7 +157,9 @@
     }
     progress.style.width = ((i + 1) / n * 100) + '%';
     hudNum.textContent = `${i + 1} / ${n}`;
-    try { history.replaceState(null, '', '#' + (i + 1)); } catch (e) { location.hash = String(i + 1); }
+    // 網址記頁 id，頁序調整了連結也不會跳錯（舊的頁碼網址照樣能開）
+    try { history.replaceState(null, '', '#' + s.id); } catch (e) { location.hash = s.id; }
+    Deck.onGo.forEach(fn => { try { fn(s, i); } catch (e) { console.error(e); } });
     renderNotes();
     renderPresenter();
     if (!overviewEl.hidden) renderOverview();
@@ -187,12 +202,28 @@
   let planBase = 0;
   const planAt = i => cumMinutes(i) - cumMinutes(planBase);
   // 講稿段落開頭的【可略】【提示】標籤換顏色，講者一眼看得到
-  const notesHTML = s => (s.notes || '（這一頁沒有講稿）').trim().split(/\n\s*\n/).map(p => `<p>${p.trim().replace(/^【(.+?)】/, '<b class="tg">【$1】</b>')}</p>`).join('');
+  const notesHTML = s => Deck.ref(s.notes || '（這一頁沒有講稿）').trim().split(/\n\s*\n/).map(p => `<p>${p.trim().replace(/^【(.+?)】/, '<b class="tg">【$1】</b>')}</p>`).join('');
   function fmtMin(m) { return `${Math.floor(m)}:${String(Math.round((m % 1) * 60)).padStart(2, '0')}`; }
 
+  // 旁白：講稿拿掉給講者看的【可略】【提示】段落，也不顯示計時
+  let notesMode = 'talk';
+  const narrHTML = s => {
+    const ps = Deck.ref(s.notes || '').trim().split(/\n\s*\n/).map(p => p.trim()).filter(p => p && !/^【(可略|提示)】/.test(p));
+    return ps.length ? ps.map(p => `<p>${p}</p>`).join('') : '<p>（這一頁沒有旁白）</p>';
+  };
+  Deck.toggleNotes = function (mode) {
+    const same = !notesEl.hidden && notesMode === mode;
+    notesMode = mode;
+    notesEl.hidden = same;
+    notesEl.classList.toggle('narr', mode === 'narr');
+    renderNotes();
+    return !notesEl.hidden;
+  };
+  Deck.notesOpen = () => !notesEl.hidden && notesMode;
   function renderNotes() {
     if (notesEl.hidden) return;
     const s = Deck.slides[Deck.cur];
+    if (notesMode === 'narr') { notesEl.innerHTML = `<div class="nh"><span>旁白 · ${String(s.short || s.title).replace(/<[^>]+>/g, '')}</span><span>再按一次「旁白」收起</span></div>${narrHTML(s)}`; return; }
     const total = planAt(Deck.slides.length);
     const el = startTime ? (Date.now() - startTime) / 60000 : 0;
     const paras = notesHTML(s);
@@ -205,7 +236,7 @@
   let presenter = null;
   function openPresenter() {
     try { presenter = window.open('', 'deck-presenter', 'width=900,height=640'); } catch (e) { presenter = null; }
-    if (!presenter) { notesEl.hidden = false; renderNotes(); return; }
+    if (!presenter) { if (Deck.notesOpen() !== 'talk') Deck.toggleNotes('talk'); return; } // 開不了新視窗：改在下方顯示講稿
     const d = presenter.document;
     d.open();
     d.write(`<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>講者視窗</title><style>
@@ -273,6 +304,8 @@
     notesEl = document.getElementById('notes');
     overviewEl = document.getElementById('overview');
     fit();
+    // 互動元件之後才放進頁面的文字（例如點了才出現的說明），也要換頁碼引用
+    new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(fixRefs))).observe(stage, { childList: true, subtree: true });
     // 視窗大小改變（例如按 F 全螢幕）：canvas 解析度是進頁時決定的，縮放差超過一成就重建當頁，避免畫面變糊
     let rsT = null;
     window.addEventListener('resize', () => {
@@ -294,7 +327,7 @@
         case 'ArrowLeft': case 'PageUp': Deck.go(Deck.cur - 1); e.preventDefault(); break;
         case 'Home': Deck.go(0); break;
         case 'End': Deck.go(Deck.slides.length - 1); break;
-        case 'n': case 'N': toggle(notesEl); renderNotes(); break;
+        case 'n': case 'N': Deck.toggleNotes('talk'); break;
         case 'o': case 'O': toggle(overviewEl); if (!overviewEl.hidden) renderOverview(); break;
         case 'Escape': toggle(overviewEl, false); break;
         case 't': case 'T': startTime = Date.now(); planBase = Deck.cur; renderNotes(); renderPresenter(); break;
@@ -332,7 +365,7 @@
     });
     document.getElementById('btn-prev').onclick = () => Deck.go(Deck.cur - 1);
     document.getElementById('btn-next').onclick = () => Deck.go(Deck.cur + 1);
-    document.getElementById('btn-notes').onclick = () => { toggle(notesEl); renderNotes(); };
+    document.getElementById('btn-notes').onclick = () => Deck.toggleNotes('talk');
     document.getElementById('btn-ov').onclick = () => { toggle(overviewEl); if (!overviewEl.hidden) renderOverview(); };
 
     // 觸控滑動
@@ -346,7 +379,13 @@
     setInterval(() => { const e = document.getElementById('elapsed'); if (e && startTime) e.textContent = fmtMin((Date.now() - startTime) / 60000); renderPresenter(); }, 1000);
     const bpv = document.getElementById('btn-pv'); if (bpv) bpv.onclick = openPresenter;
     startTime = Date.now();
-    const h = parseInt((location.hash || '').replace('#', ''), 10);
-    Deck.go(isNaN(h) ? 0 : h - 1, { force: true });
+    // 網址可以是頁 id（#hk1）或頁碼（#12）
+    const h = decodeURIComponent((location.hash || '').replace('#', ''));
+    const byId = Deck.slides.findIndex(x => x.id === h), n = parseInt(h, 10);
+    Deck.go(byId >= 0 ? byId : isNaN(n) ? 0 : n - 1, { force: true });
+    window.addEventListener('hashchange', () => {
+      const id = decodeURIComponent(location.hash.slice(1)), k = Deck.slides.findIndex(x => x.id === id);
+      if (k >= 0 && k !== Deck.cur) Deck.go(k);
+    });
   };
 })();

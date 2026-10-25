@@ -1,5 +1,6 @@
 /* 手冊網站（手冊模式）：在瀏覽器裡把內嵌的 Markdown 轉成網頁。
-   資料由 build.py 放在 window.HB：{ kb: {name, title, intro, maintainers, bigpicture}, parts: [{title, readme, chapters: [{slug, title, overview, ids, md}]}], terms } */
+   資料由 build.py 放在 window.HB：{ kb: {name, title, intro, maintainers, bigpicture}, parts: [{title, readme, chapters: [{slug, title, overview, ids, md}]}], terms,
+   deck: {href, pages: {小節 id: [[頁 id, 頁標題]]}}（有簡報才有：小節標題旁連回講到它的簡報頁） } */
 (function () {
   const HB = window.HB;
   const md = window.markdownit({ html: true, linkify: false, typographer: false }).use(window.markdownitFootnote);
@@ -26,6 +27,12 @@
     nav(cur);
     const main = $('#main');
     main.innerHTML = html;
+    if (HB.deck) main.querySelectorAll('a[name]').forEach(a => {
+      const pages = HB.deck.pages[a.getAttribute('name')], h = (a.closest('p') || a).nextElementSibling;
+      if (!pages || !h || !/^H[23]$/.test(h.tagName)) return;
+      h.insertAdjacentHTML('beforeend', pages.map(([id, t]) =>
+        `<a class="to-deck" href="${HB.deck.href}#${encodeURIComponent(id)}" target="_blank" rel="noopener" title="${esc(t)}">▶ 看簡報</a>`).join(''));
+    });
     if (window.mermaid) window.mermaid.run({ nodes: main.querySelectorAll('pre.mermaid') }).catch(e => console.error(e));
     const t = anchor && (document.getElementById(anchor) || main.querySelector(`a[name="${CSS.escape(anchor)}"]`));
     if (t) t.scrollIntoView(); else window.scrollTo(0, 0);

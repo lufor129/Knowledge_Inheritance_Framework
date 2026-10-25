@@ -260,7 +260,8 @@ def _num(name):
     return int(m.group(1)) if m else 999
 
 
-def load_chapter(path, problems):
+def load_chapter(path, problems, faq_head=FAQ_HEAD):
+    """手冊的一章；簡報的章檔（deck/）也用這個讀，題目的標題是「## 自我檢查」。"""
     text = path.read_text(encoding='utf-8')
     lines = text.splitlines()
     title = _h1(text)
@@ -284,7 +285,7 @@ def load_chapter(path, problems):
             sections.append(cur)
             in_faq = False
             continue
-        if not in_code and l.strip() == FAQ_HEAD:
+        if not in_code and l.strip() == faq_head:
             cur, in_faq = None, True
             continue
         if cur is not None:
@@ -293,8 +294,8 @@ def load_chapter(path, problems):
         while s.lines and not s.lines[-1].strip():
             s.lines.pop()
     # 常見問題：<details><summary>題目</summary> … 相關：id、id </details>
-    if FAQ_HEAD in lines:
-        start = lines.index(FAQ_HEAD)
+    if faq_head in lines:
+        start = lines.index(faq_head)
         q = None
         for i in range(start + 1, len(lines)):
             l = lines[i]
@@ -508,10 +509,197 @@ def section_index():
 
 
 def slide_ids(kb):
-    ids = set()
+    ids = set(load_deck(kb).md_pages) if kb.has_deck else set()
     for f in sorted((kb.dir / 'deck/slides').glob('*.js')):
         ids.update(re.findall(r"\bid:\s*'([A-Za-z0-9_-]+)'", f.read_text(encoding='utf-8')))
     return ids
+
+
+# ---------- 簡報頁 ----------
+# 新的簡報頁寫在 deck/<部分>/<章>.md：一頁一個「錨點＋## 標題」，底下是欄位；互動圖寫在 deck/figures/*.js。
+# 舊的簡報頁寫在 deck/slides/*.js，文字和動畫混在一起；搬到 Markdown 之前，只抓得到標題、結論、講稿這些欄位。
+
+CHECK_HEAD = '## 自我檢查'
+DECK_META = {'短標題': 'short', '英文': 'en', '建議': 'minutes', '圖': 'fig'}
+DECK_FIELD = re.compile(r'^(結論|重點|數字卡|比喻|旁白)(?:（([a-z]+)）)?[：:]\s*(.*)$')
+
+
+@dataclass
+class DeckPage:
+    id: str
+    title: str
+    file: pathlib.Path
+    line: int
+    part: int = 0
+    chap: int = 0        # 0：不屬於任何一章（部分的開場、總覽）
+    short: str = ''
+    en: str = ''
+    minutes: float = 0
+    fig: str = ''        # 互動圖名稱，或 assets/img/…、assets/video/…（後面可以接「｜說明」）
+    thesis: str = ''
+    points: list = field(default_factory=list)
+    fact: tuple = None       # (數字, 說明)
+    analogy: tuple = None    # (圖示名稱, 文字)
+    notes: str = ''
+    footnotes: dict = field(default_factory=dict)  # 註腳名稱 → 出處
+    md: bool = True          # False：舊的程式頁
+
+    @property
+    def text(self):
+        """這一頁的純文字：給搜尋、讀者測試用。"""
+        parts = [self.title, self.thesis, *self.points]
+        if self.fact:
+            parts.append('：'.join(self.fact))
+        if self.analogy:
+            parts.append(self.analogy[1])
+        parts.append(self.notes)
+        return plain('\n'.join(p for p in parts if p))
+
+
+def plain(text):
+    """去掉 HTML 標籤、Markdown 粗體和註腳標號。"""
+    text = re.sub(r'<[^>]+>', '', text)
+    text = FOOTREF.sub('', text)
+    return re.sub(r'\*\*(.+?)\*\*', r'\1', text).strip()
+
+
+@dataclass
+class DeckInfo:
+    order: Order
+    pages: list          # 照頁序排列的 [DeckPage]；頁序裡有、但找不到的頁不在這裡
+    md_pages: dict       # 頁 id → DeckPage（只有 Markdown 頁）
+    checks: dict         # (部分, 章) → [(Chapter, Faq)]：簡報章檔裡的自我檢查題目
+    titles: dict         # (部分, 章) → 章檔的「# 標題」
+    problems: list
+
+
+def deck_files(kb):
+    """deck/ 底下的章檔：deck/<數字-英文>/<兩位數字-英文>.md。"""
+    d = kb.dir / 'deck'
+    return sorted((f for f in d.glob('*/*.md') if PART_DIR.match(f.parent.name)),
+                  key=lambda f: (_num(f.parent.name), _num(f.name), f.name))
+
+
+def load_deck(kb):
+    order = load_order(kb)
+    problems = []
+    md_pages, checks, titles = {}, {}, {}
+    for f in deck_files(kb):
+        if not CHAP_FILE.match(f.name):
+            problems.append((f, 0, f'簡報的章檔名稱要是「兩位數字-英文.md」，例如 05-gate.md；部分的開場用 00：{f.name}'))
+        key = (_num(f.parent.name), _num(f.name))
+        ch = load_chapter(f, problems, CHECK_HEAD)
+        titles[key] = ch.title
+        if ch.faqs:
+            checks[key] = [(ch, q) for q in ch.faqs]
+        for s in ch.sections:
+            if s.id in md_pages:
+                o = md_pages[s.id]
+                problems.append((f, s.line, f'簡報頁 id「{s.id}」重複，{rel(o.file)}:{o.line} 已經用過'))
+                continue
+            md_pages[s.id] = _deck_page(s, key, problems)
+    legacy = _legacy_pages(kb, {p.id for p in order.pages} - set(md_pages))
+    pages = []
+    for p in order.pages:
+        page = md_pages.get(p.id) or legacy.get(p.id)
+        if page:
+            pages.append(page)
+    return DeckInfo(order, pages, md_pages, checks, titles, problems)
+
+
+def _deck_page(s, key, problems):
+    p = DeckPage(s.id, s.title, s.file, s.line, key[0], key[1])
+    mode, meta = None, True
+    notes = []
+    for k, l in enumerate(s.lines[2:], s.line + 2):
+        fm = FOOTDEF.match(l)
+        if fm:
+            p.footnotes[fm.group(1)] = fm.group(2).strip()
+            mode = 'fn'
+            continue
+        mm = re.match(r'^- (\S+?)[：:]\s*(.*?)\s*$', l)
+        if meta and mm and mm.group(1) in DECK_META:
+            key_, v = DECK_META[mm.group(1)], mm.group(2)
+            if key_ == 'minutes':
+                n = re.search(r'\d+(?:\.\d+)?', v)
+                v = float(n.group(0)) if n else 0
+            setattr(p, key_, v)
+            continue
+        fm2 = DECK_FIELD.match(l)
+        if fm2:
+            meta = False
+            name, icon, rest = fm2.groups()
+            mode = name
+            if name == '結論':
+                p.thesis = rest
+            elif name == '數字卡':
+                v, _, d = rest.partition('｜')
+                p.fact = (v.strip(), d.strip())
+                mode = None
+            elif name == '比喻':
+                p.analogy = (icon or 'chip', rest)
+            elif name == '旁白' and rest:
+                notes.append(rest)
+            continue
+        if not l.strip():
+            if mode == '旁白':
+                notes.append('')
+            elif mode in ('結論', '比喻', '重點'):
+                mode = None
+            continue
+        if mode == '重點' and l.startswith('- '):
+            p.points.append(l[2:].strip())
+        elif mode == '結論':
+            p.thesis += l.strip()
+        elif mode == '比喻':
+            p.analogy = (p.analogy[0], p.analogy[1] + l.strip())
+        elif mode == '旁白':
+            notes.append(l.rstrip())
+        else:
+            problems.append((s.file, k, f'簡報頁「{s.id}」看不懂這一行，欄位要寫成「結論：」「重點：」「數字卡：」「比喻：」「旁白：」：{l[:40]}'))
+    p.notes = re.sub(r'\n{3,}', '\n\n', '\n'.join(notes)).strip()
+    return p
+
+
+def _legacy_pages(kb, wanted):
+    """舊的程式頁：從原始碼抓 id、部分、章、建議分鐘、標題、短標題、結論、講稿。只看頁序裡有的頁。"""
+    out = {}
+    esc = {'n': '\n', 't': '\t'}
+
+    def field_(block, name):
+        m = re.search(rf"\b{name}:\s*(?:'((?:[^'\\]|\\.)*)'|`((?:[^`\\]|\\.)*)`)", block)
+        if not m:
+            return ''
+        raw = m.group(1) if m.group(1) is not None else m.group(2)
+        return re.sub(r'\\(.)', lambda e: esc.get(e.group(1), e.group(1)), raw)
+
+    def num(text, name):
+        m = re.search(rf'\b{name}:\s*(\d+(?:\.\d+)?)', text or '')
+        return float(m.group(1)) if m else None
+
+    for f in sorted((kb.dir / 'deck/slides').glob('*.js')):
+        src = f.read_text(encoding='utf-8')
+        # 只用頁序裡的頁切段：render 裡的資料也可能寫 id: '…'
+        starts = [m for m in re.finditer(r"\bid:\s*'([A-Za-z0-9_-]+)'", src) if m.group(1) in wanted]
+        for i, m in enumerate(starts):
+            sid = m.group(1)
+            block = src[m.start(): starts[i + 1].start() if i + 1 < len(starts) else len(src)]
+            if sid in out or 'title:' not in block:
+                continue
+            # Object.assign({ … }, F, { chap: 4 })：後面的物件蓋過前面的，部分和章也可能寫在共用的 F 裡
+            ends = list(re.finditer(r'\}\s*,\s*(\w+)\s*(?:,\s*\{([^}]*)\})?\s*\)\s*\)\s*;', block))
+            a = ends[-1] if ends else None  # 註冊的結尾是這一段最後一個「}, F));」
+            d = a and re.search(rf'\b{a.group(1)}\s*=\s*\{{([^}}]*)\}}', src)
+            layers = [a.group(2) if a else '', d.group(1) if d else '', block[:400]]
+
+            def pick(name):
+                return next((v for v in (num(t, name) for t in layers) if v is not None), None)
+            line = src.count('\n', 0, m.start()) + 1
+            out[sid] = DeckPage(sid, plain(field_(block, 'title')), f, line, int(pick('part') or 0), int(pick('chap') or 0),
+                                short=plain(field_(block, 'short')), en=field_(block, 'en'),
+                                minutes=pick('minutes') or 0, thesis=field_(block, 'thesis'),
+                                notes=field_(block, 'notes'), md=False)
+    return out
 
 
 # ---------- 圖片清單 ----------
@@ -529,6 +717,28 @@ def load_sources(kb):
     return rows
 
 
+# ---------- 入口網站的角色路徑 ----------
+
+PATHS = ROOT / 'framework/paths.md'
+
+
+def load_paths():
+    """framework/paths.md 的角色路徑：[{name, intro, steps: [[知識庫, 頁 id, 說明, 行號]]}]（HTML 註解裡的範例不算）。"""
+    if not PATHS.exists():
+        return []
+    text = re.sub(r'<!--.*?-->', lambda m: '\n' * m.group(0).count('\n'), PATHS.read_text(encoding='utf-8'), flags=re.S)
+    roles = []
+    for i, l in enumerate(text.splitlines(), 1):
+        if l.startswith('## '):
+            roles.append({'name': l[3:].strip(), 'intro': '', 'steps': []})
+        elif roles and l.startswith('- '):
+            m = re.match(r'^- ([a-z0-9-]+)/([A-Za-z0-9_-]+)\s*(?:[：:]\s*(.*))?$', l.strip())
+            roles[-1]['steps'].append([m.group(1), m.group(2), (m.group(3) or '').strip(), i] if m else [None, l, '', i])
+        elif roles and l.strip() and not roles[-1]['steps']:
+            roles[-1]['intro'] = (roles[-1]['intro'] + ' ' + l.strip()).strip()
+    return roles
+
+
 # ---------- 首頁的知識庫清單 ----------
 
 KB_LIST_START = '<!-- 知識庫清單：由 build.py --readme 產生，請勿手改 -->'
@@ -536,8 +746,12 @@ KB_LIST_END = '<!-- 知識庫清單結束 -->'
 
 
 def download_url(kbname, kind):
+    return release_url(f'{kbname}-{kind}.html')
+
+
+def release_url(fname):
+    """最新發布裡某個檔案的下載網址；手動模式（沒有 Git 主機）是 None。"""
     host, repo = CONFIG.get('host'), CONFIG.get('repo', '')
-    fname = f'{kbname}-{kind}.html'
     if host == 'github':
         return f'https://github.com/{repo}/releases/latest/download/{fname}'
     if host == 'gitlab':
@@ -547,7 +761,10 @@ def download_url(kbname, kind):
 
 
 def kb_list_block():
-    rows = ['| 知識庫 | 介紹 | 維護者 | 簡報 | 下載 |', '|---|---|---|---|---|']
+    portal = release_url('portal.zip')
+    head = (f'**入口網站**：[下載 portal.zip]({portal})，解開後用 Chrome 或 Edge 打開裡面的 index.html。所有知識庫的簡報、手冊網站、學習路徑和搜尋都在裡面。'
+            if portal else '**入口網站**：請 Agent 建置，或執行 `python3 framework/tools/get.py portal --open`。')
+    rows = [head, '', '| 知識庫 | 介紹 | 維護者 | 簡報 | 單一檔案 |', '|---|---|---|---|---|']
     for k in all_kbs():
         who = '、'.join(n for n, _ in k.maintainers) or '（還沒有）'
         links = []
