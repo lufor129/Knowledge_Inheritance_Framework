@@ -20,18 +20,11 @@ allowed-tools: Bash(git push:*), Bash(gh label create:*), Bash(gh pr create:*), 
 
    有不清楚的就再問一輪，發起人全部確認了才往下走。骨架定了之後，部分和章的結構很難再大改。
 2. **開分支**：`git fetch origin && git switch -c kb/<短名>/skeleton origin/main`。
-3. **建骨架**，用 framework/templates/：
-   - `kb/<短名>/README.md`：名稱、一句話介紹、維護者、全景圖草稿（Mermaid，畫出部分和章之間的關係）
-   - `kb/<短名>/terms.md`：訪談裡出現的術語先列進去
-   - `kb/<短名>/handbook/<n>-<英文>/README.md`：每個部分一個
-   - 每一章一個檔案（`<兩位數字>-<英文>.md`），只有「# 章名」一行
-   - `kb/<短名>/assets/SOURCES.md`
-
-   簡報（deck/）等要上課時再做。
-4. **更新首頁的知識庫清單**：`python3 framework/tools/build.py --readme`
-5. **檢查**：`python3 framework/tools/check.py`，到沒有 ✗ 為止。
-6. **建標籤**：`gh label create "kb:<短名>" --color 1f4fb5 --description "<名稱>"`，issue 和提案才分得出是哪個知識庫的。
-7. **開變更提案**：commit、`git push -u origin kb/<短名>/skeleton`，再開提案：標題「新增知識庫：<名稱>」，只貼 `kb:<短名>` 標籤，說明寫進 `.kif/tmp/proposal.md`（第一行「🤖 由 Agent 產生」，接著是訪談結果的摘要），`gh pr create --base main --title "新增知識庫：<名稱>" --label "kb:<短名>" --body-file .kif/tmp/proposal.md`。發起人不是框架維護者時，`gh pr edit <N> --add-reviewer <框架維護者帳號>`。
-8. **收尾**：告訴發起人：框架維護者核准合併之後，知識庫就成立了，首頁清單會多一列；之後用 kb-add 一章一章補內容，現成的資料可以整批整理，但一章一個變更提案。
+3. **建骨架**：把訪談結果寫成 `.kif/tmp/new-kb.json`（格式寫在 framework/tools/new_kb.py 開頭：名稱、介紹、維護者、部分和章、術語），再跑 `python3 framework/tools/new_kb.py .kif/tmp/new-kb.json`。它照 framework/templates/ 建好 README、術語表、每個部分的 README、每一章只有標題的檔案、圖片清單，也更新首頁的知識庫清單；每次建出來的結構都一樣，檢查才過得了。
+   建好後打開 `kb/<短名>/README.md`，把全景圖草稿補成部分和章之間真正的關係。簡報（deck/）等要上課時再做。
+4. **檢查**：`python3 framework/tools/check.py`，到沒有 ✗ 為止。
+5. **建標籤**：`gh label create "kb:<短名>" --color 1f4fb5 --description "<名稱>"`，issue 和提案才分得出是哪個知識庫的。
+6. **開變更提案**：commit、`git push -u origin kb/<短名>/skeleton`，再開提案：標題「新增知識庫：<名稱>」，只貼 `kb:<短名>` 標籤，說明寫進 `.kif/tmp/proposal.md`（第一行「🤖 由 Agent 產生」，接著是訪談結果的摘要），`gh pr create --base main --title "新增知識庫：<名稱>" --label "kb:<短名>" --body-file .kif/tmp/proposal.md`。發起人不是框架維護者時，`gh pr edit <N> --add-reviewer <框架維護者帳號>`。
+7. **收尾**：告訴發起人：框架維護者核准合併之後，知識庫就成立了，首頁清單會多一列；之後用 kb-add 一章一章補內容，現成的資料可以整批整理，但一章一個變更提案。
 
 GitLab 和手動模式的指令對照見 framework/guide/host.md。

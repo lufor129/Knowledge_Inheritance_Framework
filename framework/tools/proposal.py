@@ -58,7 +58,12 @@ def kb_body(kb, ch, source, closes, reader, warns, files):
         out.append(f'- 術語表新增 {len(ch.terms_added)} 個：' + '、'.join(l.strip('|').split('|')[0].strip() for l in ch.terms_added))
     if len(out) == 3:
         out.append('- （這個分支沒有改到小節、常見問題或術語；寫出改了什麼）')
-    out += ['', '## 來歷', f'{source}：（內容從哪裡來：查了哪些來源／整理了哪份資料／誰口述的）', '', '## 影響']
+    if source == '研究':  # 研究來的說法沒有人親身確認過，維護者要知道哪些只是報導
+        origin = ['研究：', '- 第一手：（原廠文件、論文、官方網頁，各支持哪些說法）',
+                  '- 報導：（新聞、業界媒體，各支持哪些說法；沒有就寫「沒有」）']
+    else:
+        origin = [f'{source}：（內容從哪裡來：整理了哪份資料／誰口述的）']
+    out += ['', '## 來歷', *origin, '', '## 影響']
     out.append(f'- 簡報頁：{"、".join(ch.pages) + "（重看過，寫出哪些改了文字）" if ch.pages else "沒有對應的簡報頁要改"}')
     chap_files = {K.rel(c.file) for c in kb.chapters}
     others = [f for f in files if f not in chap_files and not f.startswith(f'kb/{kb.name}/deck/')
