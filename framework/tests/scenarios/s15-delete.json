@@ -1,0 +1,110 @@
+{
+  "id": "s15-delete",
+  "role": "維護者",
+  "title": "刪除小節",
+  "local": {
+    "name": "lufor129",
+    "watch": [
+      "semiconductor"
+    ]
+  },
+  "setup": [
+    {
+      "issue": {
+        "var": "issue_pm",
+        "title": "機台保養（PM）多久做一次？",
+        "labels": [
+          "待回答",
+          "kb:semiconductor"
+        ],
+        "body": "🤖 由 Agent 產生\n\n## 問題\n機台保養（PM）多久做一次？\n\n## 新人當時在讀哪一章\n檢測量測（猜的）\n\n## 誰問的\n小美"
+      }
+    },
+    {
+      "branch": {
+        "name": "kb/semiconductor/pm-section",
+        "edits": [
+          {
+            "file": "kb/semiconductor/handbook/2-manufacturing/09-metrology.md",
+            "before": "<a name=\"wat\"></a>",
+            "text": "<a name=\"pmx\"></a>\n## 機台保養 PM\n\n廠裡會事先排好保養：蝕刻、CVD 照 RF 運轉時數算，CMP 照研磨墊磨了幾片算，天數只是保底[^pmx-1]。\n\n[^pmx-1]: 老王（製程整合）口述，2026-10\n\n"
+          },
+          {
+            "file": "kb/semiconductor/handbook/2-manufacturing/09-metrology.md",
+            "append": "\n<details>\n<summary>機台保養（PM）多久做一次？</summary>\n看機台，多半照用量算，天數只是保底。\n相關：pmx、apc\n</details>\n"
+          },
+          {
+            "file": "kb/semiconductor/terms.md",
+            "append": "| 定期保養 | Preventive Maintenance (PM) | 照固定週期排好的保養 | pmx |\n"
+          }
+        ],
+        "commit": "半導體：檢測量測新增機台保養 PM",
+        "pr": {
+          "var": "pr_pm",
+          "title": "半導體製程：檢測量測新增機台保養 PM（回答 #{issue_pm}）",
+          "labels": [
+            "kb:semiconductor",
+            "來歷:訪談"
+          ],
+          "body": "🤖 由 Agent 產生\n\n## 改了什麼\n- 新增 `pmx` 機台保養 PM、一題常見問題、一個術語。\n\n## 來歷\n訪談\n\nCloses #{issue_pm}"
+        }
+      }
+    },
+    {
+      "merge": "pr_pm"
+    }
+  ],
+  "sessions": [
+    {
+      "first": "檢測量測那章的 pmx 小節（機台保養）是用虛構人物「老王」的口述寫的，不是真的訪談。請把它刪掉，相關的常見問題和術語也一起處理。開變更提案，檢查過了就合併。",
+      "persona": "lufor129，半導體知識庫的維護者，也是框架維護者。Agent 問要不要重新打開相關的 issue 時，說好。",
+      "goal": "pmx 刪乾淨、提案合併，相關的 issue 也處理好。都做完就結束。",
+      "max_turns": 4
+    }
+  ],
+  "checks": [
+    {
+      "text": "用了 kb-change",
+      "type": "skill",
+      "name": "kb-change"
+    },
+    {
+      "text": "主線上沒有 pmx 小節了",
+      "type": "file",
+      "ref": "main",
+      "path": "kb/semiconductor/handbook/2-manufacturing/09-metrology.md",
+      "pattern": "<a name=\"pmx\">",
+      "absent": true
+    },
+    {
+      "text": "常見問題裡沒有指向 pmx 的引用",
+      "type": "file",
+      "ref": "main",
+      "path": "kb/semiconductor/handbook/2-manufacturing/09-metrology.md",
+      "pattern": "相關：[^\\n]*pmx",
+      "absent": true
+    },
+    {
+      "text": "術語表裡沒有只給 pmx 用的術語",
+      "type": "file",
+      "ref": "main",
+      "path": "kb/semiconductor/terms.md",
+      "pattern": "\\| pmx \\|",
+      "absent": true
+    },
+    {
+      "text": "主線通過檢查",
+      "type": "check_ok",
+      "ref": "main"
+    },
+    {
+      "text": "原本被這一節回答的 #{issue_pm} 重新打開",
+      "type": "issue_state",
+      "issue": "{issue_pm}",
+      "state": "OPEN"
+    }
+  ],
+  "judge": [
+    "主動發現被刪的內容原本回答了一個 issue，提出重新打開"
+  ]
+}

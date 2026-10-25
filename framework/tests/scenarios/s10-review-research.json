@@ -1,0 +1,71 @@
+{
+  "id": "s10-review-research",
+  "role": "維護者",
+  "title": "審研究來的提案",
+  "local": {
+    "name": "lufor129",
+    "watch": [
+      "semiconductor"
+    ]
+  },
+  "setup": [
+    {
+      "branch": {
+        "name": "kb/semiconductor/euv-power",
+        "edits": [
+          {
+            "file": "kb/semiconductor/handbook/2-manufacturing/01-litho.md",
+            "before": "<a name=\"litho3m\"></a>",
+            "text": "EUV 光源的功率一直在提高：新一代機台的光源功率大約 500 W[^litho3-90]，下一代的目標是 1,000 W 以上。功率越高，同樣的曝光量需要的時間越短，產量就越高[^litho3-91]。\n\n[^litho3-90]: ASML，EUV lithography systems 產品頁，https://www.asml.com/en/products/euv-lithography-systems\n[^litho3-91]: 業界簡報（示意出處）\n\n"
+          }
+        ],
+        "run": [
+          "python3 framework/tools/check.py --fp semiconductor litho3"
+        ],
+        "commit": "半導體：litho3 補充 EUV 光源功率",
+        "pr": {
+          "var": "pr_r",
+          "title": "半導體製程：EUV 光源功率",
+          "labels": [
+            "kb:semiconductor",
+            "來歷:研究"
+          ],
+          "body": "🤖 由 Agent 產生\n\n## 改了什麼\n- 修改 `litho3`：補一段 EUV 光源功率。\n\n## 來歷\n研究\n\n## 影響\n- 簡報頁：litho3 對照過，沒有改。\n- 讀者測試：2/2 題答對。"
+        }
+      }
+    }
+  ],
+  "sessions": [
+    {
+      "first": "/kb-review {pr_r}",
+      "persona": "lufor129，半導體知識庫的維護者，也是框架維護者。看完整理後，如果 Agent 指出有問題，就決定退回，請 Agent 照它的建議整理成意見直接送出。",
+      "goal": "審 #{pr_r}；有問題就退回附意見。意見送出就結束。",
+      "max_turns": 3
+    }
+  ],
+  "checks": [
+    {
+      "text": "提案還開著（退回不是關掉）",
+      "type": "pr_state",
+      "pr": "{pr_r}",
+      "state": "OPEN"
+    },
+    {
+      "text": "送出要求修改",
+      "type": "pr_comment",
+      "pr": "{pr_r}",
+      "pattern": "要求修改|↩"
+    },
+    {
+      "text": "意見裡點出「1,000 W」沒有出處",
+      "type": "pr_comment",
+      "pr": "{pr_r}",
+      "pattern": "1,?000 ?W"
+    }
+  ],
+  "judge": [
+    "把研究來的說法一段一段列出來，每段附上出處",
+    "指出「下一代目標 1,000 W 以上」沒有出處",
+    "指出「業界簡報（示意出處）」不是可以查證的來源"
+  ]
+}

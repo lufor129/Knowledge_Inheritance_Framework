@@ -1,0 +1,40 @@
+{
+  "id": "s01-day1",
+  "role": "新人",
+  "title": "第一天",
+  "setup": [
+    {
+      "wait_release": true
+    }
+  ],
+  "sessions": [
+    {
+      "first": "我是小美，製程整合部的新人，主管叫我先熟悉半導體。打開半導體的簡報。",
+      "persona": "小美，製程整合部的新人，第一天上班，沒有半導體背景。",
+      "goal": "拿到半導體的簡報，知道從哪裡開始看。Agent 交代完就結束。",
+      "max_turns": 2
+    }
+  ],
+  "checks": [
+    {
+      "text": "用了 kb-learn",
+      "type": "skill",
+      "name": "kb-learn"
+    },
+    {
+      "text": "從 Git 主機下載最新的簡報",
+      "type": "ran",
+      "pattern": "gh release download.*semiconductor-deck|get\\.py.*semiconductor.*deck"
+    },
+    {
+      "text": "簡報檔真的下載到本機",
+      "type": "local_file",
+      "path": ".kif/downloads/semiconductor-deck.html",
+      "pattern": "<html"
+    }
+  ],
+  "judge": [
+    "告訴小美怎麼打開簡報，或已經幫小美打開",
+    "提醒先看全景圖和各章速覽，而且說對在哪裡看：全景圖和速覽在手冊網站首頁，簡報從議程開始"
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "s03-gap",
+  "role": "新人",
+  "title": "手冊沒寫",
+  "sessions": [
+    {
+      "first": "機台保養（PM）多久做一次？",
+      "persona": "小美，製程整合部的新人，第一天上班，沒有半導體背景。你想知道機台多久保養一次。Agent 問要不要記下來（記成待回答）時，說好。",
+      "goal": "把這個問題交給懂的人回答。issue 開好就結束。",
+      "max_turns": 3
+    }
+  ],
+  "checks": [
+    {
+      "text": "用了 kb-learn",
+      "type": "skill",
+      "name": "kb-learn"
+    },
+    {
+      "text": "開了待回答 issue，標籤是「待回答」和「kb:semiconductor」",
+      "type": "issue",
+      "labels": [
+        "待回答",
+        "kb:semiconductor"
+      ],
+      "title": "保養|PM"
+    },
+    {
+      "text": "issue 內文第一行標明「🤖 由 Agent 產生」",
+      "type": "issue",
+      "labels": [
+        "待回答"
+      ],
+      "body": "^🤖 由 Agent 產生"
+    },
+    {
+      "text": "開 issue 之前先查過有沒有重複",
+      "type": "ran_before",
+      "first": "gh issue list",
+      "then": "gh issue create"
+    }
+  ],
+  "judge": [
+    "明白說手冊沒有寫到保養週期，沒有用自己的知識回答多久保養一次",
+    "開 issue 前先問小美要不要記下來"
+  ]
+}

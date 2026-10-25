@@ -1,0 +1,91 @@
+{
+  "id": "s08-revise",
+  "role": "傳承者",
+  "title": "被要求修改",
+  "local": {
+    "name": "老王",
+    "watch": [
+      "semiconductor"
+    ],
+    "login": "laowang-test"
+  },
+  "setup": [
+    {
+      "branch": {
+        "name": "kb/semiconductor/high-na-weight",
+        "edits": [
+          {
+            "file": "kb/semiconductor/handbook/2-manufacturing/01-litho.md",
+            "before": "<a name=\"litho6\"></a>",
+            "text": "High-NA 機台很大，一台大約重 150 噸。\n\n"
+          }
+        ],
+        "run": [
+          "python3 framework/tools/check.py --fp semiconductor litho5"
+        ],
+        "commit": "半導體：litho5 補充 High-NA 機台重量",
+        "pr": {
+          "var": "pr_fix",
+          "title": "半導體製程：補充 High-NA 機台重量",
+          "labels": [
+            "kb:semiconductor",
+            "來歷:研究"
+          ],
+          "body": "🤖 由 Agent 產生\n\n## 改了什麼\n- 修改 `litho5`：加一句 High-NA 機台的重量。\n\n## 來歷\n研究\n\n## 影響\n- 簡報頁：litho5 對照過，沒有改。\n- 讀者測試：3/3 題答對。"
+        }
+      }
+    },
+    {
+      "comment": {
+        "pr": "pr_fix",
+        "body": "🤖 由 Agent 代 lufor129 發出\n\n↩ 要求修改\n\n1. `litho5` 新增的「一台大約重 150 噸」沒有出處。請補上出處註腳；找不到可靠的出處就刪掉這個數字。"
+      }
+    }
+  ],
+  "sessions": [
+    {
+      "first": "維護者在 #{pr_fix} 留了意見，照維護者的意見改。",
+      "persona": "老王，資深製程工程師，部門是製程整合。你不是半導體知識庫的維護者：Agent 問要不要合併時，請它交給維護者審。#{pr_fix} 是你提的變更提案。Agent 改完給你看時，合理就同意。",
+      "goal": "照維護者的意見把 #{pr_fix} 改好、推上去，並在提案上回覆。做完就結束。",
+      "max_turns": 3
+    }
+  ],
+  "checks": [
+    {
+      "text": "用了 kb-change",
+      "type": "skill",
+      "name": "kb-change"
+    },
+    {
+      "text": "改在同一個提案上（#{pr_fix} 多了 commit）",
+      "type": "pr_new_commits",
+      "pr": "{pr_fix}"
+    },
+    {
+      "text": "沒有另外開新的提案",
+      "type": "no_new_pr"
+    },
+    {
+      "text": "沒有留下沒附出處的「150 噸」",
+      "type": "file",
+      "ref": "pr:pr_fix",
+      "path": "kb/semiconductor/handbook/2-manufacturing/01-litho.md",
+      "pattern": "^(?!\\[\\^)[^\\n]*150 噸(?![^\\n]*\\[\\^)",
+      "absent": true
+    },
+    {
+      "text": "在提案上回覆（Agent 的留言）",
+      "type": "pr_comment",
+      "pr": "{pr_fix}",
+      "pattern": "🤖 由 Agent (產生|代 ?老王)"
+    },
+    {
+      "text": "提案通過檢查（check.py 沒有錯誤）",
+      "type": "check_ok",
+      "ref": "pr:pr_fix"
+    }
+  ],
+  "judge": [
+    "在提案上逐條說明每個意見怎麼處理"
+  ]
+}
