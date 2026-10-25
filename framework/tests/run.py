@@ -136,13 +136,15 @@ def run_case(case, args, work, run_dir):
         except Exception as e:  # 檢查本身出錯也記下來，不中斷
             ok, ev = False, f'檢查出錯：{e}'
         exps.append({'text': S.fill(c['text'], vars), 'passed': bool(ok), 'evidence': ev})
-    exps += G.judge(case.get('judge', []), md, state, vars, args.judge_model, work)
+    exps += G.judge(case.get('judge', []), md, G.state_md(state), vars, args.judge_model, work,
+                    G.context_md(clone, case.get('judge_context', [])))
     counts = {}
     for x in tr['tools']:
         counts[x['name']] = counts.get(x['name'], 0) + 1
     denials = sum(len(t['denials']) for t in turns if t['role'] == 'agent')
     sp = clone / '.claude/settings.json'
-    approvals = G.would_prompt(tr['tools'], json.loads(sp.read_text(encoding='utf-8')) if sp.exists() else {})
+    approvals = G.would_prompt(tr['tools'], json.loads(sp.read_text(encoding='utf-8')) if sp.exists() else {},
+                               G.skill_tools(clone), tr['user'])
     (out / 'tools.json').write_text(json.dumps(tr['tools'], ensure_ascii=False, indent=1), encoding='utf-8')
     (out / 'metrics.json').write_text(json.dumps({
         'tool_calls': counts, 'total_tool_calls': len(tr['tools']), 'total_steps': len(tr['agent']),

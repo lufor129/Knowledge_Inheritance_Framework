@@ -19,7 +19,7 @@
     {
       "text": "讀的是正式內容（主線上的手冊）",
       "type": "ran",
-      "pattern": "origin/main|framework/tools/(index|show)\\.py"
+      "pattern": "origin/main|framework/tools/read\\.py|index\\.py.*--main"
     },
     {
       "text": "回答附上出處小節 litho6",
@@ -30,5 +30,8 @@
   "judge": [
     "回答的內容都找得到手冊依據（微影章的 litho6、cmask），沒有加入手冊沒寫的說法",
     "最後列出出處，格式像「知識庫 › 章 › 小節 id」"
+  ],
+  "judge_context": [
+    "kb/semiconductor/handbook/2-manufacturing/01-litho.md"
   ]
 }

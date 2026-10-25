@@ -37,7 +37,11 @@ python3 framework/tests/run.py --ref main --config with_skill --iteration .kif/t
 
 ## 看結果
 
-skill-creator 的工具可以彙整和產生檢視頁面：
+`python3 framework/tests/report.py <iteration 資料夾> --ref old_skill=<舊版> --ref new_skill=<新版>`：每個情境、每一版的通過數、花費、時間、估計要按幾次「允許」，以及沒過的項目，寫進 `report.md`。
+
+改了評分標準或評分模型看到的資料，用 `rejudge.py` 拿跑完的對話重評，不用重跑 Agent（用法見檔案開頭）。
+
+skill-creator 的工具也可以彙整和產生檢視頁面：
 
 ```
 python3 -m scripts.aggregate_benchmark <iteration 資料夾> --skill-name kb-framework   # 在 skill-creator 資料夾裡執行
@@ -54,6 +58,7 @@ python3 <skill-creator>/eval-viewer/generate_review.py <iteration 資料夾> --s
 | `local` | 寫進 `.kif/local.json` 的使用者偏好（扮演哪個人的電腦） |
 | `sessions` | 一段或多段對話：`first` 第一句話、`persona` 人物設定、`goal` 想完成的事、`max_turns`、`after: newest_pr`（把最新的提案編號存成 `{pr_new}`） |
 | `checks` | 程式檢查，種類見 grade.py 的 `check()` |
-| `judge` | 交給評分模型的標準 |
+| `judge` | 交給評分模型的標準。評分模型看得到對話、測試 repo 的 issue 和提案（含 diff） |
+| `judge_context` | 評分時附上的手冊原文（正式內容的檔案路徑），用來對照「回答有沒有手冊依據」 |
 
 `{issue_pm}` 這類寫法會換成前置步驟產生的編號。

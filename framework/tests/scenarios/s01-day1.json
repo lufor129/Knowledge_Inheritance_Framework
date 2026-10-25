@@ -24,7 +24,7 @@
     {
       "text": "從 Git 主機下載最新的簡報",
       "type": "ran",
-      "pattern": "gh release download.*semiconductor-deck"
+      "pattern": "gh release download.*semiconductor-deck|get\\.py.*semiconductor.*deck"
     },
     {
       "text": "簡報檔真的下載到本機",

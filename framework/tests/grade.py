@@ -33,7 +33,16 @@ def collect(clone, start, before):
     for x in issues + prs:
         x['labels'] = [l['name'] for l in x.get('labels', [])]
         x['new'] = x['number'] > before
+    for x in prs:
+        x['diff'] = pr_diff(x['number'])
     return {'issues': issues, 'prs': prs}
+
+
+def pr_diff(n, limit=20000):
+    """提案改了什麼（評分模型要看內容才判斷得了出處）；太長就截斷。關掉的提案也讀得到。"""
+    d = S.gh('pr', 'diff', str(n), check=False)
+    return d if len(d) <= limit else d[:limit] + f'\n…（後面還有 {len(d) - limit} 字，截斷）'
+
 
 
 def state_md(state):
@@ -49,6 +58,11 @@ def state_md(state):
             out += ['', (x.get('body') or '').strip(), '']
             for c in x.get('comments', []):
                 out += [f'> 留言：{c["body"].strip()[:1500]}', '']
+            for r in x.get('reviews', []):
+                if (r.get('body') or '').strip():
+                    out += [f'> 審查（{r.get("state", "")}）：{r["body"].strip()[:1500]}', '']
+            if x.get('diff'):
+                out += ['改了什麼（diff）：', '', '```diff', x['diff'].rstrip(), '```', '']
     return '\n'.join(out)
 
 
@@ -171,10 +185,18 @@ READ_ONLY = ('ls', 'cat', 'head', 'tail', 'wc', 'grep', 'rg', 'find', 'pwd', 'ec
              'git ls-files')
 
 
-def _rules(settings):
-    allow = settings.get('permissions', {}).get('allow', []) if settings else []
+def _rules(allow):
     bash = [r[5:-1] for r in allow if r.startswith('Bash(') and r.endswith(')')]
-    return [(b[:-2].rstrip(), True) if b.endswith(':*') else (b, False) for b in bash], allow
+    return [(b[:-2].rstrip(), True) if b.endswith(':*') else (b, False) for b in bash]
+
+
+def skill_tools(clone):
+    """每個 skill 的 allowed-tools：用到那個 skill 之後，這些就不用再問。"""
+    out = {}
+    for f in (clone / '.claude/skills').glob('*/SKILL.md'):
+        m = re.search(r'^allowed-tools:\s*(.+)$', f.read_text(encoding='utf-8'), re.M)
+        out[f.parent.name] = re.findall(r'[A-Za-z]+(?:\([^)]*\))?', m.group(1)) if m else []
+    return out
 
 
 def _covered(part, rules):
@@ -184,19 +206,58 @@ def _covered(part, rules):
     return any(part == r or part.startswith(r + ' ') for r in READ_ONLY)
 
 
-def would_prompt(tools, settings):
-    """照被測版本的 .claude/settings.json，估計同仁會被問幾次。
+def command_parts(cmd):
+    """一個 Bash 指令拆成各段（照 &&、||、;、|、換行），引號裡的不拆，heredoc 的內容不算。"""
+    import shlex
+    lines, keep, end = cmd.splitlines(), [], None
+    for l in lines:
+        if end is not None:
+            if l.strip() == end:
+                end = None
+            continue
+        m = re.search(r"<<-?\s*['\"]?(\w+)['\"]?", l)
+        if m:
+            end = m.group(1)
+        keep.append(re.sub(r'\d*>&\d+', '', l))  # 2>&1 這類轉向不是指令
+    lex = shlex.shlex(' ; '.join(keep), posix=True, punctuation_chars=';&|')
+    lex.whitespace_split = True
+    parts, cur = [], []
+    try:
+        for tok in lex:
+            if tok in (';', '&&', '||', '|', '&', ';;'):
+                if cur:
+                    parts.append(' '.join(cur))
+                cur = []
+            else:
+                cur.append(tok)
+    except ValueError:  # 引號沒配對：退回整段
+        return [cmd.strip()]
+    if cur:
+        parts.append(' '.join(cur))
+    return parts
+
+
+def would_prompt(tools, settings, skills=None, user_msgs=()):
+    """照被測版本的 .claude/settings.json 和 skill 的 allowed-tools，估計同仁會被問幾次。
 
     一個 Bash 指令用 &&、||、;、| 拆開，每段都要被允許（Claude Code 的做法）；
     同一種指令（前三個字）同仁按過「不再詢問」就不會再問，所以也算不重複的種類數。
     """
-    import shlex
-    rules, allow = _rules(settings)
+    skills = skills or {}
+    allow = list(settings.get('permissions', {}).get('allow', []) if settings else [])
+    for m in user_msgs:  # 使用者直接輸入 /kb-review 這類指令
+        for name, extra in skills.items():
+            if m.strip().startswith('/' + name):
+                allow += extra
+    rules = _rules(allow)
     asks, kinds = 0, set()
     for t in tools:
+        if t['name'] == 'Skill':
+            allow += skills.get(t['input'].get('skill', ''), [])
+            rules = _rules(allow)
+            continue
         if t['name'] == 'Bash':
-            parts = [p.strip() for p in re.split(r'&&|\|\||;|\|', t['input'].get('command', '')) if p.strip()]
-            parts = [re.sub(r'^(\w+=\S+\s+)+', '', p) for p in parts]  # 開頭的環境變數
+            parts = [re.sub(r'^(\w+=\S+\s+)+', '', p) for p in command_parts(t['input'].get('command', ''))]  # 去掉開頭的環境變數
             miss = [p for p in parts if not _covered(p, rules)]
         elif t['name'] in ('WebFetch', 'WebSearch'):
             miss = [] if t['name'] in allow or any(r.startswith(t['name'] + '(') for r in allow) else [t['name']]
@@ -205,23 +266,30 @@ def would_prompt(tools, settings):
         if miss:
             asks += 1
             for p in miss:
-                try:
-                    words = shlex.split(p)[:3]
-                except ValueError:
-                    words = p.split()[:3]
-                kinds.add(' '.join(words))
+                kinds.add(' '.join(p.split()[:3]))
     return {'tool_calls_needing_approval': asks, 'distinct_commands_needing_approval': len(kinds),
             'examples': sorted(kinds)[:30]}
 
 
 # ---------- 評分模型 ----------
 
-def judge(criteria, transcript_md, state, vars, model, work):
+def context_md(clone, paths):
+    """情境指定的手冊原文（正式內容），讓評分模型對照 Agent 的回答。"""
+    out = []
+    for path in paths:
+        text = _show(clone, 'origin/main', path)
+        if text:
+            out += [f'### {path}', '', text.rstrip(), '']
+    return '\n'.join(out) or '（沒有指定）'
+
+
+def judge(criteria, transcript_md, state_text, vars, model, work, context='（沒有指定）'):
+    """state_text 是 state_md() 的結果；context 是 context_md() 的結果。"""
     if not criteria:
         return []
     items = '\n'.join(f'{i + 1}. {S.fill(c, vars)}' for i, c in enumerate(criteria))
     prompt = (PROMPTS / 'judge.md').read_text(encoding='utf-8').replace('{criteria}', items) \
-        .replace('{transcript}', transcript_md).replace('{state}', state_md(state))
+        .replace('{transcript}', transcript_md).replace('{state}', state_text).replace('{context}', context)
     out = ask(prompt, model, work)
     m = re.search(r'\[\s*\{.*\}\s*\]', out, re.S)
     try:
