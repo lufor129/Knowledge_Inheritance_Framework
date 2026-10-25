@@ -7,6 +7,7 @@
 1. **挑一個知識庫**：在下面的清單下載手冊網站或簡報。兩個都是單一 HTML 檔，離線就能打開。先看全景圖和各章速覽，再進細節。
 2. **想問問題、想補充知識**：
    1. 安裝 [Claude Code](https://claude.com/claude-code) 和 [GitHub CLI](https://cli.github.com/)，登入：`gh auth login`
+      - 模型：Sonnet 和 Opus 都用情境測試（framework/tests/）測過，結果差不多；Sonnet 的花費大約是 Opus 的三分之一，日常用 Sonnet 就夠。
    2. `gh repo clone lufor129/Knowledge_Inheritance_Framework`，在資料夾裡打開 Claude Code
    3. 直接用中文說，例如：
       - 「OPC 是什麼？跟光罩有什麼關係？」
