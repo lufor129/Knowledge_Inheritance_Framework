@@ -9,6 +9,7 @@
       "Bash(python3 framework/tools/get.py:*)",
       "Bash(python3 framework/tools/reader_test.py:*)",
       "Bash(python3 framework/tools/proposal.py:*)",
+      "Bash(mkdir:*)",
       "Bash(git fetch:*)",
       "Bash(git switch:*)",
       "Bash(git add:*)",
