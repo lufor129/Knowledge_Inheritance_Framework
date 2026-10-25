@@ -1,0 +1,60 @@
+{
+  "id": "s12-newkb",
+  "role": "框架維護者",
+  "title": "核准新知識庫",
+  "sessions": [
+    {
+      "first": "/kb-new 我想開一個 MLOps（機器學習模型上線與維運）的知識庫。",
+      "persona": "lufor129，想開 MLOps 知識庫的發起人，也是框架維護者。Agent 訪談時，建議答案大致同意；部分和章精簡成三個部分（基礎、上線、維運），每個部分兩三章；維護者是自己（GitHub: lufor129）；英文短名 mlops；目前沒有現成資料。",
+      "goal": "建好 MLOps 知識庫的骨架並開成變更提案。提案開好就結束。",
+      "max_turns": 4,
+      "after": "newest_pr"
+    },
+    {
+      "first": "/kb-review {pr_new}",
+      "persona": "lufor129，半導體知識庫的維護者，也是框架維護者。看完整理後沒有問題就核准、合併。",
+      "goal": "審完骨架提案，核准並合併。合併好就結束。",
+      "max_turns": 3
+    }
+  ],
+  "checks": [
+    {
+      "text": "用了 kb-new",
+      "type": "skill",
+      "name": "kb-new"
+    },
+    {
+      "text": "骨架提案已合併",
+      "type": "pr_state",
+      "pr": "{pr_new}",
+      "state": "MERGED"
+    },
+    {
+      "text": "主線上有 kb/mlops/README.md，寫了維護者",
+      "type": "file",
+      "ref": "main",
+      "path": "kb/mlops/README.md",
+      "pattern": "維護者"
+    },
+    {
+      "text": "首頁的知識庫清單多了 mlops",
+      "type": "file",
+      "ref": "main",
+      "path": "README.md",
+      "pattern": "kb/mlops"
+    },
+    {
+      "text": "建了 kb:mlops 標籤",
+      "type": "ran",
+      "pattern": "gh label create.*kb:mlops"
+    },
+    {
+      "text": "主線通過檢查",
+      "type": "check_ok",
+      "ref": "main"
+    }
+  ],
+  "judge": [
+    "訪談一輪問完領域、讀者、部分和章、維護者、現有資料、英文短名，每題附建議答案"
+  ]
+}

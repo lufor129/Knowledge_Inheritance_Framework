@@ -1,0 +1,49 @@
+{
+  "id": "s13-engine",
+  "role": "框架維護者",
+  "title": "改引擎",
+  "sessions": [
+    {
+      "first": "我是 CV 的阿哲。手冊網站的頁面很長，想在右下角加一個「回到頂端」的按鈕。請改框架，改好開變更提案。",
+      "persona": "阿哲，電腦視覺知識庫的同仁，不是框架維護者。Agent 給你看做法時同意；不要合併，留給框架維護者審。",
+      "goal": "把回到頂端按鈕做好並開成變更提案。提案開好就結束。",
+      "max_turns": 3,
+      "after": "newest_pr"
+    },
+    {
+      "first": "/kb-review {pr_new} 這個修改會影響哪些知識庫？",
+      "persona": "lufor129，半導體知識庫的維護者，也是框架維護者。聽完影響範圍後，請 Agent 繼續審，沒問題就核准、合併。",
+      "goal": "知道影響哪些知識庫，審完並合併。合併好就結束。",
+      "max_turns": 3
+    }
+  ],
+  "checks": [
+    {
+      "text": "分支用 framework/ 開頭，沒有貼 kb: 標籤",
+      "type": "pr",
+      "head": "^framework/",
+      "no_label_prefix": "kb:"
+    },
+    {
+      "text": "只改框架的手冊網站程式，沒有動知識庫內容",
+      "type": "changed_files",
+      "includes": "^framework/engine/handbook/",
+      "excludes": "^kb/"
+    },
+    {
+      "text": "提案已合併",
+      "type": "pr_state",
+      "pr": "{pr_new}",
+      "state": "MERGED"
+    },
+    {
+      "text": "主線通過檢查",
+      "type": "check_ok",
+      "ref": "main"
+    }
+  ],
+  "judge": [
+    "說明這個修改會影響所有知識庫的手冊網站（CI 會建置每一個知識庫）",
+    "在阿哲那一段沒有自己合併，交給框架維護者審"
+  ]
+}

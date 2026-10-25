@@ -1,0 +1,78 @@
+{
+  "id": "s06-answer",
+  "role": "傳承者",
+  "title": "回答待回答（訪談）",
+  "setup": [
+    {
+      "issue": {
+        "var": "issue_pm",
+        "title": "機台保養（PM）多久做一次？",
+        "labels": [
+          "待回答",
+          "kb:semiconductor"
+        ],
+        "body": "🤖 由 Agent 產生\n\n## 問題\n機台保養（PM）多久做一次？\n\n## 新人當時在讀哪一章\n檢測量測（猜的）\n\n## 誰問的\n小美"
+      }
+    }
+  ],
+  "local": {
+    "name": "老王",
+    "watch": [
+      "semiconductor"
+    ]
+  },
+  "sessions": [
+    {
+      "first": "我是老王（製程整合）。我來回答 #{issue_pm}。",
+      "persona": "老王，資深製程工程師，部門是製程整合。你不是半導體知識庫的維護者：Agent 問要不要合併時，請它交給維護者審。你對機台保養的經驗如下，被問到才說：\n- 保養分點檢（每天或每班）、定期保養 PM、季或年的大保養（會換零件）、出警報時的臨時保養。新人說的 PM 通常指定期保養。\n- 週期多半照用量算：蝕刻和 CVD 看 RF 運轉時數；CMP 看研磨墊、研磨頭磨了幾片；曝光機主要是定期校正。天數只是保底。\n- 你們廠的經驗，各廠不同：蝕刻機台濕式清腔大約每幾百到一千多 RF 小時一次，約兩到四週；CMP 研磨墊大約磨幾百到一千多片就換。確切數字照廠內規範。\n- 保養完要復機：跑微粒、蝕刻率或膜厚、均勻度的測試片，通常幾小時到一天。\n- PM 剛做完的前幾批，APC 要重新抓基準，所以 PM 會在管制圖上標成事件。\nAgent 給你看草稿時，內容和你說的一致就同意。",
+      "goal": "用訪談把 #{issue_pm} 的答案寫進手冊，草稿確認後開成變更提案。提案開好就結束。",
+      "max_turns": 6
+    }
+  ],
+  "checks": [
+    {
+      "text": "用了 kb-add",
+      "type": "skill",
+      "name": "kb-add"
+    },
+    {
+      "text": "認領：把 #{issue_pm} 指派給自己",
+      "type": "ran",
+      "pattern": "gh issue edit.*{issue_pm}.*--add-assignee|--add-assignee.*{issue_pm}"
+    },
+    {
+      "text": "開了變更提案，標籤是 kb:semiconductor 和 來歷:訪談，說明寫 Closes #{issue_pm}",
+      "type": "pr",
+      "labels": [
+        "kb:semiconductor",
+        "來歷:訪談"
+      ],
+      "body": "(?i)closes #{issue_pm}"
+    },
+    {
+      "text": "提案留給維護者審，沒有自己合併",
+      "type": "pr",
+      "labels": [
+        "來歷:訪談"
+      ],
+      "state": "OPEN"
+    },
+    {
+      "text": "提案裡的手冊寫了口述的出處",
+      "type": "file",
+      "ref": "pr:new",
+      "path": "kb/semiconductor/handbook/2-manufacturing/09-metrology.md",
+      "pattern": "口述"
+    },
+    {
+      "text": "提案通過檢查（check.py 沒有錯誤）",
+      "type": "check_ok",
+      "ref": "pr:new"
+    }
+  ],
+  "judge": [
+    "訪談時一輪問好幾題，每題附上 Agent 的猜測",
+    "開提案前先把草稿給老王看，得到同意",
+    "提案說明寫了讀者測試的結果"
+  ]
+}

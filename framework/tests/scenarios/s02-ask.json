@@ -1,0 +1,34 @@
+{
+  "id": "s02-ask",
+  "role": "新人",
+  "title": "看不懂",
+  "sessions": [
+    {
+      "first": "OPC 是什麼？跟光罩有什麼關係？",
+      "persona": "小美，製程整合部的新人，第一天上班，沒有半導體背景。",
+      "goal": "弄懂 OPC 和光罩的關係。拿到回答就結束。",
+      "max_turns": 2
+    }
+  ],
+  "checks": [
+    {
+      "text": "用了 kb-learn",
+      "type": "skill",
+      "name": "kb-learn"
+    },
+    {
+      "text": "讀的是正式內容（主線上的手冊）",
+      "type": "ran",
+      "pattern": "origin/main|framework/tools/(index|show)\\.py"
+    },
+    {
+      "text": "回答附上出處小節 litho6",
+      "type": "reply",
+      "pattern": "litho6"
+    }
+  ],
+  "judge": [
+    "回答的內容都找得到手冊依據（微影章的 litho6、cmask），沒有加入手冊沒寫的說法",
+    "最後列出出處，格式像「知識庫 › 章 › 小節 id」"
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "id": "s07-research",
+  "role": "傳承者",
+  "title": "研究新主題",
+  "local": {
+    "name": "老王",
+    "watch": [
+      "semiconductor"
+    ]
+  },
+  "sessions": [
+    {
+      "first": "主管希望大家了解 EUV 光罩的護膜（pellicle）。幫我研究一下，放進微影那章。",
+      "persona": "老王，資深製程工程師，部門是製程整合。你不是半導體知識庫的維護者：Agent 問要不要合併時，請它交給維護者審。你對護膜沒有特別的資料，請 Agent 自己研究。草稿給你看時，有附出處就同意。",
+      "goal": "把護膜的研究寫進微影那章並開成變更提案。提案開好就結束。",
+      "max_turns": 4
+    }
+  ],
+  "checks": [
+    {
+      "text": "用了 kb-add 或 kb-change",
+      "type": "skill",
+      "names": [
+        "kb-add",
+        "kb-change"
+      ]
+    },
+    {
+      "text": "開了變更提案，標籤是 kb:semiconductor 和 來歷:研究",
+      "type": "pr",
+      "labels": [
+        "kb:semiconductor",
+        "來歷:研究"
+      ]
+    },
+    {
+      "text": "提案留給維護者審，沒有自己合併",
+      "type": "pr",
+      "labels": [
+        "來歷:研究"
+      ],
+      "state": "OPEN"
+    },
+    {
+      "text": "改的是微影那章",
+      "type": "changed_files",
+      "includes": "01-litho\\.md"
+    },
+    {
+      "text": "新內容有附網址的出處註腳",
+      "type": "file",
+      "ref": "pr:new",
+      "path": "kb/semiconductor/handbook/2-manufacturing/01-litho.md",
+      "pattern": "(?i)\\[\\^[^\\]]+\\]:[^\\n]*(pellicle|護膜)[^\\n]*https?://|\\[\\^[^\\]]+\\]:[^\\n]*https?://[^\\n]*(pellicle|護膜)"
+    },
+    {
+      "text": "提案通過檢查（check.py 沒有錯誤）",
+      "type": "check_ok",
+      "ref": "pr:new"
+    }
+  ],
+  "judge": [
+    "新寫的數字都有出處註腳，出處是原廠文件、論文，或明確標示是報導",
+    "開提案前先給老王看草稿，得到同意",
+    "提案說明分清楚哪些出處是第一手、哪些是報導"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "id": "s05-start",
+  "role": "傳承者",
+  "title": "開工",
+  "setup": [
+    {
+      "issue": {
+        "var": "issue_pm",
+        "title": "機台保養（PM）多久做一次？",
+        "labels": [
+          "待回答",
+          "kb:semiconductor"
+        ],
+        "body": "🤖 由 Agent 產生\n\n## 問題\n機台保養（PM）多久做一次？\n\n## 新人當時在讀哪一章\n檢測量測（猜的）\n\n## 誰問的\n小美"
+      }
+    },
+    {
+      "issue": {
+        "var": "issue_err",
+        "title": "hk3：二氧化鉿傳電場的能力是 4–6 倍還是約 5 倍？",
+        "labels": [
+          "勘誤",
+          "kb:semiconductor"
+        ],
+        "body": "🤖 由 Agent 產生\n\n## 小節\nhk3\n\n## 原文\n它傳遞電場的能力約是二氧化矽的 4–6 倍。\n\n## 為什麼覺得不對\n手冊這句沒有出處；部門講義寫「約 5 倍」。\n\n## 誰回報的\n小美"
+      }
+    }
+  ],
+  "sessions": [
+    {
+      "first": "我是老王，資深製程工程師。有什麼待回答是我可以回答的？",
+      "persona": "老王，資深製程工程師，部門是製程整合。你不是半導體知識庫的維護者：Agent 問要不要合併時，請它交給維護者審。你關心半導體知識庫。這次只想看看有哪些題目，還不打算認領。",
+      "goal": "看到有哪些題目可以回答。看到清單就結束。",
+      "max_turns": 2
+    }
+  ],
+  "checks": [
+    {
+      "text": "用了 kb-add",
+      "type": "skill",
+      "name": "kb-add"
+    },
+    {
+      "text": "列出待回答 #{issue_pm}",
+      "type": "reply",
+      "pattern": "#{issue_pm}"
+    },
+    {
+      "text": "列出勘誤 #{issue_err}",
+      "type": "reply",
+      "pattern": "#{issue_err}"
+    },
+    {
+      "text": "把老王關心的知識庫記在本機",
+      "type": "local_file",
+      "path": ".kif/local.json",
+      "pattern": "semiconductor"
+    }
+  ],
+  "judge": [
+    "清單裡每個 issue 都有編號、題目、種類（待回答或勘誤）和有沒有人認領",
+    "說明怎麼認領，例如說「我來回答 #編號」"
+  ]
+}
