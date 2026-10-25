@@ -282,7 +282,7 @@ def changed_pages(kb):
     """這個分支新增或改過的 Markdown 簡報頁 id；判斷不了（沒有 Git、找不到起點）時是 None。"""
     try:
         old = K.base_kb(kb.name, fetch=False)
-    except (SystemExit, Exception):  # noqa: B902 手動模式、沒有遠端：判斷不了就不擋
+    except (SystemExit, Exception):  # 手動模式、沒有遠端、找不到起點：判斷不了就不擋
         return None
     od = K.load_deck(old).md_pages if old and old.has_deck else {}
     return {i for i, p in K.load_deck(kb).md_pages.items() if i not in od or od[i].fp != p.fp}
