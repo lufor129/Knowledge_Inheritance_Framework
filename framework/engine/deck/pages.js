@@ -1,6 +1,8 @@
 /* Markdown 寫的簡報頁，和自動產生的頁（章末自我檢查、出處）。
    建置時把 deck/<部分>/<章>.md 轉成 window.DECK_MD；互動圖用 Fig.add(名稱, { render(頁) -> html, init(el, ctx, 頁), meters, layout, side }) 註冊。
-   版面跟程式頁一樣：左邊是「圖：」指定的互動圖、圖片或影片；右邊依序是重點、數字卡、比喻卡。 */
+   版面跟程式頁一樣：左邊是「圖：」指定的互動圖、圖片或影片；右邊依序是重點、數字卡、比喻卡。
+   版面特別的頁，互動圖寫 body: true，render 回傳整個內容區，右欄用 U.pageSide({ top, meters, extra }) 放這一頁的文字；
+   raw: true 連標題都自己畫。cls、eyebrow、back、hub、hubShort、footL 這些頁面設定也可以寫在互動圖裡。 */
 (function () {
   const CFG = window.DECK_CONFIG || {};
   const CIRC = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳';
@@ -18,6 +20,15 @@
     render: () => `<div class="fig grow"><div class="fig-title"><span>找不到互動圖</span></div><p class="caption">「圖：${esc(p.fig || '（沒寫）')}」沒有註冊。互動圖寫在 deck/figures/*.js，用 Fig.add('${esc(p.fig)}', …) 註冊。</p></div>`
   });
   const figFor = p => p.figKind === 'name' ? Fig.list[p.fig] || missing(p) : p.figKind ? media(p) : missing(p);
+  const PASS = ['raw', 'cls', 'eyebrow', 'back', 'hub', 'hubShort', 'footL'];
+
+  /* 這一頁 Markdown 的重點、數字卡、比喻卡，加上互動圖自己的東西（top、meters、extra），排成右欄 */
+  const sideOf = (p, extra) => U.side(Object.assign({
+    points: p.points.length ? p.points : null,
+    fact: p.fact ? { v: p.fact[0], d: p.fact[1] } : null,
+    analogy: p.analogy ? { icon: p.analogy[0], t: p.analogy[2] || '比喻', p: p.analogy[1] } : null
+  }, extra || {}));
+  U.pageSide = extra => { const s = Deck.slides[Deck.cur]; return s && s.md ? sideOf(s.md, extra) : U.side(extra || {}); };
 
   /* 頁首的小字：章裡的頁寫「第二部分 · ⑤ 閘極」，部分的開場直接寫部分名稱 */
   function eyebrow(p) {
@@ -30,19 +41,18 @@
   Deck.addMarkdown = function (list) {
     (list || []).forEach(p => {
       const f = figFor(p);
-      Deck.add({
+      const s = {
         id: p.id, part: p.part, chap: p.chap || undefined, minutes: p.minutes, short: p.short, title: p.title, en: p.en,
-        thesis: p.thesis, notes: p.notes, eyebrow: eyebrow(p), md: p,
-        render: () => {
-          const side = f.side === false ? '' : U.side({
-            points: p.points.length ? p.points : null, meters: f.meters,
-            fact: p.fact ? { v: p.fact[0], d: p.fact[1] } : null,
-            analogy: p.analogy ? { icon: p.analogy[0], t: '比喻', p: p.analogy[1] } : null
-          });
-          return `<div class="s-body ${f.layout || ''}"><div class="col">${f.render ? f.render(p) : ''}</div>${side}</div>`;
+        thesis: p.thesis, notes: p.notes, badge: p.badge || undefined, src: p.src || undefined, eyebrow: eyebrow(p), md: p,
+        render: i => {
+          if (f.body || f.raw) return f.render(p, i);
+          const side = f.side === false ? '' : sideOf(p, { meters: f.meters });
+          return `<div class="s-body ${f.layout || ''}"><div class="col">${f.render ? f.render(p, i) : ''}</div>${side}</div>`;
         },
         init: f.init ? (el, ctx) => f.init(el, ctx, p) : null
-      });
+      };
+      PASS.forEach(k => { if (f[k] !== undefined) s[k] = f[k]; });
+      Deck.add(s);
     });
   };
 

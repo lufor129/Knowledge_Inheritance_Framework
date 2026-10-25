@@ -1,13 +1,10 @@
-/* 附錄：Q&A（資料在 js/qa-data.js，由 gen-qa.py 產生） */
+/* 附錄：Q&A（題目是各章 Markdown 的「## 自我檢查」，建置時整理成 window.QA） */
 (function () {
   const QA = window.QA || [];
   const total = QA.reduce((a, g) => a + g.items.length, 0);
   // 跳去別頁再按 B 回來時，還原主題、搜尋字、展開的題目和捲動位置
   const st = { sel: -1, q: '', open: new Set(), scroll: 0 };
-  Deck.add({
-    id: 'qa', part: 9, minutes: 0, short: '附錄：Q&A',
-    title: '附錄：現場可能被問的問題', en: 'Q&A',
-    thesis: `共 ${total} 題。左邊選主題或搜尋，<b>點問題看建議回答</b>；按「→ 第幾頁」跳去相關投影片，看完按 <b>B</b> 回到這裡。`,
+  Fig.add('qa', { body: true,
     render: () => `<div class="s-body" style="grid-template-columns:300px 1fr">
       <div class="col" style="min-height:0;gap:10px">
         <input id="qa-s" type="search" placeholder="搜尋關鍵字，例如 EUV、良率" autocomplete="off"
@@ -53,7 +50,6 @@
       list.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && e.target.tagName === 'SUMMARY') e.stopPropagation(); });
       draw();
       list.scrollTop = st.scroll;
-    },
-    notes: `附錄：問答時用。左邊可以選主題或直接搜尋關鍵字，點問題就會展開建議回答；需要畫面輔助時，按「→ 第幾頁」跳過去講，講完按 B 鍵回到這一頁。題目和 docs/qa-by-topic.md 同步。`
+    }
   });
 })();

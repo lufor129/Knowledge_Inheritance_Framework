@@ -1,6 +1,5 @@
 /* 第二部分 ③ 薄膜沉積：鋪上新材料 */
 (function () {
-  const A = Deck.add.bind(Deck);
   const F = { chap: 3, eyebrow: '第二部分 · ③ 薄膜沉積' };
 
   /* 1. PVD / CVD / ALD 在溝槽裡的覆蓋 */
@@ -9,17 +8,12 @@
     { n: 'CVD 化學氣相沉積', s: '起霧', top: 1, side: 0.65, bot: 0.75, over: 0.25, d: '通入氣體，在表面起化學反應長成薄膜，像霧氣凝結。' },
     { n: 'ALD 原子層沉積', s: '一層層刷', top: 1, side: 1, bot: 1, over: 0, d: '一輪只長固定的一薄層（約 0.1 nm），任何角落都一樣厚。' }
   ];
-  A(Object.assign({
-    id: 'depo1', part: 2, minutes: 1.2, short: '沉積：三種鋪膜方式',
-    title: '沉積：鋪一層新材料，難在每個角落一樣厚', en: 'Deposition: PVD · CVD · ALD',
-    thesis: '同一個溝槽，用三種方法鋪膜。溝越深越窄，<b>只有一層一層長的 ALD 能完美覆蓋</b>。',
+  Fig.add('depo1', Object.assign({ body: true,
     render: () => `<div class="s-body">
       <div class="col"><div class="controls">${U.seg('d1-m', METH.map(m => m.n), 0)}</div>${U.figHTML('d1-cv', '溝槽剖面：黃色是鋪上去的薄膜', '')}</div>
-      ${U.side({
+      ${U.pageSide({
         top: `<div class="card key"><h4 id="d1-s"></h4><p id="d1-d" style="font-size:20px;margin:0"></p></div>`,
-        meters: [['d1-m1', '側壁覆蓋'], ['d1-m2', '速度']],
-        points: ['PVD 快，但側壁很薄、開口容易被堵住', 'CVD 比較均勻', 'ALD 最均勻，但最慢'],
-        analogy: { icon: 'paint', t: '比喻', p: '幫深杯子內壁上漆：噴漆（PVD）杯底噴不到；起霧（CVD）比較均勻；一層層刷（ALD）才每處都一樣厚。' }
+        meters: [['d1-m1', '側壁覆蓋'], ['d1-m2', '速度']]
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#d1-cv'));
@@ -48,14 +42,7 @@
           else if (i < 24) { const k = i / 24; const ph = (t * 0.5) % 1; U.dot(c, cx - W / 2 + 6 + k * (W - 12), top + 10 + ph * (bot - top - 80), 3, 'rgba(201,150,40,.85)'); }
         });
       });
-    },
-    notes: `沉積就是在晶圓上鋪一層新材料。難的不是鋪，而是讓每個角落都一樣厚，尤其是在又深又窄的溝槽裡。
-
-先看 PVD 物理氣相沉積，像噴漆，原子由上往下飛。溝槽上面很厚，側壁很薄，開口邊緣還會長出一圈，最後把開口堵住，裡面留下空洞，這是很嚴重的缺陷。
-
-切到 CVD 化學氣相沉積，像霧氣凝結，氣體可以跑進溝裡，所以均勻很多。
-
-切到 ALD 原子層沉積，一輪只長固定的一薄層，任何角落都一樣厚。缺點是非常慢。先進製程的關鍵薄膜，例如閘極的絕緣層，都必須用 ALD。下一頁就來看 ALD 怎麼做到一層一層長。`
+    }
   }, F));
 
   /* 2. ALD 循環 */
@@ -72,49 +59,26 @@
     U.txt(c, txt, w / 2, h - 18, { align: 'center', size: 19, w: 700, color: '#17202b' });
     U.tag(c, `已長 ${layers} 層`, 30, 30, { size: 15, color: '#6b3fb0' });
   }
-  A(Object.assign({
-    id: 'depo2', part: 2, minutes: 2.7, short: 'ALD 一層一層長',
-    title: 'ALD：像刷油漆一樣，一次只刷固定的一薄層', en: 'Atomic Layer Deposition',
-    thesis: 'A 氣體黏滿表面就自動停止，不會多黏。<b>每輪長的厚度固定（約 0.1 奈米），數輪數就知道多厚</b>。',
+  Fig.add('depo2', Object.assign({ body: true,
     render: () => `<div class="s-body w66">
       <div class="col">${U.figHTML('d2-cv', '表面放大（剖面）', '')}${U.stepperHTML('d2-st')}</div>
-      ${U.side({
-        points: ['「黏滿就停」是 ALD 的精髓', '所以再深的洞、再複雜的形狀都一樣厚', '閘極裡最關鍵的絕緣膜就是這樣長的', '👁 0.1 nm 怎麼確認？長幾十輪量總厚度再除以輪數（第九章）'],
-        fact: { v: '約 15 輪', d: '長出閘極裡 1.5 nm 的絕緣膜（⑤ 閘極章會講）大約需要的循環次數' },
-        analogy: { icon: 'paint', t: '比喻', p: '刷油漆：刷一層、等乾、再刷一層。每層厚度固定，數一數刷幾次就知道多厚。' }
+      ${U.pageSide({
+        
       })}</div>`,
     init(el, ctx) {
       // 起點是乾淨的表面（0 層），跑完一輪第 5 步才變成 1 層
       const D = ['乾淨的表面，還沒有任何薄膜。', '氣體 A（前驅物，例如 TMA、四氯化鉿 HfCl₄）每個位置只黏一顆，黏滿就自動停止。', '把沒黏上的 A 吹走。', '氣體 B（例如水、臭氧、氨氣）和表面的 A 反應，變成一整層薄膜。', '再清洗一次：完成一輪（圖上畫成一整層）。重複幾輪，就長多厚。'];
       const steps = ['起點', '氣體 A', '清洗', '氣體 B', '清洗'].map((t, i) => ({ t, d: D[i], draw: (c, w, h, p, tt) => ald(c, w, h, i, p, tt, i === 4 && p > .3 ? 1 : 0) }));
       U.animSteps(el, ctx, { canvas: 'd2-cv', stepper: 'd2-st', steps });
-    },
-    notes: `ALD 是先進製程最重要的沉積技術，我們一步一步看。
-
-畫面第一步是起點，按下一步開始。第二步通入氣體 A。它有個特性：每個表面位置只能黏一顆，黏滿了就自動停止，多的會彈走。第三步把多餘的 A 吹走。第四步通入氣體 B，和黏在表面的 A 反應，變成一整層薄膜。第五步再清洗一次，完成一層。
-
-氣體 A 叫前驅物，是含有目標金屬、外面包著一圈原子團的分子。教科書範例是長氧化鋁：A 用三甲基鋁，簡稱 TMA，B 用水。閘極的氧化鉿，A 可用四氯化鉿，B 用水或臭氧；氮化鈦則是四氯化鈦配氨氣。為什麼只黏一顆？表面上有一個個抓手，像氫氧基，A 只跟抓手反應；黏上去之後外圈的甲基或氯把表面蓋住，同種分子彼此不反應，所以後來的只會彈走。等 B 把這些原子團換掉、重新長出抓手，下一輪才接得上。
-
-因為「黏滿就停」，所以不管洞多深、形狀多複雜，每個地方長的厚度都一樣。實際上每一輪大約只長 0.1 奈米，比一層原子還薄，因為氣體分子本身很佔位置，表面黏不滿一整層。圖上為了好看畫成一整層。要多厚就數幾輪，厚度可以控制到 0.1 奈米。
-
-閘極裡那層 1.5 奈米的絕緣膜，也就是第五章會講的高介電材料，大約就是十五輪 ALD 長出來的。還記得蝕刻那一章的原子層蝕刻 ALE 嗎？它和 ALD 是同一個招式：一次只動固定的一薄層、做完自動停止，只是一個是加、一個是減。
-
-那 0.1 奈米是怎麼確認的？不是一輪一輪量，而是長幾十輪之後量總厚度，再除以輪數。通常在沒有圖案的監控片上，用橢圓偏光儀打一道光，看反射光的偏振怎麼改變，反推膜有多厚，原理和第九章的 OCD 很像。這麼薄的膜，厚度和折射率會互相影響，廠裡還會搭配其他方法交叉確認。
-
-下一頁看 ALD 的進階用法：讓它只長在指定的地方。`
+    }
   }, F));
 
   /* 3. 磊晶 */
-  A(Object.assign({
-    id: 'depo3', part: 2, minutes: 1.8, short: '磊晶：照著地磚鋪',
-    title: '磊晶：照著底下的原子排列，長出完美的新晶體', en: 'Epitaxy',
-    thesis: '磊晶是用「長」的，不是用「打」的：新原子會對齊底下的晶格（原子排成的格子），像照著地磚紋路繼續鋪。在 2 奈米電晶體裡，<b>磊晶用在兩個地方</b>，切到第三個分頁看。',
+  Fig.add('depo3', Object.assign({ body: true,
     render: () => `<div class="s-body">
       <div class="col"><div class="controls">${U.seg('d3-m', ['矽長在矽上', '矽鍺長在矽上', '磊晶用在哪兩處？'], 0)}<button class="btn" id="d3-re" type="button">⟲ 再長一次</button></div>${U.figHTML('d3-cv', '原子排列（剖面示意）', '')}</div>
-      ${U.side({
-        points: ['<b>磊晶</b>：新晶體延續底下的排列', '用在兩處：① 奈米片疊層 ② 源汲極', '矽鍺比矽大一號，長上去會被擠緊'],
-        fact: { v: '約 4%', d: '鍺的原子間距比矽大的幅度；常用的矽鍺和矽只差約 1–2%，就足以讓晶格「繃緊」' },
-        analogy: { icon: 'tile', t: '比喻', p: '照著舊地磚的縫繼續鋪新磚。新磚大一點點，就得擠一擠才對得齊。' }
+      ${U.pageSide({
+        
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#d3-cv'));
@@ -159,14 +123,7 @@
         U.tag(c, '原本的矽晶圓', x0, base + 38, { size: 15 });
         U.tag(c, big ? '矽鍺：原子大一號，得擠緊才對得齊' : '新長的矽：完美對齊，看不出界線', x0, 30, { size: 15, color: big ? '#1f7a4d' : '#3e4b5b' });
       });
-    },
-    notes: `上一頁說到，源汲極這一塊在 3D 結構裡用打的，打不均勻又會打壞。這一頁先認識另一個工具：磊晶。它是用「長」的，不是用「打」的。
-
-磊晶是一種特別的沉積：新長出來的材料，會完全延續底下晶體的原子排列，也就是原子排成的格子，就像照著舊地磚的縫繼續鋪新磚。先看矽長在矽上，新長的部分和原本的晶圓完美接在一起，看不出界線。
-
-切到矽鍺長在矽上。鍺的原子比矽大一點，所以矽鍺長上去時，原子得被左右擠緊才能對齊，晶格就「繃緊」了。這一點下一頁會用到。
-
-切到第三個分頁，磊晶用在哪兩處？這是最容易搞混的地方。第一處，橘框：奈米片疊層。第七章 GAA 九步驟的第一步，就是用磊晶一層矽、一層矽鍺交替長上去，每層只有幾奈米。第二處，藍框：源極和汲極。它們也是用磊晶長出來的，而且是「選擇性」地長、一邊長一邊摻雜，這就是下一頁要講的，用來解決上一頁源汲極用打的不好的問題。`
+    }
   }, F, { chap: 4, eyebrow: '第二部分 · ④ 摻雜與磊晶' }));
 
   /* 4. 薄膜在電晶體中的位置 */
@@ -180,18 +137,14 @@
     { k: 'cu', n: '銅導線', t: '最細約 10–20 nm 寬', how: 'PVD＋電鍍', go: 'loop', r: [0.03, 0.02, 0.94, 0.05] },
     { k: 'ox', n: '絕緣填充', t: '數十 nm', how: 'CVD', go: 'depo1', r: [0.66, 0.08, 0.3, 0.1] }
   ];
-  A(Object.assign({
-    id: 'depo4', part: 2, minutes: 1.6, short: '全貌：電晶體裡的各種薄膜', hubShort: '薄膜全貌',
-    title: '先看全貌：一顆電晶體裡，有十幾種不同的薄膜', en: 'Films in a Transistor',
-    thesis: '點選剖面上的顏色，看它是什麼、多厚、用哪種方法鋪上去。像蓋房子前先看一眼整張施工圖：<b>接下來三章（③④⑤），就是在學這些材料怎麼鋪上去</b>。',
+  Fig.add('depo4', Object.assign({ body: true,
+    hubShort: '薄膜全貌',
     render: () => `<div class="s-body">
       <div class="col">${U.figHTML('d4-cv', '環繞式電晶體剖面（點選任一區域）', '')}</div>
-      ${U.side({
+      ${U.pageSide({
         top: `<div class="card key"><h4>你點的是</h4><div class="bigword" id="d4-n"></div><table class="t" style="font-size:19px;margin-top:6px"><tbody><tr><td>厚度</td><td id="d4-t"></td></tr><tr><td>怎麼鋪上去</td><td id="d4-h"></td></tr></tbody></table><button class="btn primary" type="button" id="d4-go" style="margin-top:8px">看它怎麼做 →</button></div>`,
         extra: `<div><div class="gloss" style="margin-bottom:4px">章節導覽（點擊跳頁，每頁標題旁都有「⌂ 全貌」按鈕可以跳回來）</div><div style="display:flex;flex-wrap:wrap;gap:6px">${[['depo1', '③ 三種鋪法'], ['depo2', 'ALD'], ['asd', '選擇性沉積'], ['dope1', '④ 摻雜'], ['depo3', '磊晶'], ['dope3', '選擇性磊晶'], ['hk1', '⑤ 閘極絕緣層']].map(([id, l]) => `<button class="btn" type="button" data-go="${id}" style="padding:4px 10px;font-size:15px">${l}</button>`).join('')}</div></div>
-          <table class="t" style="font-size:17px" id="d4-list"><tbody>${FILMS.map((f, i) => `<tr class="clickable" data-i="${i}"><td><i style="display:inline-block;width:14px;height:14px;background:${U.MAT[f.k]};margin-right:8px;vertical-align:-2px"></i>${f.n}</td><td>${f.how}</td></tr>`).join('')}</tbody></table>`,
-        analogy: null,
-        fact: null
+          <table class="t" style="font-size:17px" id="d4-list"><tbody>${FILMS.map((f, i) => `<tr class="clickable" data-i="${i}"><td><i style="display:inline-block;width:14px;height:14px;background:${U.MAT[f.k]};margin-right:8px;vertical-align:-2px"></i>${f.n}</td><td>${f.how}</td></tr>`).join('')}</tbody></table>`
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#d4-cv'));
@@ -239,13 +192,6 @@
         ];
         for (const [i, b, fn] of hits) if (x >= b[0] && x <= b[0] + b[2] && y >= b[1] && y <= b[1] + b[3] && (!fn || fn(y))) { pick(i); break; }
       });
-    },
-    notes: `進入第三章：薄膜沉積。先看全貌：一顆環繞式電晶體裡，有十幾種不同的薄膜，每一層都要靠「鋪上去」或「長上去」。可以直接點剖面上的顏色，或點右邊的清單。
-
-藍色的矽奈米片是用磊晶長的；紫色的高介電絕緣層只有 1.5 奈米，必須用 ALD；灰色的金屬閘極由好幾層不同的金屬組成，用 ALD，上方填充可用 CVD；綠色的間隔層用 ALD 或 CVD，材料是氮化矽或更低介電的材料；奈米片和奈米片之間、靠源汲極那一小段也是綠色，叫內間隔層，是環繞式特有的，把金屬閘極和源汲極隔開，[[頁:gaaflow]]會看到它怎麼做；源極汲極用磊晶，而且在長的同時就把雜質摻進去；最上面的銅導線用 PVD 加電鍍。
-
-每一種材料位置不同、要求不同，施工方法也不同。點選任一種薄膜後，按「看它怎麼做」就會跳到講它的那一頁；右邊的章節導覽可以直接跳到這一章和後面兩章的任何一頁，每一頁標題旁都有「⌂ 全貌」按鈕可以跳回這裡。就像蓋房子要用水泥、磚、鋼筋和隔熱棉。
-
-右邊的方法欄裡有兩大類：PVD、CVD、ALD 是「鋪」上去的，這一章依序介紹，最後看 ALD 的進階用法；矽奈米片和源汲極用的磊晶是「長」出晶體，放到下一章和摻雜一起講。`
+    }
   }, F));
 })();

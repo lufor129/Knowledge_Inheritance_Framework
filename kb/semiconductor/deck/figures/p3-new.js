@@ -1,6 +1,5 @@
 /* 第三部分新增：SoIC（混合鍵合後）；頁序在 index.html 用 Deck.move 調整 */
 (function () {
-  const A = Deck.add.bind(Deck);
   const EP = '第三部分 · ① 先進封裝';
 
   /* ---------- SoIC：台積電的 3D 堆疊 ---------- */
@@ -10,21 +9,17 @@
     { n: 'SoIC 6 µm（2025）', p: 6, y: '2025 年起', c: '#c9793b' },
     { n: 'SoIC 4.5 µm（2029 目標）', p: 4.5, y: '2029 年目標', c: '#b3541e' }
   ];
-  A({
-    id: 'soic', part: 3, minutes: 3.6, short: 'SoIC：台積電的 3D 堆疊', eyebrow: EP, badge: '新技術',
-    title: 'SoIC 系統整合晶片：晶片直接疊晶片', en: 'System on Integrated Chips',
-    thesis: 'SoIC（System on Integrated Chips，系統整合晶片）是台積電把<b>混合鍵合做成產品</b>的 3D 堆疊平台：兩顆晶片不用微凸塊，直接疊在一起。① 看同樣一小塊面積裡，<b>上下能接的線多了幾十倍</b>；② 看最有名的實例：<b>AMD 3D V-Cache</b>。',
-    render: () => `<div class="s-body">
+  Fig.add('soic', { body: true,
+    eyebrow: EP, render: () => `<div class="s-body">
       <div class="col"><div class="controls">${U.seg('so-t', ['① 接點有多密', '② 實例：AMD 3D V-Cache'], 0)}<span id="so-pw">${U.seg('so-p', PITCH.map(x => x.n), 1)}</span></div>
         <div id="so-p0" style="display:flex;flex-direction:column;flex:1;min-height:0">${U.figHTML('so-cv', '左：兩顆晶片疊起來（剖面）　右：0.2 × 0.2 mm 範圍內的接點（上視）', '')}</div>
         <div id="so-p1" hidden style="display:flex;flex-direction:column;flex:1;min-height:0">${U.figHTML('so-vc', '上：AMD 3D V-Cache 結構（自繪示意圖）　下：CPU 和快取之間的路', '')}</div></div>
-      ${U.side({
+      ${U.pageSide({
         top: `<div class="card alt" id="so-why2" hidden><h4>為什麼 CPU 需要它？</h4><p style="font-size:16px">CPU 每算一步都要跟<b>快取</b>拿資料。快取不夠大，就得跑去更遠、更慢的記憶體拿，<b>中間那條路就成了瓶頸</b>，核心再快也在空等。<br>3D V-Cache 用 SoIC 把一塊 64 MB 快取直接疊在 CPU 上：L3 快取從 32 MB 變 96 MB，上下只隔幾微米、頻寬約 2 TB/s。AMD 宣稱 5800X3D 遊戲平均比 5900X 快約 15%。圖是第一代（Zen 3）結構，最新一代改把快取放在下面。</p></div><div class="card alt" id="so-why1"><h4>為什麼要做 SoIC？</h4><p style="font-size:16px"><b>① 距離最短</b>：上下只差幾微米，接點又密，傳資料更快、更省電<br><b>② 拆開做再疊</b>：例如 MI300 的 I/O 晶片用 6 奈米、運算晶片用 5 奈米，分開做良率更好<br><b>③ 省面積</b>：往上疊，不用攤平佔地；疊好還能再放上 CoWoS</p></div><div class="fact"><div class="v" id="so-n">—</div><div class="d" id="so-d">每平方毫米的上下接點數</div></div>`,
         extra: `<table class="t" style="font-size:16px"><tbody>
           <tr><td><b>AMD 3D V-Cache</b></td><td>快取晶片疊在 CPU 上</td></tr>
           <tr><td><b>AMD MI300</b></td><td>運算晶片疊在 I/O 晶片上，再放上 CoWoS</td></tr>
-          <tr><td><b>A14 疊 A14</b></td><td>2029 年，接點密度是 N2 疊 N2 的 1.8 倍</td></tr></tbody></table>`,
-        analogy: { icon: 'stairs', t: '比喻', p: '兩棟樓之間只搭幾座天橋（微凸塊），改成上下兩層樓、每隔幾步就有一個樓梯口（SoIC）。' }
+          <tr><td><b>A14 疊 A14</b></td><td>2029 年，接點密度是 N2 疊 N2 的 1.8 倍</td></tr></tbody></table>`
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#so-cv'));
@@ -113,23 +108,6 @@
         for (let a = 0; a < show; a++) for (let b = 0; b < n; b++) { c.beginPath(); c.arc(gx + (b + 0.5) * cell, gy + (a + 0.5) * cell, r, 0, 7); c.fill(); }
         U.txt(c, `間距 ${x.p} µm：這一小格裡有 ${(n * n).toLocaleString()} 個接點`, gx + gs / 2, gy + gs + 26, { align: 'center', size: 15, w: 700, color: '#17202b' });
       });
-    },
-    notes: `【可略】時間緊時，第二個分頁（3D V-Cache）只講結論：快取從 32 MB 變 96 MB，遊戲快約 15%。
-
-上一頁講了混合鍵合怎麼做，這一頁看台積電把它做成的產品：SoIC，全名是 System on Integrated Chips，系統整合晶片。
-
-為什麼要做？好處就是前面說的：拆開做、良率好，疊起來距離最短，右上角整理了三點。在廚房比喻裡，它就是疊在主廚頭頂的層架。
-
-SoIC 就是把兩顆晶片直接疊在一起，中間不用微凸塊，用混合鍵合銅對銅接起來。左邊是剖面，右邊是 0.2 毫米見方的一小塊，從上面看有多少接點。
-
-跟微凸塊比多密，上一頁已經比過了。這裡看台積電把間距一路往下推的路線：2022 年量產 9 微米，也就是 AMD 3D V-Cache 那一代；2025 年起 6 微米；2029 年目標 4.5 微米。按按看，接點一格比一格密。
-
-實際產品：AMD 的 3D V-Cache 處理器把快取疊在 CPU 上；AMD MI300 把運算晶片疊在 I/O 晶片上，再整組放上 CoWoS，3D 和 2.5D 一起用。台積電也宣布 2029 年要做 A14 疊 A14，接點密度是 N2 疊 N2 的 1.8 倍。
-
-切到第二個分頁，看最有名的實例：AMD 的 3D V-Cache。先講為什麼需要它。CPU 每算一步，都要跟快取拿資料；快取就是放在 CPU 旁邊、最快的小倉庫。快取不夠大，資料就得去更遠、更慢的記憶體拿，中間那條路就成了瓶頸，核心再快也只能空等。就像廚師手很快，但每道菜都要跑去遠方的倉庫拿食材。
-
-上面是依 AMD 公開資料畫的剖面示意：底下是 CPU 晶片，兩側是 CPU 核心、中間是原本的 32 MB 快取；上面橘色那一片，就是用 SoIC 疊上去的 64 MB 快取晶片，剛好蓋在原本的快取正上方，兩側墊上結構矽讓表面一樣高、幫忙散熱；上下靠矽穿孔和混合鍵合接通。下面比一比：快取不夠時要去遠方的記憶體拿，路長又慢；疊上去之後，上下只隔幾微米、頻寬大約每秒 2 TB，L3 快取從 32 MB 變成 96 MB。AMD 宣稱 5800X3D 玩遊戲平均比 5900X 快大約 15%。這張圖是第一代 Zen 3 的結構；最新一代把快取改放在 CPU 下面，原理一樣。這就是 SoIC 最直接的好處：把最常用的資料，放在離 CPU 最近的地方。
-
-最後收一下前面的 2.5D：SoIC 不是 CoWoS 的競爭對手，而是疊在上面一起用。右邊表格第二列的 AMD MI300，就是運算晶片用 SoIC 疊在 I/O 晶片上，整組再放上 CoWoS，3D 和 2.5D 一起用。一顆 MI300 封裝裡有二十顆左右的晶片（運算、I/O、HBM 加起來），一顆壞就整顆報廢，所以每顆疊上去前都要先測、確認是好晶片，就是這一章第一頁講過的 Known Good Die。疊起來之後最大的難題是散熱，還有怎麼一起設計、怎麼測，接下來三頁深入看，時間緊可以略過。`
+    }
   });
 })();

@@ -1,6 +1,5 @@
 /* 第一部分：先進製程的演進與現況（簡單版：零公式、具象動畫） */
 (function () {
-  const A = Deck.add.bind(Deck);
   const VT = 0.0259;
   /* 內部用的簡化電晶體模型（只拿來驅動動畫，不顯示在畫面上） */
   function idvg(vg, vth, ss) {
@@ -18,10 +17,8 @@
   const leakWord = f => f < 0.3 ? ['很低', 'good'] : f < 0.55 ? ['中等', 'warn'] : ['很高', 'bad'];
 
   /* 章節頁 */
-  A({
-    id: 'p1', part: 1, raw: true, cls: 'divider-slide', minutes: 0.5, short: '第一部分',
-    title: '先進製程的演進與現況',
-    render: () => `<div class="divider-grid"><div class="divider-num"><div class="l">Part</div><div class="n">01</div></div>
+  Fig.add('p1', {
+    raw: true, cls: 'divider-slide', render: () => `<div class="divider-grid"><div class="divider-num"><div class="l">Part</div><div class="n">01</div></div>
       <div class="divider-body"><div class="s-eyebrow">PART 1 · 約 26 分鐘</div><h2>先進製程的演進與現況</h2>
       <p class="q">一句話看懂這一部分：電晶體縮得太小，<b style="color:var(--accent-2)">閘極就關不住電子</b>。這十年所有結構的改變，都是為了把電子重新關好。</p>
       <div class="cards c3" style="max-width:1000px">
@@ -29,9 +26,7 @@
         <button type="button" class="card go-card" data-go="struct3d"><h4>看結構怎麼變 →</h4><p>平面 → 鰭式 → 環繞式 → 上下疊</p></button>
         <button type="button" class="card go-card" data-go="timeline"><h4>看產業現況 →</h4><p>台積電、Intel、三星走到哪裡</p></button>
       </div></div></div>`,
-    init(el) { U.$$(el, '[data-go]').forEach(c => c.onclick = () => Deck.goId(c.dataset.go)); },
-
-    notes: `第一部分大約二十六分鐘。先認識電晶體的零件和它怎麼開關，再看兩種電晶體 nFET 和 pFET；接著看縮得太小會出什麼問題，以及結構怎麼一步步變形來解決；然後拆穿「幾奈米」這個名字；最後看時間軸、三大廠的現況和成本。`
+    init(el) { U.$$(el, '[data-go]').forEach(c => c.onclick = () => Deck.goId(c.dataset.go)); }
   });
 
   /* 電晶體的各個零件 */
@@ -45,10 +40,7 @@
     { k: 'nit', n: '間隔層 Spacer', d: '閘極兩側的絕緣小牆，防止閘極和源極、汲極碰在一起短路。', a: '隔間牆', chem: '氮化矽 Si₃N₄', lat: 'ins' },
     { k: 'w', n: '接觸電極', d: '把源極、汲極、閘極接到上方導線的金屬柱，電從這裡進出。', a: '水管接頭', chem: '鎢 W 或鈷 Co', lat: 'metal' }
   ];
-  A({
-    id: 'parts', part: 1, minutes: 3, short: '電晶體的零件',
-    title: '先認識電晶體的 8 個零件', en: 'Anatomy of a Transistor',
-    thesis: '點選零件，看它是什麼、用什麼材料做。右下角的原子放大鏡說明：<b>同樣是矽，摻一點雜質就能從不導電變成導電</b>。',
+  Fig.add('parts', { body: true,
     render: () => `<div class="s-body">
       <div class="col">${U.figHTML('pt-cv', '電晶體剖面（側面切開來看）', '')}
         <div class="controls"><button class="btn primary" id="pt-tour" type="button">▶ 自動導覽</button><span class="gloss">一顆手機晶片裡有約 200 億個這樣的電晶體</span></div></div>
@@ -153,16 +145,7 @@
         U.tag(c, `${sel + 1}. ${PARTS[sel].n}`, Math.min(R - 10, Math.max(L + 10, a + cw / 2)), sel === 0 ? b + ch * 0.62 : Math.max(24, b - 12), { align: 'center', size: 17, color: '#b3541e' });
         PARTS.forEach((p, i) => { if (i === sel) return; const [x, y, ww] = rects[i][0]; U.txt(c, String(i + 1), x + ww / 2, y + 22, { align: 'center', size: 15, w: 700, color: '#17202b' }); });
       });
-    },
-    notes: `在講電晶體怎麼運作之前，先認識它的八個零件，整場都會一直用到這些名字。可以按自動導覽，或直接點選。
-
-最底下是矽晶圓，整顆電晶體的地基。左右兩塊是源極和汲極：源極是電子的出發點，汲極是終點，兩塊都摻了很多雜質，所以有大量能移動的電子。中間那一小段矽叫通道，是電子要走的路。
-
-通道上面有一層只有一到兩奈米的絕緣層，再上面是閘極。閘極加電壓，就能在通道裡打開一條路；絕緣層確保電場過得去、電流過不去。閘極兩側的綠色小牆叫間隔層，防止閘極和源汲極碰在一起。最後，灰色的金屬柱是接觸電極，把電接進來、接出去。
-
-用水龍頭來記：源極是水塔，通道是水管，汲極是出水口，閘極是把手，絕緣層是把手和水管之間的墊片。
-
-右下角的原子放大鏡回答一個問題：同樣是矽，為什麼源極導電、基板卻不太導電？矽原子最外層有 4 個電子，剛好和 4 個鄰居各共用一對，電子全被綁住，所以純矽幾乎不導電，這就是「半」導體。如果摻進磷，磷有 5 個最外層電子，多出來的那一個可以自由移動，就變成 n 型，源極和汲極就是這樣做的，源極和汲極是重摻雜：先進製程的源汲極，大約每二、三十顆矽原子就有一顆磷。如果摻進硼，硼只有 3 個，少了一個就留下空位，叫電洞，鄰居的電子跳進來，空位就好像在移動，這是 p 型，基板和通道就是 p 型。其他零件：絕緣層、間隔層是電子被抓死的絕緣體；閘極和接觸電極是有一大片自由電子的金屬。`
+    }
   });
 
   /* MOSFET 水龍頭：分四步看懂原理 */
@@ -172,10 +155,7 @@
     ['電壓夠大', '閘極把電子吸到矽的表面，排成一條薄薄的電子通路：通道這段矽，這時才真正「打開」。', '水已經到出水口了。'],
     ['導通', '電子沿著這條通路從源極流到汲極，電流出現，這就是「開」。', '水流出來了。']
   ];
-  A({
-    id: 'mosfet', part: 1, minutes: 2.5, short: '電晶體像水龍頭',
-    title: '電晶體就是一個「用電壓控制的水龍頭」', en: 'MOSFET（金屬-氧化物-半導體電晶體）',
-    thesis: '慢慢往右拖動閘極電壓，看右邊四個步驟依序亮起：<b>電壓在矽的表面打開一條讓電子通過的路</b>。',
+  Fig.add('mosfet', { body: true,
     render: () => `<div class="s-body">
       <div class="col">${U.figHTML('mf-cv', '電晶體剖面（側面切開來看）', '')}
         <div class="controls">${U.range('mf-vg', '閘極電壓：把手轉開多少', 0, 100, 1, 0, '%')}</div></div>
@@ -239,29 +219,16 @@
         U.setMeter(el, 'mf-m', on ? 0.3 + (vg - 0.65) / 0.35 * 0.7 : st === 2 ? 0.05 : 0.01, on ? '流動中' : '幾乎 0', on ? 'good' : '');
         U.$(el, '#mf-state').innerHTML = on ? '<span style="color:var(--good)">● 開（1）</span>' : st === 2 ? '<span style="color:var(--warn)">◐ 通路剛形成，快開了</span>' : '<span style="color:var(--bad)">● 關（0）</span>';
       });
-    },
-    notes: `電晶體是今天的主角。先認識三個部分：左邊的源極，裡面有很多電子；右邊的汲極，要接收電子；中間上方是閘極，隔著一層很薄的絕緣層。源極和汲極之間是 p 型矽，裡面有很多帶正電的「電洞」，但幾乎沒有能自由移動的電子。
-
-請大家看我慢慢拖動滑桿，右邊四個步驟會依序亮起。
-
-第一步，沒有電壓：水龍頭關緊，電子過不去，這是「關」。第二步，加一點電壓：閘極帶正電，把矽表面的電洞推開，表面變得空空的，就像把手開始轉、還沒出水。第三步，電壓夠大：閘極把電子吸到表面，排成一條薄薄的電子通路。上一頁說通道是源極和汲極之間那段矽，這時候那段矽的表面才真正打開。第四步，電子沿著這條通路從源極流到汲極，電流出現，這是「開」。
-
-一顆手機晶片裡大約有兩百億個這樣的開關。記住水龍頭的比喻：閘極是把手，後面所有結構的演變，都是在讓這個把手更能控制通道。`
+    }
   });
 
   /* 短通道：電子偷溜 */
-  A({
-    id: 'sce', part: 1, minutes: 2, short: '通道太短電子關不住',
-    title: '一直縮小的代價：通道太短，電子就關不住', en: 'Moore’s Law & Short Channel',
-    thesis: '為了讓晶片更快、更省電，每一代都要把電晶體縮小（<b>摩爾定律</b>：約每兩年數量翻倍）。但縮太短，電子會<b>從閘極管不到的底部偷溜過去</b>。',
+  Fig.add('sce', { body: true,
     render: () => `<div class="s-body">
       <div class="col">${U.figHTML('sc-cv', '平面電晶體（關閉狀態）', '')}
         <div class="controls">${U.range('sc-lg', '閘極長度（通道長短）', 8, 100, 1, 70, ' nm')}</div></div>
-      ${U.side({
-        meters: [['sc-m', '漏電']],
-        points: ['<b>摩爾定律</b>：電晶體約每兩年翻倍', '通道越短，閘極越管不到底部', '解法：把通道整個<b>包起來</b>'],
-        fact: { v: '約 20 nm', d: '平面電晶體大約縮到這裡就撐不住；Intel 2011 年起改用鰭式' },
-        analogy: { icon: 'faucet', t: '比喻', p: '用一根手指壓水管：水管越短越粗，手指越壓不住，水從底下漏出來。' }
+      ${U.pageSide({
+        meters: [['sc-m', '漏電']]
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#sc-cv'));
@@ -298,12 +265,7 @@
         const [word, cls] = leakWord(leak);
         U.setMeter(el, 'sc-m', leak, word, cls);
       });
-    },
-    notes: `先講為什麼要一直縮小。電晶體越小，同樣面積能放越多、切換越快、每次切換越省電，所以每一代都要縮小。這就是摩爾定律：同樣面積的電晶體數量，大約每兩年翻一倍。但縮小有極限，這頁就來看極限在哪裡。\n\n現在畫面上的電晶體是「關」的狀態。藍色電子被擋在源極這邊。綠色是閘極電壓管得到的範圍，大概只在表面一層。
-
-請把閘極長度往下拉。通道還長的時候，電子要穿過一大段閘極管轄的區域，過不去。但通道越短，電子就越容易從閘極管不到的深處偷溜過去，帶紅框的就是漏電的電子，右邊的漏電量條也跟著升高。
-
-漏電有兩個壞處：晶片待機也耗電，而且開關分不清楚。平面電晶體大約在二十奈米左右就撐不住了。解法只有一個方向：不要只從上面按住通道，要把通道包起來。這就是下一頁鰭式和環繞式的由來。`
+    }
   });
 
   /* 奈米只是名稱 */
@@ -311,19 +273,13 @@
     { n: '16nm', y: 2015, cpp: 90, den: 29 }, { n: '10nm', y: 2017, cpp: 66, den: 53 }, { n: '7nm', y: 2018, cpp: 57, den: 91 },
     { n: '5nm', y: 2020, cpp: 51, den: 171 }, { n: '3nm', y: 2023, cpp: 48, den: 216 }, { n: '2nm', y: 2025, cpp: 48, den: 313 }
   ];
-  A({
-    id: 'nodename', part: 1, minutes: 2, short: '「奈米」只是名稱',
-    title: '「2 奈米」其實沒有任何東西是 2 奈米', en: 'Node Names',
-    thesis: '製程名稱只是「第幾代」的代號。橘色是名字上的數字，藍色是<b>真實的閘極間距</b>。',
+  Fig.add('nodename', { body: true,
     render: () => `<div class="s-body">
       <div class="col"><div class="controls">${U.seg('nn-m', ['名字 vs 真實間距', '同樣面積能放多少電晶體'], 0)}</div>
         ${U.figHTML('nn-svg', '', '台積電各代（閘極間距為業界估計；密度為 WikiChip、TechInsights 分析值）', 'svg')}</div>
-      ${U.side({
-        points: ['名字從 1990 年代後就和實際尺寸脫鉤', '閘極間距：兩個閘極中心的距離', '各家名字不能比：18A 和 N2 同期，密度不同'],
-        fact: { v: '約 24 倍', d: '2 奈米世代的實際閘極間距（約 45–48 nm，業界估計）是名字的 20 幾倍' },
-        analogy: { icon: 'ruler', t: '比喻', p: '像衣服尺碼 S、M、L：代表「大一號」，不是真的幾公分。' }
+      ${U.pageSide({
+        
       })}</div>`,
-    src: 'TSMC、WikiChip、TechInsights 公開數據',
     init(el) {
       const svg = U.$(el, '#nn-svg');
       // 切換圖表時，標題下的說明和右邊的大數字跟著換
@@ -349,26 +305,15 @@
           U.svg('text', { x: ax.x(3.6), y: ax.y(81), class: 'lbl', style: 'font-size:16px', fill: U.MAT.accent, text: '藍色：真實閘極間距' }, ax.plot);
         } else U.svg('text', { x: ax.x(0.2), y: ax.y(330), class: 'lbl', style: 'font-size:16px', text: '名字縮了 8 倍、間距只縮一半，密度卻增加 11 倍：還靠把電路排得更聰明' }, ax.plot);
       });
-    },
-    notes: `很多人以為「2 奈米」代表某個零件是 2 奈米，其實沒有。製程名字大約在 1990 年代後期就和實際尺寸脫鉤了，現在只是「第幾代」的代號。
-
-看左圖。橘色短線是名字上的數字，藍色長條是真實的閘極間距，也就是兩個閘極中心之間的距離。2 奈米世代的實際間距大約 45 到 48 奈米，台積電沒有正式公布，這是業界估計，大約是名字的二十幾倍。
-
-切換到第二張圖：從 16 奈米到 2 奈米，名字縮了 8 倍，間距只縮了一半，但同樣面積能放的電晶體卻增加了 11 倍左右。多出來的密度，靠的是把電路排得更聰明：每一列電路做得更矮、走線更少，同樣面積就塞得下更多電晶體。
-
-所以不同公司的名字不能直接比。Intel 的 18A 和台積電的 N2 在同一個時期推出，但一般估計 N2 的密度比較高，就像不同品牌的 M 號衣服不一定一樣大。`
+    }
   });
 
   /* nFET 與 pFET */
-  A({
-    id: 'nfetpfet', part: 1, minutes: 2.5, short: 'nFET 與 pFET',
-    title: '電晶體有兩種：nFET 和 pFET，一定成對使用', en: 'nFET · pFET · CMOS',
-    thesis: '切換輸入 0 / 1：<b>nFET 在輸入 1 時打開，pFET 在輸入 0 時打開</b>，剛好相反。兩個搭在一起，就是所有數位電路的基本單位。',
+  Fig.add('nfetpfet', { body: true,
     render: () => `<div class="s-body">
       <div class="col"><div class="controls">${U.seg('nf-in', ['輸入 0（低電壓）', '輸入 1（高電壓）'], 0)}</div>${U.figHTML('nf-cv', '上：兩種電晶體剖面　下：接成一組（反相器）的電路簡圖', '')}</div>
-      ${U.side({
-        points: ['<b style="color:#1f4fb5">nFET</b> 靠電子導電：閘極給 1 才打開', '<b style="color:#c0392b">pFET</b> 靠電洞導電：閘極給 0 才打開', '兩個接成一組（CMOS）：永遠一開一關，很省電'],
-        analogy: { icon: 'gate', t: '比喻', p: '蹺蹺板的兩端：一邊上去，另一邊一定下來。nFET 和 pFET 永遠一開一關。（FET：場效電晶體，用電場控制開關）' }
+      ${U.pageSide({
+        
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#nf-cv'));
@@ -454,14 +399,7 @@
         U.dot(c, kx - 74, mid, 13, out ? '#f2c14e' : '#cfd6de'); U.txt(c, String(out), kx - 74, mid + 5, { align: 'center', size: 15, w: 700 });
         U.txt(c, out ? '上面接通 → 輸出連到 1' : '下面接通 → 輸出連到 0', kx + 18, mid + 5, { size: 14, w: 700, color: out ? '#c0392b' : '#1f4fb5' });
       });
-    },
-    notes: `在看結構演進之前，要先知道電晶體其實有兩種。
-
-上面左邊是 nFET，就是我們前面一直在看的那種，源極和汲極是 n 型矽，靠電子導電，閘極給 1 才打開。右邊是 pFET，剛好反過來：源極和汲極是 p 型矽，靠電洞導電，閘極給 0 才打開。請切換輸入，看兩個永遠一開一關。
-
-下面左邊是工程師畫的電路簡圖。兩個符號長得幾乎一樣，差別是 pFET 的閘極前面多一個小圓圈，意思是「反過來」：給 0 才打開。右邊把它們換成兩個開關，更好理解。一個 pFET 在上、接電源，一個 nFET 在下、接地，中間是輸出。輸入 1 的時候，nFET 打開，輸出被接到地，變成 0；輸入 0 的時候，pFET 打開，輸出被接到電源，變成 1。這叫反相器，是所有數位電路的基本單位。這種 n、p 成對的設計叫 CMOS，任何時候只有一個打開，所以很省電。
-
-記住這一對，等一下[[頁:struct3d]]看到叉型片和 CFET，就會知道它們是在想辦法把這一對排得更緊。`
+    }
   });
 
   /* 3D 結構演進 */
@@ -472,10 +410,7 @@
     forksheet: { y: '研究中', g: '3 面＋中間一道牆', d: '在兩種電晶體中間插一道絕緣牆，讓它們可以靠得更近。' },
     cfet: { y: '預計 2030 年代', g: '4 面，兩個電晶體上下疊', d: '把兩個電晶體疊成上下兩層，佔地面積可以省三到五成。' }
   };
-  A({
-    id: 'struct3d', part: 1, minutes: 2.5, short: '結構演進 3D 模型',
-    title: '結構演進：閘極從「壓住」變成「包住」', en: 'Planar → FinFET → GAA → CFET',
-    thesis: '每一次改變都為了同一件事：<b>讓閘極包住更多通道</b>。拖曳可旋轉；用「切面位置」把模型切開，<b>直接看閘極包住幾面</b>。',
+  Fig.add('struct3d', { body: true,
     render: () => `<div class="s-body w66">
       <div class="col">
         <div class="controls">${U.seg('t3-type', T3D.TYPES.map(t => T3D.NAMES[t] + (t === 'forksheet' ? '<small style="display:block;font-size:12px;opacity:.8">研發中</small>' : t === 'cfet' ? '<small style="display:block;font-size:12px;opacity:.8">第三部分詳談</small>' : '')), 0)}</div>
@@ -483,11 +418,10 @@
         <div class="controls">${U.range('t3-op', '閘極透明度', 0.1, 1, 0.01, 0.5, '')}<button class="btn primary" id="t3-cur" type="button">⚡ 電流流動：開</button><button class="btn" id="t3-rot" type="button">⟳ 自動旋轉</button></div>
         <div class="controls"><span class="gloss" style="font-size:16px;color:var(--ink-2)">切開來看：</span>${U.seg('t3-cd', ['橫切（看閘極怎麼包）', '順著電流切'], 0)}${U.range('t3-cut', '切面位置', 0, 100, 1, 100, '')}</div>
       </div>
-      ${U.side({
+      ${U.pageSide({
         top: `<div class="bigword" id="t3-name"></div><p style="margin:0;font-size:21px" id="t3-d"></p>
           <table class="t" style="font-size:18px"><tbody><tr><td>閘極包住</td><td id="t3-g"></td></tr><tr><td>開始使用</td><td id="t3-y"></td></tr></tbody></table>`,
-        extra: U.legendHTML(['metal', 'hk', 'si', 'n', 'p', 'nit', 'ox']) + '<p class="gloss" style="margin:0"><b>藍色小球</b>：電子，由源極流向汲極（紅色小球：pFET 裡的電洞，方向相反）。電流只走被閘極包住的通道。<br><b>高介電</b>：一種擋電子更好的絕緣材料（第二部分 ⑤ 閘極章詳談）。</p>',
-        analogy: { icon: 'gate', t: '比喻', p: '一根手指壓（平面）→ 三根手指捏（鰭式）→ 整個拳頭握住（環繞式）。' }
+        extra: U.legendHTML(['metal', 'hk', 'si', 'n', 'p', 'nit', 'ox']) + '<p class="gloss" style="margin:0"><b>藍色小球</b>：電子，由源極流向汲極（紅色小球：pFET 裡的電洞，方向相反）。電流只走被閘極包住的通道。<br><b>高介電</b>：一種擋電子更好的絕緣材料（第二部分 ⑤ 閘極章詳談）。</p>'
       })}</div>`,
     init(el, ctx) {
       const t3 = T3D.mount(U.$(el, '#t3-host'), ctx, { type: 'planar', current: true, gateOpacity: 0.5, noSpacer: true });
@@ -515,35 +449,17 @@
       // 電流和切面互斥：切開時自動關掉電流；打開電流時自動恢復成不切
       function setCur(v) { cur = v; t3.setCurrent(v); const b = U.$(el, '#t3-cur'); b.classList.toggle('primary', v); b.textContent = '⚡ 電流流動：' + (v ? '開' : '關'); }
       U.$(el, '#t3-cur').onclick = () => { setCur(!cur); if (cur && cut < 100) cutSl.set(100); };
-    },
-    notes: `這頁是整場最重要的一張圖。藍色小球是電子，從源極流向汲極，讓大家看清楚電流走的是哪一條路。模型可以拖曳旋轉，也可以把閘極調成透明，看看裡面。
-
-平面電晶體：閘極只蓋在通道上面，像用一根手指壓水管，底下管不到。
-
-鰭式 FinFET：把通道立起來變成一片鰭，閘極像馬鞍一樣從左、右、上三面包住。2011 年 Intel 率先導入（2012 年上市），台積電從 16 奈米開始用，一路用到 3 奈米。
-
-環繞式 GAA：鰭已經薄到五奈米、沒辦法再薄了，所以把它橫切成幾片薄薄的奈米片，閘極把每一片完全包住，像整個拳頭握住水管。台積電 N2、Intel 18A、三星都已經量產。
-
-下面的「切開來看」可以把模型切開（切開時電流動畫會自動關掉，再按電流就恢復完整模型）：選橫切、把切面拉到閘極正中間，就能直接看到切口，平面只有上面一面被閘極蓋住，鰭式是三面，環繞式每一片奈米片四面都被包住。選順著電流切，則可以看到電子從源極、經過閘極下方、流到汲極的路。
-
-再往後，叉型片在兩種電晶體中間插一道牆，讓它們靠更近；CFET 則把兩個電晶體上下疊起來，佔地可以省三到五成，預計 2030 年代才會量產。`
+    }
   });
 
   /* 閘極控制：三格並排漏電動畫 */
-  A({
-    id: 'gatectl', part: 1, minutes: 2, short: '包得越緊漏電越少',
-    title: '閘極包得越緊，漏電越少', en: 'Gate Control',
-    thesis: '三種電晶體都在「關」的狀態，閘極長度一樣。上排是側面：<b>紅框的電子從源極偷溜到汲極</b>；下排是切面：看它從哪裡溜。拉短閘極，三種都漏得更多，但環繞式撐得最久。',
+  Fig.add('gatectl', { body: true,
     render: () => `<div class="s-body">
       <div class="col">${U.figHTML('gc-cv', '上：側面（橘色標尺＝閘極長度）　下：切面', '<span style="color:#1f4fb5">●</span> 電子　<span style="color:#1f4fb5;-webkit-text-stroke:1.5px #b3261e">●</span> 漏電的電子')}
         <div class="controls">${U.range('gc-l', '閘極長度', 6, 30, 1, 20, ' nm')}</div></div>
-      ${U.side({
-        meters: [['gc-a', '平面'], ['gc-b', '鰭式'], ['gc-c', '環繞式']],
-        points: ['離閘極越遠、管得越少，電子越容易漏', '平面漏在底下；鰭式漏在鰭的底部', '環繞式只剩每片正中央一點點'],
-        fact: { v: '省電 25–30%', d: '台積電 N2（第一代環繞式）相對 N3E：同速度下的功耗降幅（整個世代的改善，不只來自結構）' },
-        analogy: { icon: 'faucet', t: '比喻', p: '同樣短的水管：用手指壓會漏，用整個拳頭握住就關得緊。' }
+      ${U.pageSide({
+        meters: [['gc-a', '平面'], ['gc-b', '鰭式'], ['gc-c', '環繞式']]
       })}</div>`,
-    src: '示意動畫；漏電程度為簡化模型的相對值',
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#gc-cv'));
       let Lg = 20;
@@ -654,14 +570,7 @@
           U.setMeter(el, mid, leak, word, cls);
         });
       });
-    },
-    notes: `三種電晶體放在一起比，都在「關」的狀態，閘極長度也一樣。每一格分上下兩張圖。
-
-上面是側面：左邊是源極、右邊是汲極，中間灰色的是閘極，上面那條橘色標尺就是閘極長度。電晶體關掉的時候，源極的電子應該被擋住；紅框的電子就是硬闖過去的漏電。平面電晶體的閘極只壓在上面，電子從底下深處繞過去；鰭式從鰭的底部溜；環繞式只剩每片奈米片的正中央。
-
-下面是切面，也就是在閘極正中間切一刀、從電流方向看過去，可以清楚看到三種結構各漏在哪裡。
-
-現在把閘極長度往下拉。橘色標尺變短，源極和汲極靠得越來越近，三種電晶體漏電都變多，但平面最先失控，環繞式撐到最後。拉到 6 奈米，連環繞式也開始漏。所以再往後，閘極長度很難再縮，業界改成想辦法把電晶體排得更密、甚至上下疊起來，第三部分的 CFET 會講到。`
+    }
   });
 
   /* 時間軸：每個節點都有代表圖 */
@@ -715,10 +624,7 @@
     }
     U.txt(c, '示意圖', w - 10, h - 8, { align: 'right', size: 12, color: '#6a7888' });
   }
-  A({
-    id: 'timeline', part: 1, minutes: 2.5, short: '7→2 奈米時間軸',
-    title: '7 → 5 → 3 → 2 奈米：每一代換了什麼', en: 'Timeline',
-    thesis: '先預告三件大事，後面會一一拆解：<b>換更細的光（EUV）</b>、<b>換結構（鰭式 → 環繞式）</b>、<b>把電線搬到背面</b>。點選任一節點看說明和照片。',
+  Fig.add('timeline', { body: true,
     render: () => `<div class="s-body full" style="grid-template-rows:auto 1fr">
       <div class="fig" style="height:230px"><div class="fig-canvas"><svg id="tl-svg"></svg></div></div>
       <div class="s-body" style="grid-template-columns:40fr 60fr;gap:22px">
@@ -728,7 +634,6 @@
           <div id="tl-imgs" style="flex:1;min-height:0;display:flex;gap:10px"></div>
           <div id="tl-cr" style="font-size:11.5px;color:var(--ink-3);line-height:1.3"></div></div>
       </div></div>`,
-    src: 'TSMC、ASML、Intel、Samsung 公開資料（2026/09）',
     init(el, ctx) {
       const svg = U.$(el, '#tl-svg'); const { w, h } = U.fit(svg);
       const X = U.lin(2017.5, 2032.8, 40, w - 30);
@@ -771,14 +676,7 @@
         }
       }
       sel(0);
-    },
-    notes: `這條時間軸把 2018 年以後的大事串起來。上排是新的製程世代，下排是產業大事，每一個都可以點，右下角會出現說明和照片。
-
-7 奈米：這是一顆真實的 7 奈米處理器晶片。它還用舊的深紫外光，一條線要曝光好幾次。2019 年極紫外光 EUV 上線，波長短了十幾倍，單次能畫的線大約細了 3 倍，不用再曝光好幾次。5 奈米關鍵的十幾層大量改用 EUV，這是一顆 5 奈米的處理器晶片。3 奈米是台積電鰭式的最後一代，三星的 3 奈米則已經換成環繞式，左邊是 iPhone 15 Pro 的 A17 Pro 晶片，右邊是一根鰭的電子顯微鏡剖面，這個研究樣品大約 40 奈米寬，比量產晶片的鰭粗；彩色圖是元素分布，綠色是矽、黃色是包在外面的氧化層。
-
-2 奈米換成環繞式，右邊是真實環繞式電晶體的電子顯微鏡剖面，三片奈米片被閘極完全包住。這是研究樣品，片比量產的厚一些。之後是 High-NA、背面供電、第二代環繞式，最後是 2030 年代的 CFET。這裡先講一下代號：A 是埃，0.1 奈米。台積電把 A 寫在前面，A16 就是 16 埃、1.6 奈米級；Intel 把 A 寫在後面，18A、14A。意思一樣，都只是世代代號，不是哪一個尺寸，所以不能用數字大小直接比誰先進。背面供電雖然 Intel、台積電都發表過剖面照，但沒有開放授權，所以這幾個用示意圖表示。
-
-先記住這三件大事：換更細的光、換結構、把電線搬到背面，接下來會一一拆解。最後一頁的三個趨勢，它們各是一個代表。灰色區域是未來規劃，時程隨時可能改變。`
+    }
   });
 
   /* 三大廠：用實際電晶體密度比較各代製程 */
@@ -804,10 +702,7 @@
       { y: 2020.8, n: '5LPE', den: 127, m: 1, gaa: 0, bs: 0, d: '同樣叫 5 奈米，密度約 127，比台積電 N5 的 171 低不少。' },
       { y: 2025.9, dx: 0.4, n: 'SF2', den: 231, m: 1, gaa: 1, bs: 0, d: '原名 SF3（第二代 3 奈米），2024 年改名 SF2，2025 年底量產。Exynos 2600 使用。密度約 231（TechInsights 分析），和台積電 N3 家族相近。前一代 SF3E（2022）是全世界第一個量產的環繞式，但沒有公布密度。' } ] }
   ];
-  A({
-    id: 'fabs', part: 1, minutes: 3, short: '三大廠比較',
-    title: '三大廠比一比：同樣的「幾奈米」，實際能塞的電晶體差很多', en: 'TSMC · Intel · Samsung',
-    thesis: '每個點是一代製程，<b>高度是實際的電晶體密度</b>（每平方毫米幾百萬個）。實心是第三方分析或官方公布，空心是依官方宣稱推估；⚡ 是背面供電。點圓點看說明，或切到完整表格。',
+  Fig.add('fabs', { body: true,
     render: () => `<div class="s-body w66">
       <div class="col"><div class="controls">${U.seg('fb-m', ['密度走勢圖', '完整表格'], 0)}</div>
         <div class="fig grow" id="fb-chart"><div class="fig-title"><span>電晶體密度（百萬個／mm²，高密度電路）</span></div><div class="fig-canvas"><svg id="fb-svg"></svg></div></div>
@@ -829,7 +724,6 @@
         <div class="card"><h4>三星：最早換環繞式</h4><p style="font-size:19px">SF2（原名 SF3）約 231。2022 年的 SF3E 就量產環繞式，是第一家。</p></div>
         <div class="fact" style="margin-top:auto"><div class="v">約 1.3 倍</div><div class="d">同樣叫 2 奈米級，台積電 N2 的密度約是 Intel 18A、三星 SF2 的倍數：名字不能直接比</div></div>
       </div></div>`,
-    src: 'WikiChip、TechInsights 分析；Intel 公布值；TSMC、Intel 官方宣稱倍數推估（2026/09）。密度是高密度電路的推估值，實際晶片會混用多種電路，密度較低',
     init(el) {
       const svg = U.$(el, '#fb-svg'); const { w, h } = U.fit(svg);
       U.onSeg(el, 'fb-m', i => { U.$(el, '#fb-chart').style.display = i === 1 ? 'none' : ''; U.$(el, '#fb-table').style.display = i === 0 ? 'none' : ''; });
@@ -865,30 +759,17 @@
         U.$(el, '#fb-d').textContent = p.d;
       }
       const f = all.find(a => a.p.n === 'N2'); show(f.ln, f.p, f.dot);
-    },
-    notes: `三大廠的比較，直接用「實際能塞多少電晶體」來看。橫軸是年份，縱軸是電晶體密度：每平方毫米能放幾百萬個電晶體，用的是最密的那種電路來算。實心圓點是研究機構分析或公司公布的，空心圓點是照公司自己宣稱的「比上一代多幾成」推算的，⚡ 代表有背面供電。橘色虛線右邊是還沒量產的規劃。切到「完整表格」，可以看到三家每一代的名字和數字。
-
-先看前幾代：2015 年台積電 16 奈米大約 29，到 5 奈米已經 171，五年多了快六倍。Intel 在 14 奈米停留了好幾年，10 奈米一路延後，2021 年還把它改名叫 Intel 7。三星的 5 奈米只有 127，同樣叫 5 奈米，比台積電低不少。
-
-再看今天的 2 奈米級：台積電 N2 大約 313，Intel 18A 大約 238，三星 SF2 大約 231。要注意三星的 SF2 其實是原本的第二代 3 奈米，2024 年改名成 2 奈米；三星真正領先的地方是 2022 年的 SF3E，全世界第一個量產環繞式。三家都叫 2 奈米級，台積電卻多塞了三成左右，這就是前面說的：名字不能直接比。
-
-不過密度不是全部。Intel 18A 同時用了背面供電，速度表現很好；新結構的量產爬坡則是各家共同的挑戰。往右看規劃：台積電 A16 加背面供電、A14 再提升兩成；Intel 14A 宣稱比 18A 密三成左右。代號別看混：台積電的 A 在前（A16、A14），Intel 的 A 在後（18A、14A），A 都是埃、0.1 奈米，都只是代號；A16 和 14A 是兩家不同的製程，不能用數字大小比誰先進。最後提醒：密度、速度、良率三者都要好，才是真正的勝負關鍵。`
+    }
   });
 
   /* 成本：1,500 道關卡 */
-  A({
-    id: 'cost', part: 1, minutes: 2.2, short: '1,500 道關卡',
-    title: '1,500 道關卡，每一關都不能出錯', en: 'Why It Gets Expensive',
-    thesis: '一片晶圓要經過約 1,500 個步驟。拖動滑桿看：<b>每一步只要差一點點，最後能用的就少很多</b>。這裡粗估成整片全對或全錯；實際一個缺陷只壞幾顆晶粒，真正的良率算法在 <button type="button" class="btn" data-go="yield" style="padding:0 10px;font-size:16px">⑩ 良率 →</button>',
+  Fig.add('cost', { body: true,
     render: () => `<div class="s-body">
       <div class="col">${U.figHTML('ct-cv', '100 片晶圓闖關，最後剩下幾片完好？', '')}
         <div class="controls">${U.range('ct-p', '每一步的成功率', 0, 4, 1, 0, '')}</div></div>
-      ${U.side({
-        top: `<div class="fig" style="height:230px"><div class="fig-title"><span>每片晶圓價格（美元，業界估計）</span></div><div class="fig-canvas"><svg id="ct-bar"></svg></div></div>`,
-        points: ['步驟越多，每一步都要接近完美', '一台 EUV 機台約 2 億美元', '2nm 晶圓價格約是 28nm 的 10 倍'],
-        analogy: { icon: 'stairs', t: '比喻', p: '連續投 1,500 顆罰球都要進：就算命中率 99.9%，全部投進的機會也只剩兩成左右。' }
+      ${U.pageSide({
+        top: `<div class="fig" style="height:230px"><div class="fig-title"><span>每片晶圓價格（美元，業界估計）</span></div><div class="fig-canvas"><svg id="ct-bar"></svg></div></div>`
       })}</div>`,
-    src: '晶圓價格為 IBS、TrendForce 等業界估計',
     init(el, ctx) {
       U.$$(el, '[data-go]').forEach(b => b.onclick = () => Deck.goId(b.dataset.go));
       const { c, w, h } = U.canvas(U.$(el, '#ct-cv'));
@@ -923,21 +804,11 @@
         U.svg('text', { x, y: ax.y(v) - 5, 'text-anchor': 'middle', class: 'lbl-s mono', text: '$' + v + 'k' }, ax.plot);
         U.svg('text', { x, y: ax.h - 8, 'text-anchor': 'middle', class: 'lbl-s', text: n }, ax.plot);
       });
-    },
-    notes: `先進製程越來越貴，最主要的原因是步驟太多。一片晶圓從投片到完成要三、四個月，經過大約一千五百個步驟。
-
-左邊一百個圓圈代表一百片晶圓。一開始每一步的成功率是 99.9%，聽起來很完美，但走完一千五百步，只剩兩成左右。就像連投一千五百顆罰球都要進，命中率再高，全進的機會也很低。把滑桿往右拉到 99.99%，才剩大約 86 片完好。最後能用的比例，就叫「良率」，後面會一直出現這個詞。不過這裡是粗估：把每一步當成全對或全錯，好像一步出錯整片晶圓就報廢。實際上一個缺陷通常只壞掉附近幾顆晶粒，廠裡算的良率是一片晶圓上好晶粒的比例，第十章最後一頁會用晶粒來算真正的良率。
-
-所以每一道製程都要做到接近完美，這需要極昂貴的設備，一台 EUV 大約兩億美元。右上角是每片晶圓的價格，這是業界的估計，台積電不公開報價：2 奈米大約三萬美元，是 28 奈米的十倍。
-
-這就是第二部分要講的各項製程技術真正的壓力來源：每一步都要做到原子等級的精準。`
+    }
   });
 
   /* 第一部分小結 */
-  A({
-    id: 'p1sum', part: 1, minutes: 1.5, short: '第一部分總結',
-    title: '小結：要做出環繞式電晶體，需要哪些技術？', en: 'From Structure to Process',
-    thesis: '先用三句話回顧第一部分；再看左邊的每一個部位，各要靠哪一項製程技術做出來。<b>點右邊的技術可以直接跳到那一章。</b>',
+  Fig.add('p1sum', { body: true,
     render: () => `<div class="s-body w50">
       <div class="fig"><div class="fig-title"><span>環繞式電晶體剖面（沿通道方向）</span></div><div class="fig-canvas"><svg id="ps-svg"></svg></div></div>
       <div class="col">
@@ -978,13 +849,6 @@
       sh.push({ label: '紫色：絕緣層', x: cx + gw / 2 + 24, y: base - 120, cls: 'lbl-s', fill: '#6b4fb0' });
       sh.push({ label: '綠色：間隔層', x: cx + gw / 2 + 24, y: base - 14, cls: 'lbl-s', fill: '#1f7a4d' });
       U.drawShapes(g, sh);
-    },
-    notes: `第一部分小結。先用右下角的三句話回顧：第一，縮太短會漏電，所以閘極從壓住通道變成包住通道；第二，「2 奈米」只是世代代號，密度還靠把電路排得更聰明；第三，三大廠都已經換成環繞式；背面供電 Intel 18A 已經先用上，台積電 A16 接著跟上。
-
-接著看左邊環繞式電晶體的剖面：三片灰藍色的矽奈米片，每一片大約 5 奈米厚，被紫色的絕緣層和灰色的閘極完全包住，左右兩邊是源極和汲極。
-
-右邊這張表把每個部位對應到一項製程技術，而且可以點，點了會直接跳到那一章。最後一列不是部位：做出來還要變成產品、良率一格一格爬上去，這是第十章「從設計到量產」。
-
-下一部分，我們就一項一項來看這些技術。`
+    }
   });
 })();

@@ -51,6 +51,7 @@ class Faq:
     deep: bool
     rel: list            # [(知識庫名稱或 None, 小節 id, 行號)]
     line: int
+    topic: str = ''      # 前面最近的「### 主題」（簡報的自我檢查用來分組）
 
 
 @dataclass
@@ -297,12 +298,15 @@ def load_chapter(path, problems, faq_head=FAQ_HEAD):
     if faq_head in lines:
         start = lines.index(faq_head)
         q = None
+        topic = ''
         for i in range(start + 1, len(lines)):
             l = lines[i]
+            if l.startswith('### '):
+                topic = l[4:].strip()
             sm = re.search(r'<summary>(.*?)</summary>', l)
             if sm:
                 t = sm.group(1).strip()
-                q = Faq(re.sub(r'^【深入】\s*', '', t), t.startswith('【深入】'), [], i + 1)
+                q = Faq(re.sub(r'^【深入】\s*', '', t), t.startswith('【深入】'), [], i + 1, topic)
                 faqs.append(q)
             rm = REL.match(l)
             if rm and q is not None:
@@ -316,7 +320,7 @@ def load_chapter(path, problems, faq_head=FAQ_HEAD):
                     else:
                         problems.append((path, i + 1, f'「相關：」裡的「{tok}」不是小節 id'))
             if l.strip() == '</details>':
-                if q is not None and not q.rel:
+                if q is not None and not q.rel and faq_head == FAQ_HEAD:  # 簡報的自我檢查可以不指向任何一頁
                     problems.append((path, q.line, f'常見問題「{q.q}」沒有寫「相關：」指向任何小節'))
                 q = None
     ch = Chapter(path, _num(path.name), title, overview, sections, faqs, text)
@@ -520,8 +524,8 @@ def slide_ids(kb):
 # 舊的簡報頁寫在 deck/slides/*.js，文字和動畫混在一起；搬到 Markdown 之前，只抓得到標題、結論、講稿這些欄位。
 
 CHECK_HEAD = '## 自我檢查'
-DECK_META = {'短標題': 'short', '英文': 'en', '建議': 'minutes', '圖': 'fig'}
-DECK_FIELD = re.compile(r'^(結論|重點|數字卡|比喻|旁白)(?:（([a-z]+)）)?[：:]\s*(.*)$')
+DECK_META = {'短標題': 'short', '英文': 'en', '建議': 'minutes', '圖': 'fig', '標籤': 'badge', '資料': 'src'}
+DECK_FIELD = re.compile(r'^(結論|重點|圖說|數字卡|比喻|旁白)(?:（([a-z]+)(?:｜([^）]+))?）)?[：:]\s*(.*)$')
 
 
 @dataclass
@@ -536,10 +540,13 @@ class DeckPage:
     en: str = ''
     minutes: float = 0
     fig: str = ''        # 互動圖名稱，或 assets/img/…、assets/video/…（後面可以接「｜說明」）
+    badge: str = ''      # 標題旁的標籤，例如「新技術」
+    src: str = ''        # 頁尾的「資料：」
     thesis: str = ''
     points: list = field(default_factory=list)
+    captions: list = field(default_factory=list)   # 圖說：[(標題, 說明)]，樣板的每一步、每個零件
     fact: tuple = None       # (數字, 說明)
-    analogy: tuple = None    # (圖示名稱, 文字)
+    analogy: tuple = None    # (圖示名稱, 文字, 卡片標題)
     notes: str = ''
     footnotes: dict = field(default_factory=dict)  # 註腳名稱 → 出處
     md: bool = True          # False：舊的程式頁
@@ -547,7 +554,7 @@ class DeckPage:
     @property
     def text(self):
         """這一頁的純文字：給搜尋、讀者測試用。"""
-        parts = [self.title, self.thesis, *self.points]
+        parts = [self.title, self.thesis, *self.points, *('：'.join(c) for c in self.captions)]
         if self.fact:
             parts.append('：'.join(self.fact))
         if self.analogy:
@@ -617,6 +624,9 @@ def _deck_page(s, key, problems):
             p.footnotes[fm.group(1)] = fm.group(2).strip()
             mode = 'fn'
             continue
+        if mode == '旁白':  # 旁白是最後一個欄位：之後到註腳之前都是旁白
+            notes.append(l.rstrip())
+            continue
         mm = re.match(r'^- (\S+?)[：:]\s*(.*?)\s*$', l)
         if meta and mm and mm.group(1) in DECK_META:
             key_, v = DECK_META[mm.group(1)], mm.group(2)
@@ -628,7 +638,7 @@ def _deck_page(s, key, problems):
         fm2 = DECK_FIELD.match(l)
         if fm2:
             meta = False
-            name, icon, rest = fm2.groups()
+            name, icon, atitle, rest = fm2.groups()
             mode = name
             if name == '結論':
                 p.thesis = rest
@@ -637,26 +647,25 @@ def _deck_page(s, key, problems):
                 p.fact = (v.strip(), d.strip())
                 mode = None
             elif name == '比喻':
-                p.analogy = (icon or 'chip', rest)
+                p.analogy = (icon or 'chip', rest, atitle or '比喻')
             elif name == '旁白' and rest:
                 notes.append(rest)
             continue
         if not l.strip():
-            if mode == '旁白':
-                notes.append('')
-            elif mode in ('結論', '比喻', '重點'):
+            if mode in ('結論', '比喻', '重點', '圖說'):
                 mode = None
             continue
         if mode == '重點' and l.startswith('- '):
             p.points.append(l[2:].strip())
+        elif mode == '圖說' and l.startswith('- '):
+            t, _, d = l[2:].strip().partition('：')
+            p.captions.append((t.strip(), d.strip()))
         elif mode == '結論':
             p.thesis += l.strip()
         elif mode == '比喻':
-            p.analogy = (p.analogy[0], p.analogy[1] + l.strip())
-        elif mode == '旁白':
-            notes.append(l.rstrip())
+            p.analogy = (p.analogy[0], p.analogy[1] + l.strip(), p.analogy[2])
         else:
-            problems.append((s.file, k, f'簡報頁「{s.id}」看不懂這一行，欄位要寫成「結論：」「重點：」「數字卡：」「比喻：」「旁白：」：{l[:40]}'))
+            problems.append((s.file, k, f'簡報頁「{s.id}」看不懂這一行，欄位要寫成「結論：」「重點：」「圖說：」「數字卡：」「比喻：」「旁白：」：{l[:40]}'))
     p.notes = re.sub(r'\n{3,}', '\n\n', '\n'.join(notes)).strip()
     return p
 
