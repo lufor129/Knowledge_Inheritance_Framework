@@ -48,11 +48,11 @@
       "state": "CLOSED"
     },
     {
-      "text": "hk3 那句倍數有出處註腳",
+      "text": "hk3 那句（倍數或介電常數）有出處註腳",
       "type": "file",
       "ref": "main",
       "path": "kb/semiconductor/handbook/2-manufacturing/05-gate.md",
-      "pattern": "傳遞電場的能力[^\\n]*\\[\\^"
+      "pattern": "^- 它[^\\n]*(倍|介電常數)[^\\n]*\\[\\^"
     },
     {
       "text": "主線通過檢查",

@@ -70,7 +70,7 @@
       "type": "file",
       "ref": "pr:pr_fix",
       "path": "kb/semiconductor/handbook/2-manufacturing/01-litho.md",
-      "pattern": "150 噸(?![^\\n]*\\[\\^)",
+      "pattern": "^(?!\\[\\^)[^\\n]*150 噸(?![^\\n]*\\[\\^)",
       "absent": true
     },
     {
