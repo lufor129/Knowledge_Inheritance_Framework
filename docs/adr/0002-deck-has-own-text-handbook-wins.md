@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by ADR-0006
 ---
 
 # 簡報可以自己寫文字，但手冊仍是正本

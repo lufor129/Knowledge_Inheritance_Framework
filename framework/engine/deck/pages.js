@@ -34,7 +34,7 @@
   function eyebrow(p) {
     const part = (Deck.PARTS[p.part] || '').split(' · ')[0];
     if (!p.chap) return Deck.PARTS[p.part] || '';
-    const ch = (Deck.CHAPS.find(c => c[0] === p.chap) || [])[1] || '';
+    const ch = (Deck.CHAPS.find(c => c[0] === p.chap && (c[3] === undefined || c[3] === p.part)) || [])[1] || '';
     return `${part} · ${CIRC[p.chap - 1] || p.chap} ${ch}`;
   }
 

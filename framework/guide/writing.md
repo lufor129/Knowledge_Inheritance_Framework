@@ -1,6 +1,6 @@
 # 手冊的格式與寫作
 
-寫或改手冊時照這份做。用詞照 GLOSSARY.md；檔案骨架在 framework/templates/。
+寫或改手冊時照這份做；出處、圖片、術語表、ELI5 這幾段，簡報頁也照這裡。新人主要看簡報：新知識先做成簡報頁（framework/guide/deck.md），一頁放不下的細節才寫進手冊。用詞照 GLOSSARY.md；檔案骨架在 framework/templates/。
 
 ## 結構
 

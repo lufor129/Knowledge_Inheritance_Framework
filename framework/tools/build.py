@@ -85,10 +85,22 @@ def linkify(text):
 
 # ---------- 簡報的章：學習路徑、自我檢查 ----------
 
+def chapter_bar(deck):
+    """章節列：[編號, 章名, 第一頁 id, 部分]。頁序寫了「章節列」就照它；沒寫就照簡報章檔的「# 章名」，每個部分各自編號。"""
+    part_of = {p.id: p.part for p in deck.pages}
+    if deck.order.chaps:
+        return [[n, name, first, part_of.get(first, 0)] for n, name, first in deck.order.chaps]
+    first = {}
+    for p in deck.pages:
+        if p.chap:
+            first.setdefault((p.part, p.chap), p.id)
+    return [[c, deck.titles.get((part, c), ''), pid, part] for (part, c), pid in first.items()]
+
+
 def groups(kb, deck):
     """照頁序把連續、同一章的頁分成一組：入口網站的學習路徑，和章末自我檢查放在哪裡。"""
     order = deck.order
-    names = {n: name for n, name, _ in order.chaps}
+    names = {(part, n): name for n, name, _, part in chapter_bar(deck)}
     out, seen_part = [], set()
     for p in deck.pages:
         key = f'{p.part}-{p.chap}'
@@ -96,7 +108,7 @@ def groups(kb, deck):
             g = out[-1]
         else:
             if p.chap:
-                name = f'{CIRC[p.chap - 1] if p.chap <= len(CIRC) else p.chap} {names.get(p.chap, deck.titles.get((p.part, p.chap), ""))}'
+                name = f'{CIRC[p.chap - 1] if p.chap <= len(CIRC) else p.chap} {names.get((p.part, p.chap), deck.titles.get((p.part, p.chap), ""))}'
             elif p.part not in seen_part:
                 name = order.parts.get(p.part, deck.titles.get((p.part, 0), ''))
             else:
@@ -218,7 +230,7 @@ def build_deck(kb, links):
     secs = K.section_index()
     order = deck.order
     cfg = {'title': order.settings.get('標題', kb.title), 'watermark': order.settings.get('浮水印', ''),
-           'parts': order.parts, 'chaps': [list(c) for c in order.chaps],
+           'parts': order.parts, 'chaps': chapter_bar(deck),
            'kb': {'name': kb.name, 'title': kb.title}, 'links': links,
            'maps': page_maps(kb, deck, secs), 'groups': groups(kb, deck), 'checks': checks(kb, deck, secs)}
     w, d = kb.dir / 'widgets', kb.dir / 'deck'
@@ -279,7 +291,7 @@ def build(kb, dest=None, links=DIST, names=('handbook.html', 'deck.html')):
     dest.mkdir(parents=True, exist_ok=True)
     out = [dest / names[0]]
     out[0].write_text(build_handbook(kb, links), encoding='utf-8')
-    if kb.has_deck:
+    if kb.has_deck and K.load_deck(kb).pages:  # 剛建好骨架、還沒有頁的簡報先不建
         out.append(dest / names[1])
         out[1].write_text(build_deck(kb, links), encoding='utf-8')
     for f in out:

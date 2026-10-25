@@ -36,6 +36,13 @@
           {
             "file": "kb/semiconductor/terms.md",
             "append": "| 定期保養 | Preventive Maintenance (PM) | 照固定週期排好的保養 | pmx |\n"
+          },
+          {
+            "file": "kb/semiconductor/deck/order.md",
+            "replace": [
+              "→ eyes@",
+              "→ pmx, eyes@"
+            ]
           }
         ],
         "commit": "半導體：檢測量測新增機台保養 PM",
@@ -47,7 +54,10 @@
             "來歷:訪談"
           ],
           "body": "🤖 由 Agent 產生\n\n## 改了什麼\n- 新增 `pmx` 機台保養 PM、一題常見問題、一個術語。\n\n## 來歷\n訪談\n\nCloses #{issue_pm}"
-        }
+        },
+        "run": [
+          "python3 framework/tools/check.py --fp semiconductor eyes"
+        ]
       }
     },
     {
@@ -82,6 +92,14 @@
       "ref": "main",
       "path": "kb/semiconductor/handbook/2-manufacturing/09-metrology.md",
       "pattern": "相關：[^\\n]*pmx",
+      "absent": true
+    },
+    {
+      "text": "頁序裡沒有指向 pmx 的對應",
+      "type": "file",
+      "ref": "main",
+      "path": "kb/semiconductor/deck/order.md",
+      "pattern": "pmx",
       "absent": true
     },
     {

@@ -37,6 +37,13 @@
       "pattern": "維護者"
     },
     {
+      "text": "骨架裡有簡報的頁序",
+      "type": "file",
+      "ref": "main",
+      "path": "kb/mlops/deck/order.md",
+      "pattern": "## 部分"
+    },
+    {
       "text": "首頁的知識庫清單多了 mlops",
       "type": "file",
       "ref": "main",

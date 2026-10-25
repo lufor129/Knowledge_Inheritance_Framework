@@ -1,7 +1,8 @@
 # 頁序
 
-簡報自己的頁面清單：由上到下就是播放順序。頁面後面的「→ 小節@指紋」記錄這一頁對應哪些小節；
-指紋由 check.py --fp 產生，人不用手改。部分和章節列只給簡報用，預設照手冊，需要重新編排時才改。
+簡報的頁面清單：由上到下就是播放順序。頁面寫在 deck/<部分>/<章>.md（寫法見 framework/guide/deck.md），加進這裡才會播放。
+有對應小節的頁寫成「- 頁id@頁的指紋 → 小節@指紋, 小節@指紋」：哪一邊改了，檢查程式就點名另一邊要重看。指紋由 check.py --fp 產生，人不用手改。
+章節列這份簡報自己編排（第二部分的十章）；沒寫的話會照簡報章檔的「# 章名」自動產生。
 
 ## 設定
 - 標題：先進製程技術演進
@@ -45,14 +46,14 @@
 - p1sum
 - p2
 - loop
-- litho1 → litho1@570fa3, field@8fc9c4, reso@09ee2b
-- lithoL → litho2@6b2f76
-- litho3 → litho3@f30d0e
-- litho3m → litho3m@cdaa31
-- litho4 → litho4@a6d85f
-- litho5 → reso@09ee2b, mpat@abebb2, litho5@373146
-- litho6 → litho6@310844
-- cmask → cmask@1690c6
+- litho1@34f751 → litho1@570fa3, field@8fc9c4, reso@09ee2b
+- lithoL@349a6b → litho2@6b2f76
+- litho3@9e2a91 → litho3@f30d0e
+- litho3m@42065b → litho3m@cdaa31
+- litho4@f8fd2a → litho4@a6d85f
+- litho5@d92432 → reso@09ee2b, mpat@abebb2, litho5@373146
+- litho6@4e4073 → litho6@310844
+- cmask@c5975a → cmask@1690c6
 - etch1
 - etch3
 - etch4
@@ -63,7 +64,7 @@
 - dope1
 - depo3
 - dope3
-- hk1 → hk1@4c046b, hk2@b86b6a, hk3@e3a45c, hk4@9e6156
+- hk1@f0cc3a → hk1@4c046b, hk2@b86b6a, hk3@e3a45c, hk4@9e6156
 - cmp1
 - cmp2
 - cmp3
@@ -74,19 +75,19 @@
 - beol2
 - tcad1
 - tcad2
-- eyes → eyes@c620d0
-- metro → metro@f1c701
-- tem → tem@87f1a2
-- sem → sem@c64f55
-- ocd → ocd@7654cc
-- ocdf → ocdf@c5ecf0
-- ocdb → ocdb@efd008
-- insp → insp@88dbf5
-- mloop → mloop@31c782
-- apc → apc@26198a
-- wat → wat@15f0a1
-- wat2 → wat2@8751e6
-- wat4 → wat4@4f7223
+- eyes@fe5310 → eyes@c620d0
+- metro@3ac731 → metro@f1c701
+- tem@424560 → tem@87f1a2
+- sem@d499c2 → sem@c64f55
+- ocd@c8420c → ocd@7654cc
+- ocdf@5e0141 → ocdf@c5ecf0
+- ocdb@edcf35 → ocdb@efd008
+- insp@a6ca6b → insp@88dbf5
+- mloop@2b5e95 → mloop@31c782
+- apc@a8207b → apc@26198a
+- wat@d5c254 → wat@15f0a1
+- wat2@3495a7 → wat2@8751e6
+- wat4@afc5b9 → wat4@4f7223
 - d2m
 - pdk
 - npi

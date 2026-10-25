@@ -5,7 +5,7 @@
   const W = 1600, H = 900;
   /* 由 build.py 從頁序（deck/order.md）產生：部分、章節列、浮水印 */
   const CFG = window.DECK_CONFIG || {};
-  /* 章節列：[編號, 名稱, 該章第一頁 id]；頁面用 chap 指定所屬章節 */
+  /* 章節列：[編號, 名稱, 該章第一頁 id, 部分]；頁面用 part、chap 指定所屬章節，章節列只列同一個部分的章 */
   const CHAPS = CFG.chaps || [];
   const PARTS = CFG.parts || {};
 
@@ -36,7 +36,7 @@
   Deck.head = function (s, i) {
     let flow = '';
     if (s.chap) { // 右上角的章節列：亮起目前所在的章，點名稱跳到該章第一頁
-      flow = '<div class="miniflow" aria-label="章節列">' + CHAPS.map(([k, n, go]) =>
+      flow = '<div class="miniflow" aria-label="章節列">' + CHAPS.filter(c => c[3] === undefined || c[3] === s.part).map(([k, n, go]) =>
         `<span class="${k === s.chap ? 'on' : ''}" data-chap="${go}" title="跳到第 ${k} 章">${'①②③④⑤⑥⑦⑧⑨⑩'[k - 1]} ${n}</span>`).join('') + '</div>';
     }
     return `<header class="s-head">

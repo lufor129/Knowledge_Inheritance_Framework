@@ -1,6 +1,6 @@
 # 情境測試
 
-用全新的 Claude Code 跑 docs/design.md 的 14 個情境（加上「刪除小節」），由另一個模型扮演使用者回話，最後評分。改了 skill、AGENTS.md 或 framework/guide/ 之後跑一次，看行為有沒有變好或變壞。
+用全新的 Claude Code 跑 docs/design.md 的情境（17 個，加上「刪除小節」），由另一個模型扮演使用者回話，最後評分。改了 skill、AGENTS.md 或 framework/guide/ 之後跑一次，看行為有沒有變好或變壞。
 
 ## 怎麼跑
 
