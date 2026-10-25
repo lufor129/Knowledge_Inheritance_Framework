@@ -57,15 +57,15 @@ def recent(start):
 def clone(dest):
     """從測試 repo 拉一份乾淨的工作目錄。
 
-    測試 repo 的歷史裡有之前的情境合併的提案；Agent 翻歷史會看到別的情境的內容。
-    所以把這次重置的 commit 接成歷史的起點（git replace --graft，只在本機），git log 只看得到重置之後的。
+    測試 repo 的歷史裡有之前的情境合併的提案；Agent 翻歷史（Claude Code 開場也會列出最近的 commit）
+    會看到別的情境的內容。所以只拉這次重置之後的歷史（shallow clone），之前的 commit 根本不在複本裡。
     """
     if dest.exists():
         shutil.rmtree(dest)
-    sh(['gh', 'repo', 'clone', SANDBOX, str(dest), '--', '--quiet'])
-    start = sh(['git', 'log', '-1', '--format=%H', '--grep=^測試：重置成', 'origin/main'], cwd=dest, check=False)
-    if start:
-        sh(['git', 'replace', '--graft', start], cwd=dest)
+    commits = json.loads(api('commits?sha=main&per_page=50', check=False) or '[]')
+    start = next((c for c in commits if c['commit']['message'].startswith('測試：重置成')), None)
+    since = [f'--shallow-since={start["commit"]["committer"]["date"]}'] if start else []
+    sh(['gh', 'repo', 'clone', SANDBOX, str(dest), '--', '--quiet', *since])
     return dest
 
 

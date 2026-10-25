@@ -34,7 +34,8 @@ TESTS = S.ROOT / 'framework/tests'
 ALLOWED = ['Read', 'Edit', 'Write', 'Glob', 'Grep', 'Agent', 'Skill', 'WebSearch', 'WebFetch', 'TodoWrite',
            'Bash(git:*)', 'Bash(gh:*)', 'Bash(python3:*)', 'Bash(grep:*)', 'Bash(ls:*)', 'Bash(cat:*)',
            'Bash(mkdir:*)', 'Bash(head:*)', 'Bash(tail:*)', 'Bash(wc:*)', 'Bash(find:*)', 'Bash(echo:*)',
-           'Bash(date:*)', 'Bash(sort:*)']
+           'Bash(date:*)', 'Bash(sort:*)', 'Bash(sed:*)', 'Bash(cut:*)', 'Bash(awk:*)', 'Bash(cp:*)',
+           'Bash(pdftotext:*)']  # 測試裡沒有人按「允許」：合理、不危險的指令先允許，要按幾次另外估計
 
 
 def agent_turn(clone, msg, sid, model):

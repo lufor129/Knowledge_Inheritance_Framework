@@ -19,7 +19,7 @@ python3 framework/tests/run.py --ref main --config with_skill --iteration .kif/t
 
 1. **重置測試 repo**：把要測的那一版框架推到 framework/tests/sandbox.json 指定的測試 repo，刪掉所有 issue、關掉所有提案（GitHub 刪不掉提案）、刪掉其他分支。
    - 推送用的是一般推送：測試 repo 的歷史會一直變長，但內容每次都是乾淨的。
-   - 歷史裡有之前的情境合併的提案。給 Agent 的複本把這次重置接成歷史的起點，`git log` 看不到之前的；關掉的舊提案還是查得到，情境不要依賴「沒有舊提案」。
+   - 歷史裡有之前的情境合併的提案。給 Agent 的複本只拉這次重置之後的歷史（shallow clone），看不到之前的；關掉的舊提案還是查得到，情境不要依賴「沒有舊提案」。
    - 指定成正式 repo 會直接拒絕。
 2. **建立前置狀態**：照情境的 `setup` 開 issue、開分支和提案、留言、合併。
 3. **對話**：在測試 repo 的一份新複本裡跑 `claude -p`。
