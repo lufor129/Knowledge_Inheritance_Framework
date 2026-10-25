@@ -1,15 +1,56 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(python3 framework/tools/check.py:*)",
+      "Bash(python3 framework/tools/build.py:*)",
+      "Bash(python3 framework/tools/index.py:*)",
+      "Bash(python3 framework/tools/read.py:*)",
+      "Bash(python3 framework/tools/who.py:*)",
+      "Bash(python3 framework/tools/get.py:*)",
+      "Bash(python3 framework/tools/reader_test.py:*)",
+      "Bash(python3 framework/tools/proposal.py:*)",
+      "Bash(git fetch:*)",
+      "Bash(git switch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git pull:*)",
+      "Bash(git grep:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh pr checkout:*)",
+      "Bash(gh release download:*)",
+      "Bash(gh label list:*)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "hooks": [{ "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/framework/tools/hooks/guard_git.py\"" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/framework/tools/hooks/guard_git.py\""
+          }
+        ]
       }
     ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit",
-        "hooks": [{ "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/framework/tools/hooks/check_after_edit.py\"" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/framework/tools/hooks/check_after_edit.py\""
+          }
+        ]
       }
     ]
   }

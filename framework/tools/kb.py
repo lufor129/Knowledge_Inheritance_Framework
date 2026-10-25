@@ -1,16 +1,23 @@
 """知識庫的共用解析：知識庫、部分、章、小節、常見問題、頁序、圖片清單。
 
-check.py、build.py、index.py 都用這裡的函式讀檔案。只用 Python 標準函式庫。
+framework/tools/ 的工具都用這裡的函式讀檔案。只用 Python 標準函式庫。
 """
 import hashlib
+import io
 import json
 import pathlib
 import re
+import shutil
+import subprocess
+import tarfile
 from dataclasses import dataclass, field
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 KB_DIR = ROOT / 'kb'
 CONFIG = json.loads((ROOT / 'framework/config.json').read_text(encoding='utf-8'))
+LOCAL = ROOT / '.kif/local.json'     # 使用者的名字、帳號、關心的知識庫；只存在本機
+TMP = ROOT / '.kif/tmp'              # Agent 的暫存檔（issue 內文、提案說明、讀者測試）
+SNAP = ROOT / '.kif/snapshot'        # 某一版手冊的快照（正式內容、分支的起點）
 
 ANCHOR = re.compile(r'^<a name="([^"]*)"></a>\s*$')
 ID_OK = re.compile(r'^[a-z][a-z0-9]*$')
@@ -96,19 +103,106 @@ def fingerprint(text):
 
 
 def rel(path):
-    return str(pathlib.Path(path).resolve().relative_to(ROOT))
+    """相對於 repo 的路徑；快照裡的檔案寫成它在 repo 裡的位置（kb/…）。"""
+    p = pathlib.Path(path).resolve()
+    if SNAP.resolve() in p.parents:
+        return str(pathlib.Path(*p.relative_to(SNAP.resolve()).parts[1:]))
+    return str(p.relative_to(ROOT))
 
 
-def all_kbs():
-    return [load_kb(d) for d in sorted(KB_DIR.iterdir()) if (d / 'README.md').exists()]
+def all_kbs(base=None):
+    base = base or KB_DIR
+    return [load_kb(d) for d in sorted(base.iterdir()) if (d / 'README.md').exists()]
 
 
-def find_kb(arg):
+def find_kb(arg, base=None):
     name = pathlib.Path(arg).name
-    d = KB_DIR / name
+    d = (base or KB_DIR) / name
     if not (d / 'README.md').exists():
         raise SystemExit(f'找不到知識庫「{arg}」：kb/{name}/README.md 不存在')
     return load_kb(d)
+
+
+def people(block):
+    """「維護者」清單的每一列「- 名字（GitHub: 帳號）」→ [(名字, 帳號或 None)]。"""
+    out = []
+    for l in (block or '').splitlines():
+        m = re.match(r'^\s*[-*]\s+(.+?)\s*$', l)
+        if not m:
+            continue
+        h = re.search(r'(?:GitHub|GitLab)[:：]\s*@?([\w-]+)', m.group(1))
+        name = re.sub(r'[（(].*?[)）]', '', m.group(1)).strip()
+        out.append((name, h.group(1) if h else None))
+    return out
+
+
+def framework_maintainers():
+    return people(_block((ROOT / 'README.md').read_text(encoding='utf-8'), '框架維護者'))
+
+
+def load_local():
+    try:
+        return json.loads(LOCAL.read_text(encoding='utf-8'))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def save_local(data):
+    LOCAL.parent.mkdir(parents=True, exist_ok=True)
+    LOCAL.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+
+# ---------- 正式內容和分支的起點 ----------
+
+SNAP_FILES = re.compile(r'^kb/[^/]+/(?:README\.md|terms\.md|handbook/.+|deck/order\.md)$')
+
+
+def git(*args, check=True):
+    r = subprocess.run(['git', *args], cwd=ROOT, capture_output=True, text=True)
+    if check and r.returncode:
+        raise SystemExit(f'git {" ".join(args)} 失敗：{r.stderr.strip()}')
+    return r.stdout.strip()
+
+
+def main_ref(fetch=True):
+    """正式內容的 git 參照：有遠端就先抓最新的，用 origin/main；沒有遠端（手動模式）用本機的 main。"""
+    main = CONFIG.get('main', 'main')
+    if git('remote', check=False):
+        if fetch:
+            git('fetch', '--quiet', 'origin', main, check=False)
+        if git('rev-parse', '--verify', '--quiet', f'origin/{main}', check=False):
+            return f'origin/{main}'
+    return main
+
+
+def base_ref():
+    """這個分支是從正式內容的哪一版開出來的（比較「這次改了什麼」用）。"""
+    return git('merge-base', main_ref(), 'HEAD')
+
+
+def snapshot(ref, name):
+    """把 ref 那一版的手冊（各知識庫的 README、terms、handbook、頁序）放到 .kif/snapshot/<name>/kb/。
+
+    回傳那個 kb 資料夾，可以直接給 all_kbs()、find_kb() 當 base。
+    """
+    sha = git('rev-parse', ref)
+    dest = SNAP / name
+    stamp = dest / 'COMMIT'
+    if stamp.exists() and stamp.read_text().strip() == sha:
+        return dest / 'kb'
+    if dest.exists():
+        shutil.rmtree(dest)
+    (dest / 'kb').mkdir(parents=True)
+    listing = subprocess.run(['git', 'ls-tree', '-r', '-z', '--name-only', sha, 'kb'], cwd=ROOT,
+                             capture_output=True, check=True).stdout.decode('utf-8')
+    files = [f for f in listing.split('\0') if SNAP_FILES.match(f)]
+    if files:
+        data = subprocess.run(['git', 'archive', '--format=tar', sha, '--', *files], cwd=ROOT,
+                              capture_output=True, check=True).stdout
+        with tarfile.open(fileobj=io.BytesIO(data)) as t:
+            t.extractall(dest, filter='data')
+    stamp.write_text(sha + '\n')
+    return dest / 'kb'
 
 
 def _h1(text):
@@ -133,15 +227,7 @@ def load_kb(d):
         if para and not para.startswith(('#', '<!--', '```')):
             intro = ' '.join(l.strip() for l in para.splitlines())
             break
-    maint = []
-    blk = _block(readme, '維護者')
-    for l in (blk or '').splitlines():
-        m = re.match(r'^\s*[-*]\s+(.+?)\s*$', l)
-        if not m:
-            continue
-        h = re.search(r'(?:GitHub|GitLab)[:：]\s*@?([\w-]+)', m.group(1))
-        name = re.sub(r'[（(].*?[)）]', '', m.group(1)).strip()
-        maint.append((name, h.group(1) if h else None))
+    maint = people(_block(readme, '維護者'))
     big = _block(readme, '全景圖') or ''
     mm = re.search(r'```mermaid\n(.*?)```', big, re.S)
     parts = []
@@ -236,6 +322,87 @@ def load_chapter(path, problems):
     for s in sections:
         s.chapter = ch
     return ch
+
+
+def faq_block(ch, q):
+    """一題常見問題的原文：從 <details> 到 </details>。"""
+    lines = ch.text.splitlines()
+    start = q.line - 1
+    if start > 0 and lines[start - 1].strip() == '<details>':
+        start -= 1
+    end = next((i for i in range(q.line - 1, len(lines)) if lines[i].strip() == '</details>'), len(lines) - 1)
+    return '\n'.join(lines[start:end + 1])
+
+
+def faq_answer(ch, q):
+    """一題常見問題的答案：<summary> 之後、「相關：」之前。"""
+    body = []
+    for l in faq_block(ch, q).splitlines()[1:]:
+        if '<summary>' in l or l.strip() in ('<details>', '</details>') or REL.match(l):
+            continue
+        body.append(l)
+    return '\n'.join(body).strip()
+
+
+def chapter_body(ch):
+    """章的內文，不含常見問題（讀者測試給外行讀者看的部分）。"""
+    lines = ch.text.splitlines()
+    if FAQ_HEAD in lines:
+        lines = lines[:lines.index(FAQ_HEAD)]
+    return '\n'.join(lines).rstrip() + '\n'
+
+
+# ---------- 這次改了什麼 ----------
+
+@dataclass
+class Changes:
+    chapters: list       # 內容有變的章（新的這一版）
+    added: list          # [Section]
+    modified: list       # [Section]
+    deleted: list        # [Section]（舊的那一版）
+    faq_added: list      # [(Chapter, Faq)]
+    faq_changed: list
+    faq_deleted: list
+    terms_added: list    # terms.md 新增的列
+    pages: list          # 頁序裡對應或指紋改過的簡報頁 id
+
+
+def changes(old, new):
+    """比較同一個知識庫的兩版（old 可以是 None，表示新的知識庫）。"""
+    o_secs = {x.id: x for x in old.sections} if old else {}
+    n_secs = {x.id: x for x in new.sections}
+    o_chaps = {rel(c.file): c for c in old.chapters} if old else {}
+    chapters = [c for c in new.chapters if rel(c.file) not in o_chaps or o_chaps[rel(c.file)].text != c.text]
+    added = [x for i, x in n_secs.items() if i not in o_secs]
+    modified = [x for i, x in n_secs.items() if i in o_secs and (o_secs[i].fp != x.fp or o_secs[i].title != x.title)]
+    deleted = [x for i, x in o_secs.items() if i not in n_secs]
+
+    def faqs(kb):
+        return {(rel(c.file), q.q): (c, q, faq_block(c, q)) for c in kb.chapters for q in c.faqs} if kb else {}
+    of, nf = faqs(old), faqs(new)
+    faq_added = [(c, q) for k, (c, q, _) in nf.items() if k not in of]
+    faq_changed = [(c, q) for k, (c, q, b) in nf.items() if k in of and of[k][2] != b]
+    faq_deleted = [(c, q) for k, (c, q, _) in of.items() if k not in nf]
+
+    def term_rows(kb):
+        f = kb.dir / 'terms.md' if kb else None
+        if not f or not f.exists():
+            return []
+        return [l for l in f.read_text(encoding='utf-8').splitlines() if l.startswith('|') and not set(l) <= set('|-: ')]
+    o_terms = set(term_rows(old))
+    terms_added = [l for l in term_rows(new)[1:] if l not in o_terms]
+
+    def page_maps(kb):
+        return {p.id: p.maps for p in load_order(kb).pages} if kb and kb.has_deck else {}
+    op, np_ = page_maps(old), page_maps(new)
+    pages = [i for i, m in np_.items() if op.get(i) != m]
+    return Changes(chapters, added, modified, deleted, faq_added, faq_changed, faq_deleted, terms_added, pages)
+
+
+def base_kb(name):
+    """這個分支起點那一版的知識庫；起點還沒有這個知識庫時是 None。"""
+    base = snapshot(base_ref(), 'base')
+    return load_kb(base / name) if (base / name / 'README.md').exists() else None
 
 
 # ---------- 頁序 ----------
