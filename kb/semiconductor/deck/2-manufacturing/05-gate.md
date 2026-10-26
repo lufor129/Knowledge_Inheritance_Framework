@@ -193,29 +193,29 @@ Vt 不只一種：
 <details>
 <summary>量子穿隧不違反能量守恆嗎？</summary>
 不違反。微觀粒子的位置是用機率描述的，牆夠薄時，電子有機率直接出現在另一邊，能量並沒有改變。牆每薄約 0.2 nm，漏電就多約 10 倍。
-相關：hk1
+相關：hk1、hk2-d
 </details>
 
 <details>
 <summary>為什麼選二氧化鉿？</summary>
 它傳遞電場的能力約是二氧化矽的 4–6 倍，和矽接觸時也比較穩定、不容易起反應。但它還是怕源汲極那種上千度的加熱，所以環繞式都等拆掉假閘極之後才鋪（環繞式流程第 9 步）。
-相關：hk1
+相關：hk1、hk3-d、hk4-d
 </details>
 
 <details>
 <summary>閘極為什麼從多晶矽換成金屬？</summary>
 多晶矽和高介電材料搭在一起時介面有問題，開關門檻也不好調。換成金屬後，還能用不同金屬分別調 nFET 和 pFET。
-相關：hk1、gaaflow
+相關：hk1、gaaflow、hk4-d
 </details>
 
 <details>
 <summary>絕緣層只有 1 nm，不會被電擊穿嗎？</summary>
 現在的工作電壓已經降到 1 V 以下，所以不會馬上擊穿；但長期使用會慢慢劣化，出廠前要做可靠度測試。
-相關：hk1
+相關：hk1、hk2-d
 </details>
 
 <details>
 <summary>電晶體的工作電壓是多少？</summary>
 先進晶片大約 0.6–0.9 V，比一顆 1.5 V 的電池還低。
-相關：hk1
+相關：hk1、hk1-d
 </details>

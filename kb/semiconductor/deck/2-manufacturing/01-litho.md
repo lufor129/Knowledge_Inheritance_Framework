@@ -660,7 +660,7 @@ Intel 最積極：已經用 High-NA 印 18A 的部分圖層，做出一部分 Pa
 <details>
 <summary>光阻是什麼？</summary>
 照到光會變質的感光膠。照到的地方用藥水洗掉，圖案就留下來，跟以前沖洗底片很像。
-相關：litho1
+相關：litho1、litho1-d
 </details>
 
 <details>
@@ -684,25 +684,25 @@ Intel 最積極：已經用 High-NA 印 18A 的部分圖層，做出一部分 Pa
 <details>
 <summary>為什麼 EUV 一定要打錫？</summary>
 錫電漿剛好在 13.5 nm 附近發光最強，這也正是鉬／矽多層鏡反射率最高的波長。
-相關：litho3、litho3m
+相關：litho3、litho3m、litho3-d、litho3m-d
 </details>
 
 <details>
 <summary>為什麼 EUV 要在真空裡？</summary>
 EUV 會被空氣吸收，走不到晶圓上，所以整條光路都在真空中。
-相關：litho3、litho3m
+相關：litho3、litho3m、litho3-d、litho3m-d
 </details>
 
 <details>
 <summary>為什麼 EUV 不能用透鏡，只能用反射鏡？</summary>
 13.5 nm 的光幾乎會被所有材料吸收，包括玻璃，連空氣都會吃掉它，所以做不出能讓它穿過去的透鏡。只能改用鉬和矽交錯疊幾十層的多層膜反射鏡，每一層反射一點點，疊加起來每面約反射 7 成；連光罩也改成反射式。
-相關：litho3、litho3m
+相關：litho3、litho3m、litho3-d、litho3m-d
 </details>
 
 <details>
 <summary>反射鏡要多平？</summary>
 表面誤差比一顆原子還小，是世界上最平的鏡子之一，由德國蔡司製造。
-相關：litho3m
+相關：litho3m、litho3m-d
 </details>
 
 <details>
@@ -714,25 +714,25 @@ EUV 會被空氣吸收，走不到晶圓上，所以整條光路都在真空中�
 <details>
 <summary>台積電為什麼還不用 High-NA？</summary>
 機台貴、一次只拍半張，產能較低。台積電判斷到 A13、A12（2029 年）都可以不用。Intel 選擇先導入，計畫用在 14A 的關鍵圖層。
-相關：litho5
+相關：litho5、litho5-d
 </details>
 
 <details>
 <summary>光罩為什麼要故意畫歪？</summary>
 線太細時，光會繞射、互相干擾，印出來會變形。電腦先算好要怎麼「預先扭曲」，印出來才會是正的，這就是 OPC。
-相關：litho6、cmask
+相關：litho6、cmask、litho6-d、cmask-d
 </details>
 
 <details>
 <summary>一套光罩多貴？</summary>
 先進製程一套光罩要幾十層，業界估計要數千萬美元等級，所以只有量大的晶片才划算；量小的設計可以搭 MPW 共乘分攤。
-相關：litho6、d2m
+相關：litho6、d2m、litho6-d
 </details>
 
 <details>
 <summary>為什麼 EUV 機台只有 ASML 做得出來？</summary>
 光源、超平反射鏡、精密平台都靠和數千家供應商幾十年的合作。其他公司早年就放棄投資，現在很難追上。
-相關：litho3、litho3m
+相關：litho3、litho3m、litho3-d、litho3m-d
 </details>
 
 <details>
@@ -744,19 +744,19 @@ EUV 會被空氣吸收，走不到晶圓上，所以整條光路都在真空中�
 <details>
 <summary>錫滴打完之後去哪裡？</summary>
 會被收集起來；機台裡還用氫氣保護，避免錫的碎屑沾到鏡子上。
-相關：litho3
+相關：litho3、litho3-d
 </details>
 
 <details>
 <summary>上下兩層要對得多準？</summary>
 每一層都要和下面那層對準到大約一兩奈米以內，相當於從台北丟一根針到高雄，還要剛好插進一個小洞。
-相關：litho1
+相關：litho1、field-d
 </details>
 
 <details>
 <summary>光阻也會碰到極限嗎？</summary>
 會。線越細，光阻就要越薄，曝光後的邊緣也比較粗糙。業界正在開發金屬氧化物光阻等新材料。
-相關：litho1、litho4
+相關：litho1、litho4、litho1-d、litho4-d
 </details>
 
 <details>

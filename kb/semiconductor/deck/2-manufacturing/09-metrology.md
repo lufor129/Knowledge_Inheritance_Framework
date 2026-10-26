@@ -999,61 +999,61 @@ CP 測出一批晶粒壞掉時，要把幾種資料疊在一起看：
 <details>
 <summary>量測和檢測有什麼不一樣？</summary>
 量測是量尺寸：線寬、膜厚、疊對，回答「做得對不對」；檢測是找缺陷：微粒、刮痕、短路，回答「哪裡壞了」。兩者用不同的機台，在廠裡常常是不同部門。晶圓做完還有第三種：WAT 量電性。
-相關：eyes、insp
+相關：eyes、insp、eyes-d、insp-d
 </details>
 
 <details>
 <summary>三種量測工具怎麼分工？</summary>
 TEM 最清楚但要切樣品，是校正其他工具的參考，也用來分析問題；SEM 不用切、從上面看線寬；OCD 最快，量 3D 形狀時產線上大量用，但量的是測試靶、要靠模型。
-相關：eyes、metro
+相關：eyes、metro、eyes-d、metro-d
 </details>
 
 <details>
 <summary>SEM 用電子束打晶片，會不會打壞？</summary>
 用的是低能量電子束，基本上不會破壞，但會讓光阻微縮，量到的線寬要校正。真正會破壞樣品的是 TEM，所以只抽查。OCD 用光，完全不接觸。（下方跳頁按鈕可以直接看 TEM、SEM、OCD 三頁）
-相關：tem、sem、ocd
+相關：tem、sem、ocd、tem-d、sem-d、ocd-d
 </details>
 
 <details>
 <summary>每一片晶圓都會量嗎？</summary>
 不會，量測是抽樣：每批抽幾片、每片量幾個到幾十個點。重要的步驟抽多一點、穩定的步驟抽少一點；抽樣太多會拖慢產能，太少會漏掉問題，這是量測工程師要拿捏的。
-相關：mloop、sem
+相關：mloop、sem、mloop-d、sem-d
 </details>
 
 <details>
 <summary>OCD 量的是真正的電路嗎？</summary>
 大多不是。OCD 的光斑有幾十微米，主要量切割道上專門做的週期性量測靶（記憶體陣列這種本身就週期性的區域，也可以直接量），得到的是那一塊的平均。真正電路裡的結構，要靠量測靶設計得夠像來代表；有疑問時再用 SEM 看電路、TEM 切開確認。
-相關：ocd、ocdf
+相關：ocd、ocdf、ocd-d、ocdf-d
 </details>
 
 <details>
 <summary>疊對（overlay）是什麼？</summary>
 上下兩層圖案有沒有對準。每一層都要對準前一層，誤差要控制在幾奈米以內，否則接觸孔會接歪、短路。它是晶圓廠數量最多的量測之一，通常用光學量測專門的疊對標記（不是曝光機自己對位用的對準標記），有拍照比對的，也有看繞射光的。
-相關：litho1、metro、mloop
+相關：litho1、metro、mloop、metro-d、mloop-d
 </details>
 
 <details>
 <summary>量測機台自己會不會不準？</summary>
 會，所以要先管好量測本身。每天量標準片，確認機台沒漂；同一型的好幾台機台互相比對，量同一片要得到一樣的數字；量測本身的誤差也要遠小於規格範圍。數字超線時，第一步是先確認不是量測出錯，再去查製程機台。
-相關：mloop、ocdb
+相關：mloop、ocdb、mloop-d、ocdb-d
 </details>
 
 <details>
 <summary>精度和準度差在哪？量測要多準才夠？</summary>
 精度：同一點重複量，數字穩不穩；準度：和參考值（TEM）差多少。OCD 精度很好，準度要靠 TEM 校正。廠裡用 GR&R，或「量測誤差 ÷ 規格範圍」（P/T 比）評估：量測誤差只能佔規格的一小部分，門檻依廠規。
-相關：ocdb、mloop
+相關：ocdb、mloop、ocdb-d、mloop-d
 </details>
 
 <details>
 <summary>CD-SEM、OCD、TEM 量同一條線，數字不一樣，誰對？</summary>
 三者的「線寬」定義不同：SEM 由演算法從亮邊判定；OCD 是模型裡梯形在某個高度的寬度；TEM 是薄片的投影。廠裡不要求數字完全一樣，而是建立彼此的對照關係（偏移、斜率），以 TEM 當參考；同一站固定同一種工具、同一套規則看趨勢。
-相關：sem、ocdb、tem
+相關：sem、ocdb、tem、sem-d、ocdb-d、tem-d
 </details>
 
 <details>
 <summary>環繞式的奈米片、內間隔層藏在裡面，從上面看不到，怎麼量？</summary>
 多種方法搭配：OCD 把這些尺寸放進模型一起反推（多角度、多偏振）；疊層的厚度和鍺含量用 X 光量；電子束看埋住的結構通不通；TEM 抽查當參考；最後用 WAT 電性回推。這是環繞式時代量測最難、最需要人的地方（環繞式流程第 5、8 步）。
-相關：gaaflow、ocdf、tem
+相關：gaaflow、ocdf、tem、ocdf-d、tem-d
 </details>
 
 ### ⑨ 找缺陷
@@ -1061,43 +1061,43 @@ TEM 最清楚但要切樣品，是校正其他工具的參考，也用來分析�
 <details>
 <summary>光學檢測怎麼知道哪裡有缺陷？</summary>
 它不知道「正確答案」長怎樣，而是把每一顆晶粒和隔壁晶粒比對：同樣的圖案，不一樣的地方就是可疑點。如果每一顆晶粒都有一模一樣的缺陷（例如一個曝光格只有一顆晶粒、光罩又髒了），和隔壁比會比不出來，要改用和設計資料比對、或直接檢查光罩等方法。
-相關：insp
+相關：insp、insp-d
 </details>
 
 <details>
 <summary>檢測抓到的都是真缺陷嗎？</summary>
 不是。靈敏度調高，會抓到很多其實沒事的「誤報」；調低又會漏抓。所以要用複檢 SEM 抽點放大確認、分類，把誤報過濾掉，這個拿捏是檢測工程師的日常。
-相關：insp
+相關：insp、insp-d
 </details>
 
 <details>
 <summary>電子束檢測是什麼？</summary>
 用電子束而不是光去掃描找缺陷，看得到更小的缺陷，也能看出電性問題（例如接觸孔沒接通）。代價是很慢，所以只掃關鍵區域或抽樣。
-相關：insp、sem
+相關：insp、sem、insp-d、sem-d
 </details>
 
 <details>
 <summary>一顆缺陷一定會讓晶片壞掉嗎？</summary>
 不一定。要看落在哪裡、多大：落在空白區或不重要的位置可能沒事；剛好讓兩條線短路或斷路，那顆晶片就壞了。所以會分類、評估哪些缺陷「殺得死」晶片。
-相關：insp
+相關：insp、insp-d
 </details>
 
 <details>
 <summary>晶片做壞了，怎麼找原因？</summary>
 三條線索一起看：線上檢測的缺陷地圖，看分布形狀猜是哪台機台；WAT、CP 的晶圓圖，看哪幾項電性超標、出現在晶圓哪裡；最後在壞掉的位置切片，用 TEM 確認。
-相關：insp、wat2、tem
+相關：insp、wat2、tem、insp-d、wat4-d、tem-d
 </details>
 
 <details>
 <summary>EUV 的隨機缺陷要怎麼抓？</summary>
 它隨機、稀少、位置不固定，抽幾個點量不到，要靠大量取樣：CD-SEM 量大量接觸孔的尺寸分布，電子束檢測大面積掃「沒開的洞」和「橋接」，再回饋給曝光劑量和光阻選擇（隨機缺陷那頁的取捨）。
-相關：litho4、insp、sem
+相關：litho4、insp、sem、insp-d、sem-d
 </details>
 
 <details>
 <summary>光罩也要檢測嗎？</summary>
 要。光罩上一個缺陷會印到每一個曝光格，所以光罩做好和使用中都要檢查；EUV 光罩是反射式，缺陷可能埋在多層膜裡，要用 EUV 波長的光罩檢測等方法。晶圓上「每個曝光格同一位置都有」的缺陷，就是光罩的警訊。
-相關：insp、litho6、d2m
+相關：insp、litho6、d2m、insp-d
 </details>
 
 ### ⑨ SPC、APC
@@ -1105,43 +1105,43 @@ TEM 最清楚但要切樣品，是校正其他工具的參考，也用來分析�
 <details>
 <summary>量出來超出規格怎麼辦？</summary>
 看超多少、在哪一站。超出管制線但還在規格內：依程序先扣住確認，通常放行，同時調機台。超出規格：如果在曝光後，洗掉光阻重做（rework）；已經蝕刻或沉積下去，整批先扣住，由工程師評估重做、報廢、降級或特准放行，並追查是哪台機台出問題。
-相關：mloop
+相關：mloop、mloop-d
 </details>
 
 <details>
 <summary>APC 開了、管制圖很好看，是不是就不用管了？</summary>
 不是。APC 是一直幫機台補償，機台本身可能還在漂，只是被藏起來了。所以廠裡也會把 APC 每批調了多少畫成管制圖，補償量一直變大，就代表機台該保養了。
-相關：apc、mloop
+相關：apc、mloop、apc-d、mloop-d
 </details>
 
 <details>
 <summary>什麼是虛擬量測？</summary>
 不實際量，而是用機台的感測資料（溫度、壓力、電漿功率、時間）加上 AI 模型，預測這片量出來會是多少。可以讓每片都有估計值，真的量測就拿來校正模型。好處是快，前提是模型要一直跟真實量測對答案。
-相關：apc、mloop
+相關：apc、mloop、apc-d、mloop-d
 </details>
 
 <details>
 <summary>量測工程師每天在做什麼？</summary>
 顧好一群量測機台和量測程式：設定要量哪些點、建和維護 OCD 模型、看管制圖，數字一偏就追原因、通知製程或機台工程師，定期拿 TEM 對答案、校正機台。說穿了就是「讓每個數字都可以相信」。
-相關：mloop、ocdb
+相關：mloop、ocdb、mloop-d、ocdb-d
 </details>
 
 <details>
 <summary>晶圓廠有用 AI 嗎？</summary>
 有，用在預測良率、找缺陷的規律、調機台參數，以及計算光罩修正（曲線光罩那頁的 GPU 加速）。
-相關：cmask
+相關：cmask、apc-d
 </details>
 
 <details>
 <summary>Cpk 是什麼？和管制圖有什麼關係？</summary>
 Cpk 看製程平均離規格邊界有多遠：（最近的規格邊界 − 平均）÷ 3 個標準差，越大越安全，常見要求 1.33 以上（依廠規）。管制圖問「機台有沒有變」，Cpk 問「這個製程的能力夠不夠」。
-相關：mloop
+相關：mloop、mloop-d
 </details>
 
 <details>
 <summary>AI 在量測和檢測怎麼用？</summary>
 複檢 SEM 影像的缺陷自動分類；虛擬量測；用機器學習加速或輔助 OCD 建模；SEM 影像去雜訊、抓輪廓。前提都一樣：要一直拿真實量測（TEM、複檢）當標準答案校正。
-相關：insp、ocdf、apc
+相關：insp、ocdf、apc、insp-d、ocdf-d、apc-d
 </details>
 
 ### ⑨ WAT 與出廠測試
@@ -1149,29 +1149,29 @@ Cpk 看製程平均離規格邊界有多遠：（最近的規格邊界 − 平�
 <details>
 <summary>WAT 是什麼？和 CP 差在哪？</summary>
 WAT（晶圓允收測試）是整片晶圓做完、出廠前，在切割道上的測試結構扎針量電性：臨界電壓、電流、漏電、電阻，每片量幾個點，確認製程做對了。CP（晶片針測）是 WAT 合格之後，對每一顆晶片扎針測功能，挑出壞的晶片。一個看製程、一個看產品。
-相關：wat、wat2
+相關：wat、wat2、wat-d、wat2-d
 </details>
 
 <details>
 <summary>每一顆晶片都會測試嗎？</summary>
 會。晶圓做完先過 WAT：量切割道上的測試結構，看製程對不對。接著 CP 針測每一顆晶片的功能，壞的做記號；切割、封裝後，FT 再把每一顆成品測一次，還會依速度分等級。
-相關：wat、d2m
+相關：wat、d2m、wat-d
 </details>
 
 <details>
 <summary>WAT 不合格怎麼辦？</summary>
 晶圓先扣住。看是哪幾項超規格、出現在晶圓哪裡（畫成晶圓圖：外圈、半邊、局部各指向不同原因），回推是哪一站出問題，例如 Vt 偏低加漏電變大，多半是閘極做太細；只有接觸電阻高，是中段接點。再由工程師評估要報廢、降級，還是特准放行。
-相關：wat、wat2、insp
+相關：wat、wat2、insp、wat-d、wat2-d、insp-d
 </details>
 
 <details>
 <summary>WAT 和線上量測有什麼關係？</summary>
 互相印證。把每個點線上量到的閘極線寬和 WAT 量到的電流畫在一起，正常會排成一條線：線寬細一點、電流就大一點。點沿著線跑，問題就是尺寸；線寬正常、電流卻偏離，就要往尺寸以外找（接點、摻雜、絕緣層）。廠裡也靠這條關係決定線上量測的規格要訂多嚴。
-相關：wat4、ocd
+相關：wat4、ocd、wat4-d、ocd-d
 </details>
 
 <details>
 <summary>檢測的缺陷、WAT、CP 的資料怎麼串起來找良率殺手？</summary>
 把各站檢測的缺陷位置和 CP 的壞晶粒圖疊在一起，看哪一站、哪一類缺陷落到的晶粒最常壞（殺傷率），就知道先處理哪台機台；WAT 晶圓圖和尺寸對照再補電性線索。這是良率工程的日常。
-相關：insp、wat、wat4、yield
+相關：insp、wat、wat4、yield、insp-d、wat-d、wat4-d
 </details>
