@@ -20,7 +20,7 @@
             <div class="card"><h4>第二部分</h4><p><b>怎麼運作</b><br>五章：知識怎麼存、新增、修改與刪除、檢查與審核、新人怎麼學</p></div>
             <div class="card"><h4>第三部分</h4><p><b>跟 Git 主機結合</b><br>對到 Git 上、誰能合併、待回答與勘誤</p></div>
             <div class="card"><h4>第四部分</h4><p><b>怎麼開始</b><br>技術選擇、skill 設計、搬半導體、新增知識庫</p></div>
-            <div class="card" style="grid-column:1/-1;background:var(--accent-2-soft);border-color:#eccab4"><h4>第五部分</h4><p><b>現況</b><br>已合併的 20 個變更提案、情境測試、只留簡報（ADR-0007）實際做成的樣子，和之後還可以做的事</p></div>
+            <div class="card" style="grid-column:1/-1;background:var(--accent-2-soft);border-color:#eccab4"><h4>第五部分</h4><p><b>現況</b><br>已合併的 21 個變更提案、情境測試、只留簡報（ADR-0007）實際做成的樣子，和之後還可以做的事</p></div>
           </div>
           <div class="meta">設計說明 · 10-24 定案，10-26 更新 · ${total()}<br>每頁左邊的互動元件都可以操作；對話與情境為示意</div>
         </div>
