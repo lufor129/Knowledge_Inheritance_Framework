@@ -1,6 +1,5 @@
 /* 第二部分 ① 微影：用光畫圖 */
 (function () {
-  const A = Deck.add.bind(Deck);
   const F = { chap: 1, eyebrow: '第二部分 · ① 微影' };
 
   /* 1. 光越細，畫筆越細 */
@@ -9,19 +8,13 @@
     { n: '深紫外光 DUV', lam: 193, lim: 40, limT: '40', fd: '深紫外光的波長；靠浸水、大鏡頭等技巧，能畫到比波長細好幾倍', col: '#7a50dc', y: '2000 年代至今' },
     { n: '極紫外光 EUV', lam: 13.5, lim: 14, limT: '13–16', fd: '極紫外光的波長，大約是 X 光和紫外光的交界', col: '#b04fc9', y: '2019 年起' }
   ];
-  A(Object.assign({
-    id: 'litho1', part: 2, minutes: 2.2, short: '微影：光越細畫筆越細',
-    title: '微影：用光當畫筆，光越細，畫得越細', en: 'Lithography',
-    thesis: '選一種光，再拖動「想畫的線寬」。線太細、光太粗，<b>印出來就糊成一片</b>。',
+  Fig.add('litho1', Object.assign({ body: true,
     render: () => `<div class="s-body">
       <div class="col"><div class="controls">${U.seg('l1-src', SRC.map(s => s.n), 0)}</div>
         ${U.figHTML('l1-cv', '上：光罩上的圖案　下：晶圓上實際印出來的結果', '')}
         <div class="controls">${U.range('l1-w', '想畫的線寬', 8, 120, 1, 40, ' nm')}</div></div>
-      ${U.side({
-        top: `<div class="bigword" id="l1-res"></div>`,
-        points: ['<b>光阻</b>：照到光會變質的感光膠', '光的波長越短，能畫的線越細', '靠浸水、大鏡頭等技巧，能畫到比波長細幾倍，但有極限'],
-        fact: { v: '400 nm', d: '可見光的波長' },
-        analogy: { icon: 'pen', t: '比喻', p: '用粗的麥克筆寫不出小字，要換成極細的針筆。光就是畫筆。' }
+      ${U.pageSide({
+        top: `<div class="bigword" id="l1-res"></div>`
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#l1-cv'));
@@ -66,16 +59,7 @@
         const res = `${s.n}<br><span style="font-size:19px;font-weight:500;color:var(--ink-2)">單次最細約 ${s.limT} nm · ${s.y}</span>`;
         if (U.$(el, '#l1-res').innerHTML !== res) { U.$(el, '#l1-res').innerHTML = res; U.$(el, '.fact .v').textContent = s.lam + ' nm'; U.$(el, '.fact .d').textContent = s.fd; }
       });
-    },
-    notes: `第一章：微影。微影就是用光來畫圖。晶圓上塗著一層光阻，它是照到光會變質的感光膠，就像底片。光穿過光罩，把圖案印到光阻上。
-
-先從最早的可見光開始：1980 年代量產的線寬大約 1 微米，也就是 1,000 奈米，40 奈米的線完全糊掉。切到深紫外光 DUV，波長 193 奈米，把線寬往下拉。你可能會問：193 奈米的光怎麼畫得出 40 奈米的線？因為工程師用了很多技巧，例如在鏡頭和晶圓之間加一層水、把鏡頭做得很大、一條線分好幾次曝光，可以畫到比波長細好幾倍。但再細就開始糊掉，技巧也有極限，就像粗麥克筆再怎麼小心也寫不出極小的字。
-
-切換到極紫外光 EUV，波長只有 13.5 奈米，是 DUV 的十四分之一，一次曝光就能印出十三到十六奈米的線。這就是為什麼 5 奈米以後都要用 EUV。
-
-補充給有興趣的聽眾：能畫多細除了看波長，也看鏡頭有多大，後面講 High-NA 時會提到。
-
-先埋一個伏筆：曝光完、還沒蝕刻之前，廠裡會先量線寬，以及這一層和下面那層有沒有對準，叫疊對。這時候如果不對，還可以把光阻洗掉重來，叫 rework；一旦蝕刻下去就回不來了。第九章會再看到。`
+    }
   }, F));
 
   /* 1b. 光的特性：為什麼越細越難印 */
@@ -85,20 +69,15 @@
     { h: '特性 2：干涉', t: '相鄰的光會疊在一起', d: '兩個開口靠得太近，散開的光重疊後互相干涉，暗的地方不夠暗，兩條線就糊成一條。長波長的光散得開，稍微靠近就糊；短波長的光散得少，線可以排得更密。' },
     { h: '特性 3：光子', t: '波長越短，每顆光能量越大', d: '光也是一顆一顆的「光子」。同樣的總能量，EUV 每顆光子的能量約是 DUV 的 14 倍，所以數量只有約 1/14，容易分布不均（後面「光子太少」那頁會看到後果）。' }
   ];
-  A(Object.assign({
-    id: 'lithoL', part: 2, minutes: 2.5, short: '光的特性：繞射、干涉、光子',
-    title: '光的三個特性：為什麼要換更短的光', en: 'Diffraction · Interference · Photons',
-    thesis: '光是波，遇到小開口會<b>散開（繞射）</b>，相鄰的光會<b>疊在一起（干涉）</b>。<b>波長越長散得越開，波長越短越能直直前進</b>，所以要畫更細的線就要換更短的光。切換長短波長比比看。',
+  Fig.add('lithoL', Object.assign({ body: true,
     render: () => `<div class="s-body">
       <div class="col"><div class="controls">${U.seg('lt-m', ['1. 繞射', '2. 干涉', '3. 光子'], 0)}</div>
         ${U.figHTML('lt-cv', '上：光罩開口　下：晶圓上收到的光有多亮、印出來的結果（示意）', '')}
         <div class="controls" id="lt-cl">${U.seg('lt-l', ['長波長的光（例如 DUV）', '短波長的光（例如 EUV）'], 0)}</div>
         <div class="controls" id="lt-c1">${U.range('lt-a', '開口寬度（示意）', 20, 140, 5, 140, '')}</div>
         <div class="controls" id="lt-c2" style="display:none">${U.range('lt-g', '兩個開口的距離（示意）', 50, 170, 5, 170, '')}</div></div>
-      ${U.side({
-        top: `<div class="card key"><h4 id="lt-h"></h4><div class="bigword" id="lt-t" style="font-size:24px"></div><p id="lt-p" style="font-size:18.5px;margin:0"></p></div>`,
-        points: ['同樣的開口：長波長散得開，短波長幾乎直走', '所以要畫更細、更密的線，就要換更短的波長', '光子：波長越短，每顆能量越大、數量越少'],
-        analogy: { icon: 'rain', t: '比喻', p: '海浪穿過防波堤的小缺口，會往兩旁擴散成半圓；缺口越小，散得越開。兩個缺口太近，浪就混在一起。' }
+      ${U.pageSide({
+        top: `<div class="card key"><h4 id="lt-h"></h4><div class="bigword" id="lt-t" style="font-size:24px"></div><p id="lt-p" style="font-size:18.5px;margin:0"></p></div>`
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#lt-cv'));
@@ -177,29 +156,15 @@
         U.txt(c, msg, w / 2, h - 12, { align: 'center', size: 18, w: 700, color: col });
         U.tag(c, LAM > 10 ? '長波長：波紋間距大，散得開' : '短波長：波紋間距小，幾乎直直前進', w - 26, 30, { align: 'right', size: 14, color: '#6b3fb0' });
       });
-    },
-    notes: `上一頁說「光越細，畫得越細」。為什麼？因為光有三個特性。
-
-第一，繞射。光是一種波，就像海浪穿過防波堤的缺口，會往兩旁擴散成半圓。開口比波長大很多的時候，光幾乎直直穿過，印出來的線很清楚。把滑桿往左拉，開口越來越小，光就越往兩旁散開，印出來的線變寬、變淡，最後淡到印不出來。現在切到「短波長的光」：同樣小的開口，短波長的波紋間距小很多，光幾乎直直穿過，又印得出來了。關鍵是「開口和波長的比例」：開口比波長大很多，光就直走；開口接近波長，光就散開。所以想畫更細的線，就要換波長更短的光。
-
-第二，干涉。切到第二個按鈕，現在有兩個開口。它們離得遠的時候，兩條線分得很清楚。把距離拉近，兩邊散開的光重疊後互相干涉，中間暗的地方不夠暗，兩條線就分不開了。再切到短波長：光散得少，同樣的距離兩條線又分得開了。所以短波長不只能畫更細的線，線和線也能排得更密。
-
-第三，光子。光除了是波，也是一顆一顆的光子。波長越短，每顆光子的能量越大。同樣的總能量，EUV 每顆光子的能量大約是 DUV 的十四倍，所以數量只有大約十四分之一。光子少，就容易分布不均，有的地方剛好沒收到，這個問題後面「光子太少」那一頁會看到。
-
-所以微影的每一次進步，都是在和這三件事搏鬥：換更短的光、把鏡頭做得更大，還要讓光子夠多。`
+    }
   }, F));
 
   /* 3. EUV 光源 */
-  A(Object.assign({
-    id: 'litho3', part: 2, minutes: 2.2, short: 'EUV：打錫滴發光',
-    title: 'EUV 的光怎麼來？用雷射每秒打 5 萬顆錫滴', en: 'EUV Light Source',
-    thesis: '極紫外光在空氣中走不遠，也穿不透鏡片。所以要<b>在真空中自己製造光，再用鏡子一路反射</b>。',
+  Fig.add('litho3', Object.assign({ body: true,
     render: () => `<div class="s-body w66">
       <div class="col">${U.figHTML('l3-cv', 'EUV 機台內部光路（示意）', '')}</div>
-      ${U.side({
-        points: ['雷射打錫滴 → 變成電漿（被打散、會發光的氣體）→ 發出 EUV', '全程在真空中，只能用鏡子反射', '一台機台約 2 億美元、重 180 噸'],
-        fact: { v: '每秒 5 萬顆', d: '被雷射擊中的錫滴數量，每顆只有 30 微米大' },
-        analogy: { icon: 'target', t: '比喻', p: '像在高速公路上，用雷射槍每秒打中 5 萬顆飛過的小鋼珠，而且每一發都要打中兩次。' }
+      ${U.pageSide({
+        
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#l3-cv'));
@@ -244,14 +209,7 @@
         c.fillStyle = U.MAT.si; c.fillRect(w * 0.66, h * 0.86, w * 0.28, 22); U.tag(c, '晶圓', w * 0.66, h * 0.86 - 8, { size: 14 });
         U.txt(c, '一般透鏡會吸收 EUV，所以整條光路都用鏡子', w / 2, h - 22, { align: 'center', size: 16, color: '#3e4b5b' });
       });
-    },
-    notes: `EUV 的光要怎麼產生？答案非常瘋狂。
-
-極紫外光在空氣中走不遠，也穿不透玻璃鏡片，所以整台機器內部是真空的，光要在裡面自己製造。方法是讓一顆顆直徑三十微米的錫滴落下，用高功率雷射精準擊中，錫瞬間變成比太陽表面還熱的電漿，發出 13.5 奈米的極紫外光。實際上每顆錫滴要打兩次：第一次把它打扁，第二次才讓它發光。每秒要打五萬顆。
-
-光被收集鏡收集，經過照明反射鏡照到光罩上。EUV 的光罩也是一面鏡子，圖案就在鏡面上；反射出來的光再經過幾面投影反射鏡縮小，最後照到晶圓。為什麼要這麼多面鏡子，下一頁細看。這些鏡子極度平滑，如果放大到一個國家那麼大，最高的凸起也不到一毫米。
-
-全世界只有荷蘭的 ASML 能做這種機台，一台大約兩億美元、重一百八十噸。`
+    }
   }, F));
 
   /* 3b. 為什麼要這麼多面反射鏡 */
@@ -328,47 +286,28 @@
     { t: '一面鏡子只能做一小段', d: '鏡子只能把光轉個方向。要收集光、整理均勻、照到光罩、再把圖案縮小 4 倍並對焦，得靠十幾面接力。' },
     { t: '代價：光越反射越少', d: '每反射一次剩約 7 成，反射十幾次後只剩約 1–2%。所以錫滴光源要打得非常亮。' }
   ];
-  A(Object.assign({
-    id: 'litho3m', part: 2, minutes: 2.2, short: 'EUV：為什麼要十幾面鏡子',
-    title: '為什麼 EUV 要用十幾面反射鏡？', en: 'Why So Many Mirrors',
-    thesis: 'EUV 穿不過任何透鏡，只能靠鏡子。可是一面鏡子<b>只能把光轉個方向</b>，要收光、勻光、縮小圖案、對焦，就得十幾面接力，每一面還會吃掉 3 成的光。',
+  Fig.add('litho3m', Object.assign({ body: true,
     render: () => `<div class="s-body w66">
       <div class="col">${U.figHTML('l3m-cv', '一步一步看', '')}${U.stepperHTML('l3m-st')}</div>
-      ${U.side({
-        points: ['EUV 會被玻璃吸收：不能用透鏡', '特製鏡子：鉬／矽疊 40 多對，反射約 7 成', '十幾面接力：收光、勻光、縮小 4 倍、對焦'],
-        fact: { v: '約 1–2%', d: '從光源出發的 EUV，經過十幾次反射（含光罩）後，真正照到晶圓上的比例' },
-        analogy: { icon: 'target', t: '比喻', p: '用好幾面鏡子把陽光一路轉進地下室：每面都會損失一些光，但少了哪一面，光就轉不進來。' }
+      ${U.pageSide({
+        
       })}</div>`,
     init(el, ctx) {
       const steps = MSTEPS.map((s, i) => Object.assign({}, s, { draw: (c, w, h, p, t) => mirrorStep(c, w, h, i, p, t) }));
       U.animSteps(el, ctx, { canvas: 'l3m-cv', stepper: 'l3m-st', steps, interval: 3600, dur: 2 });
-    },
-    notes: `上一頁說 EUV 整條光路都用鏡子。這一頁把原因講細一點：為什麼不用透鏡？為什麼要那麼多面鏡子？
-
-第一步：一般的深紫外光曝光機，用的是玻璃透鏡，像放大鏡一樣把光聚起來。但極紫外光的波長只有 13.5 奈米，任何玻璃、甚至空氣都會把它吸光，透鏡根本不能用。
-
-第二步：只能改用反射。可是一般的鏡子對 EUV 也幾乎不反射，所以要特製：把鉬和矽一層一層交錯疊上四十多對，每一層只有幾奈米。每一層的交界都會反射一點點光，全部疊加起來，大約可以反射七成。
-
-第三步：鏡子和透鏡不一樣，它不能把光「彎」過去，只能把光轉個方向，而且每面鏡子都會帶來一點變形。整台機器要做的事很多：先把錫滴發出的光收集起來，再把光整理得很均勻、用對的角度照到光罩上，接著把光罩上的圖案縮小四倍、清楚地對焦在晶圓上。每一件事都要好幾面鏡子分工，所以加起來要十幾面，照明系統大約五面，投影系統大約六面。
-
-第四步是代價：每反射一次只剩大約七成，反射十幾次之後只剩百分之一到二。所以錫滴光源必須打得非常亮，這也是 EUV 機台又大又貴的原因之一。`
+    }
   }, F));
 
   /* 4. 隨機缺陷：DUV 與 EUV 並排比較 */
   function poisson(m) { let L = Math.exp(-m), k = 0, p = 1; do { k++; p *= Math.random(); } while (p > L); return k - 1; }
-  A(Object.assign({
-    id: 'litho4', part: 2, minutes: 2.5, short: 'EUV 難題：光子太少',
-    title: 'EUV 的難題：光子太少，有些洞印不出來', en: 'Stochastic Defects',
-    thesis: '同樣的能量，EUV 的光子數只有 DUV 的約 1/14，洞開始靠運氣。多照一點光能解決，<b>但機台每小時做的晶圓會大幅變少</b>。',
+  Fig.add('litho4', Object.assign({ body: true,
     render: () => `<div class="s-body">
       <div class="col">${U.figHTML('l4-cv', '同樣能量照向 12 個要印的小洞（上視圖）', '')}
         <div class="controls">${U.range('l4-d', 'EUV 曝光量', 1, 4, 1, 1, '')}<button class="btn primary" id="l4-go" type="button">▶ 再曝光一次</button></div></div>
-      ${U.side({
+      ${U.pageSide({
         top: `<div class="card"><h4>怎麼看這張圖</h4><p style="font-size:19px;margin:0">每個洞下方的長條代表收到多少光。長條超過<b style="color:var(--accent-2)">橘線</b>才印得開（綠框），不夠就失敗（紅框）。</p></div>`,
         meters: [['l4-m', 'EUV 印壞的洞']],
-        extra: `<div class="card alt"><h4>代價：每小時能曝光幾片晶圓</h4>${U.meterHTML('l4-du', 'DUV')}${U.meterHTML('l4-eu', 'EUV')}<p id="l4-tpd" style="font-size:17px"></p></div>`,
-        points: ['EUV：光子少，收多收少差很多', '拉高曝光量 → 印壞變少，但機台變慢', '👁 怎麼抓？壞的機率極低、洞又小：用電子束大面積掃，或 CD-SEM 一次量上萬個洞看分布的尾巴（第九章）'],
-        analogy: { icon: 'rain', t: '比喻', p: '同樣一桶水：用細霧噴，每個杯子都裝得到；改成丟幾顆大水球，有的杯子就可能剛好沒被砸中。' }
+        extra: `<div class="card alt"><h4>代價：每小時能曝光幾片晶圓</h4>${U.meterHTML('l4-du', 'DUV')}${U.meterHTML('l4-eu', 'EUV')}<p id="l4-tpd" style="font-size:17px"></p></div>`
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#l4-cv'));
@@ -420,37 +359,21 @@
         const tp = U.$(el, '#l4-tpd'); if (tp.innerHTML !== tpd) tp.innerHTML = tpd;
         // 曝光結果停在畫面上，按「再曝光一次」或拉滑桿才重來
       });
-    },
-    notes: `這頁比較同樣的光能量，用 DUV 和用 EUV 會發生什麼事。
-
-左邊是 DUV，右邊是 EUV，各有 12 個要印的小洞。每個洞下方的長條代表收到了多少光，超過橘線就印得開，變成綠框；不夠就失敗，變成紅框。
-
-DUV 的光子能量小、數量多，像細霧一樣，每個洞收到的量都差不多，全部印開。EUV 的每顆光子能量大十幾倍，所以同樣的能量只有很少幾顆，像丟大水球。有的洞剛好被砸中好幾顆，有的洞運氣不好一顆都沒有，就印不開。按「再曝光一次」，每次失敗的位置都不一樣，這就是「隨機」缺陷。
-
-解法是把 EUV 曝光量調高，印壞的洞會變少，但每片晶圓要照更久。右邊的長條是估算：DUV 浸潤式機台每小時大約能曝光 300 片晶圓；最新的 EUV 機台規格是每小時大約 220 片，這是用一般曝光量算的，關鍵層的曝光量通常更高，本來就比較慢。曝光量加倍，一片晶圓的曝光時間跟著變長，每小時只剩大約 140 片，慢了三成多；要維持同樣的產量，就得多買將近六成的機台，每台大約兩億美元。
-
-這就是 EUV 在良率和產量之間最大的取捨：少印壞一點，還是多做幾片。數字是估算，實際會依圖層和機型不同；動畫把光子畫得很少，實際每個洞收到的是幾千顆，差異來自統計上的起伏，加上光阻化學本身的隨機性。
-
-右邊最後一點是給量測的伏筆：這種缺陷怎麼抓？一片晶圓上百億個洞，壞的機率可能是百萬分之一以下，光學檢測看不到，CD-SEM 平常抽幾十個點也抓不到。要用電子束檢測大面積掃，或讓 CD-SEM 一次量上萬個洞，看分布最尾巴那幾個是不是快印不開了，第九章會再碰到這兩種工具。`
+    }
   }, F));
 
   /* 5. High-NA */
-  A(Object.assign({
-    id: 'litho5', part: 2, minutes: 3.0, short: 'EUV vs High-NA EUV',
-    title: 'EUV vs High-NA EUV：畫得更細，但一次只拍半張', en: 'EUV (NA 0.33) vs High-NA (NA 0.55)',
-    thesis: 'NA 是鏡頭收光的角度。High-NA 把它從 0.33 加大到 0.55，<b>單次最細從約 13–16 nm 變成約 8 nm</b>，最細的圖層不用再多重曝光（把圖案拆開、分兩次曝光）；代價是一次只拍半張、機台貴一倍。',
+  Fig.add('litho5', Object.assign({ body: true,
     render: () => `<div class="s-body">
       <div class="col"><div class="controls">${U.seg('l5-m', ['一般 EUV（NA 0.33）', 'High-NA EUV（NA 0.55）', '最細的線：多重曝光 vs 一次'], 0)}</div>${U.figHTML('l5-cv', '左：鏡頭收光角度與印出的線　右：一次曝光的範圍', '')}</div>
-      ${U.side({
+      ${U.pageSide({
         top: `<table class="t" style="font-size:17.5px"><thead><tr><th></th><th>一般 EUV</th><th>High-NA</th></tr></thead><tbody>
           <tr><td>鏡頭收光（NA）</td><td>0.33</td><td><b>0.55</b></td></tr>
           <tr><td>單次最細（半間距）</td><td>約 13–16 nm</td><td><b>約 8 nm</b></td></tr>
           <tr><td>最細的圖層</td><td>要多重曝光（圖案拆成兩張光罩）</td><td><b>一次搞定</b></td></tr>
           <tr><td>一次曝光範圍</td><td>整張 26×33 mm</td><td>半張 26×16.5 mm</td></tr>
           <tr><td>機台價格</td><td>約 2 億美元</td><td>約 4 億美元</td></tr>
-          <tr><td>誰在用</td><td>各家主力</td><td>Intel：18A 部分圖層（2026 起出貨）、14A 關鍵層；SK hynix：下一代 DRAM</td></tr></tbody></table>`,
-        points: ['多重曝光：線太密，要把圖案拆開、分兩次曝光才印得出來；步驟多、容易對不準', '半張曝光：大晶片要拼接，接縫要對準', '台積電到 2029 年都不打算用：多曝光幾次比較划算'],
-        analogy: { icon: 'camera', t: '比喻', p: '換上更高倍的顯微鏡：看得更細，但視野變小，要拼好幾張才看得完。' }
+          <tr><td>誰在用</td><td>各家主力</td><td>Intel：18A 部分圖層（2026 起出貨）、14A 關鍵層；SK hynix：下一代 DRAM</td></tr></tbody></table>`
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#l5-cv'));
@@ -503,29 +426,15 @@ DUV 的光子能量小、數量多，像細霧一樣，每個洞收到的量都�
         if (m) { c.fillStyle = 'rgba(179,84,30,.12)'; c.fillRect(fx, top + eh, fw, fh - eh); U.txt(c, '另一半要再曝光一次，接縫要對準', fx + fw / 2, top + eh + (fh - eh) / 2 + 6, { align: 'center', size: 16, color: '#b3541e', w: 600 }); }
         if (m) { U.txt(c, '為什麼只剩一半？光打到光罩上太斜，鏡面反射不了', fx + fw / 2, top + fh + 26, { align: 'center', size: 14, color: '#6a7888' }); U.txt(c, '→ 一個方向改縮小 8 倍；光罩大小不變，只照得到半張', fx + fw / 2, top + fh + 46, { align: 'center', size: 14, color: '#6a7888' }); } else U.txt(c, '各方向都縮小 4 倍', fx + fw / 2, top + fh + 30, { align: 'center', size: 14, color: '#6a7888' });
       });
-    },
-    notes: `這一頁仔細比較一般 EUV 和下一代的 High-NA EUV。
-
-NA 可以理解成鏡頭收光的角度，也就是最後一面投影鏡張得多開。一般 EUV 的 NA 是 0.33，High-NA 加大到 0.55。收光角度越大，能畫的線就越細：一般 EUV 一次曝光，最細大約 13 到 16 奈米的半間距；High-NA 大約 8 奈米。
-
-這代表什麼？切到第三個按鈕。2 奈米之後最細的幾層線，一般 EUV 一次畫不出來，只能用「多重曝光」：線排得太密時，相鄰兩條線會糊在一起，所以把圖案拆開，隔一條取一條分到兩張光罩，每張上的線就變鬆了，再分兩次曝光，藍的一次、橘的一次，合起來才是完整的圖案。步驟多了一倍，而且第二次只要對偏一點點，線和線的間距就不均勻。High-NA 一次就能印出來，步驟少、也不怕兩次對不準。多重曝光還有另一種做法，叫自對準多重圖案，SADP、SAQP：先印一組比較鬆的線，在線的兩側長一層側壁，再把原本的線拿掉，留下的側壁就是兩倍密的線；做兩次就是四倍，鰭就是這樣做出來的。
-
-代價有兩個。第一，收光角度變大以後，光打到光罩上的角度也跟著變大，光罩的多層膜鏡面反射不了那麼斜的光。所以 ASML 把一個方向的縮小倍率從 4 倍改成 8 倍，讓光罩端的角度變小；可是光罩尺寸不變，一次就只能曝光半張，大晶片要分兩次曝光再拼起來，接縫要完美對準；每小時能做的晶圓也比較少。第二，機台大約四億美元，是一般 EUV 的兩倍。
-
-所以各家選擇不同：Intel 很積極，2026 年 7 月已經用 High-NA 印 18A 的部分圖層，做出一部分 Panther Lake 處理器出貨；這些圖層用 High-NA 或一般 EUV 都能印，等於保留備案。真正用在關鍵圖層是 14A。記憶體廠 SK hynix 也在 2025 年裝了量產型的機台，準備做下一代 DRAM。台積電公開表示，到 2029 年的 A12、A13 都還不需要 High-NA。`
+    }
   }, F));
 
   /* 6. OPC：故意畫歪 */
-  A(Object.assign({
-    id: 'litho6', part: 2, minutes: 1.6, short: 'OPC：故意畫歪',
-    title: 'OPC：光罩要故意畫歪，印出來才會是正的', en: 'Optical Proximity Correction',
-    thesis: '光在小圖案的邊角會「暈開」，印出來會變圓、變短。所以<b>先在光罩上把圖形修正過</b>。',
+  Fig.add('litho6', Object.assign({ body: true,
     render: () => `<div class="s-body">
       <div class="col"><div class="controls">${U.seg('l6-m', ['光罩照原樣畫', '光罩經過 OPC 修正'], 0)}</div>${U.figHTML('l6-cv', '左：光罩上的圖形　右：晶圓上印出來的結果（虛線是目標）', '')}</div>
-      ${U.side({
-        points: ['轉角會變圓、線尾會縮短', '在光罩上加「耳朵」和「錘頭」來補償', '電腦要算數天，才畫得出一張光罩'],
-        fact: { v: '數十億個', d: '一張先進光罩上要修正的圖形數量級，全靠電腦計算' },
-        analogy: { icon: 'pen', t: '比喻', p: '在會暈開的紙上寫字：筆畫的轉角要先多描一點，乾了才會剛好方正。' }
+      ${U.pageSide({
+        
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#l6-cv'));
@@ -576,14 +485,7 @@ NA 可以理解成鏡頭收光的角度，也就是最後一面投影鏡張得�
         U.txt(c, ok ? `和目標差 ${Math.round(r.e * 100)}%（原樣是 ${Math.round(R[0].e * 100)}%）✓ 貼近很多` : `和目標差 ${Math.round(r.e * 100)}%　✗ 轉角變圓、尾巴變短`, x2 + S / 2, y0 + S + 22, { align: 'center', size: 18, w: 700, color: ok ? '#1f7a4d' : '#b3261e' });
       };
       U.onSeg(el, 'l6-m', i => { mode = i; render(); });
-    },
-    notes: `微影最後兩頁看計算微影：先看傳統的 OPC，光學鄰近修正。
-
-當圖案小到接近光的粗細時，光在邊角會暈開。左邊是一個 T 字形的光罩，照原樣畫，右邊粉紅色是晶圓上印出來的光阻：轉角變圓、底部的尾巴變短，和橘色虛線的目標差了一截，畫面下方會顯示差多少。
-
-切換到修正後的光罩。這張光罩是電腦算出來的：先模擬曝光，看哪裡印不夠、哪裡印太多，就在光罩上補一點、削一點，反覆十幾次。結果轉角多了像耳朵的小方塊，線尾多了錘頭，光罩看起來怪怪的，但印出來反而貼近目標。
-
-一張先進光罩上有數十億個圖形要這樣修正，完全靠電腦計算，需要跑好幾天。這一行叫做計算微影。`
+    }
   }, F));
   /* 6b. 曲線光罩與 GPU 運算微影 */
   function cmaskDraw(c, w, h, m, e, t) {
@@ -629,29 +531,17 @@ NA 可以理解成鏡頭收光的角度，也就是最後一面投影鏡張得�
     const err = m === 0 ? 14 : 4;
     if (e > 0.9) U.tag(c, `和目標差約 ${err}%（示意）`, cx2, cy + S * 1.6 + 26, { align: 'center', size: 15, color: m === 0 ? '#a8660a' : '#1f7a4d' });
   }
-  A(Object.assign({
-    id: 'cmask', part: 2, minutes: 2.5, short: '曲線光罩與 GPU 運算微影', badge: '2 nm 世代新技術',
-    title: '曲線光罩：電腦算出最好的形狀，GPU 加速', en: 'Curvilinear Mask · Computational Lithography',
-    thesis: '上一頁的 OPC 只能用直角修正。新做法讓電腦<b>直接反推出任意曲線的光罩</b>，印得更準；代價是計算量暴增，所以改用 <b>GPU</b> 來算。',
+  Fig.add('cmask', Object.assign({ body: true,
     render: () => `<div class="s-body">
       <div class="col"><div class="controls">${U.seg('cm-m', ['傳統 OPC：只能畫直角', '曲線光罩：任意形狀', '計算量：CPU vs GPU'], 0)}</div>${U.figHTML('cm-cv', '一個方形的接觸孔（示意）', '')}</div>
-      ${U.side({
-        top: `<div class="card newcard"><h4>新技術：解決什麼問題？</h4><p>線越細，光的繞射越嚴重，只用直角修正已經不夠準。曲線光罩印得更接近設計，製程的容許誤差也更大。</p><h4>為什麼現在才做得到？</h4><p>以前寫光罩的機器只能畫長方形；新的「多電子束」寫光罩機能畫曲線。再加上 GPU 把計算從兩週縮到一個晚上。</p></div>`,
-        points: ['台積電 2024 年起在生產中導入 GPU 運算微影', '也開始用 AI 幫忙產生光罩圖案', '晶片製造也開始靠 AI 晶片來加速'],
-        analogy: { icon: 'pen', t: '比喻', p: '以前只能用直尺畫光罩，現在可以用曲線板；但每條曲線都要精算，所以得請超級電腦幫忙。' }
+      ${U.pageSide({
+        top: `<div class="card newcard"><h4>新技術：解決什麼問題？</h4><p>線越細，光的繞射越嚴重，只用直角修正已經不夠準。曲線光罩印得更接近設計，製程的容許誤差也更大。</p><h4>為什麼現在才做得到？</h4><p>以前寫光罩的機器只能畫長方形；新的「多電子束」寫光罩機能畫曲線。再加上 GPU 把計算從兩週縮到一個晚上。</p></div>`
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#cm-cv'));
       let m = 0, p = 0;
       U.onSeg(el, 'cm-m', i => { m = i; p = U.reduced() ? 1 : 0; });
       ctx.raf((dt, t) => { p = Math.min(1, p + dt / 1.6); c.clearRect(0, 0, w, h); cmaskDraw(c, w, h, m, U.ease(p), t); });
-    },
-    notes: `這一頁是 2 奈米世代的新技術：曲線光罩和 GPU 運算微影，接續上一頁的 OPC。
-
-上一頁的 OPC，是把光罩上的圖案加粗、在角落加小方塊，補償光的繞射。但它有個限制：只能用直角和長方形。原因很實際：以前寫光罩的機器，只能一個一個畫長方形。
-
-切到第二個按鈕：新的做法叫逆向微影，讓電腦從「想印出來的形狀」反推回去，算出最好的光罩，結果常常是一堆平滑的曲線，外圍還有一些輔助的小圖形。印出來的結果更接近設計，製程的容許誤差也更大。能做出來，是因為新的「多電子束」寫光罩機，可以同時用幾十萬道電子束畫出曲線。
-
-代價是計算量暴增。切到第三個按鈕：一整套光罩的修正，用傳統 CPU 伺服器要算大約兩週。NVIDIA 的 cuLitho 用 GPU 來算，宣稱約三百五十台 GPU 系統就能取代四萬台 CPU 伺服器（2023 年剛發表時說五百台，2024 年導入量產時更新成三百五十台），時間縮到一個晚上。台積電 2024 年起在生產中導入，也開始用 AI 幫忙產生光罩圖案。這是很有趣的循環：AI 晶片反過來幫忙製造更先進的晶片。`
+    }
   }, F));
 })();

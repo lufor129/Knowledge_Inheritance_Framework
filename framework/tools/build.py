@@ -149,11 +149,27 @@ def checks(kb, deck, secs):
                 'q': q.q, 'deep': q.deep, 'a': paras(K.faq_answer(ch, q)), 'pages': [list(x) for x in pages],
                 'secs': [[kn, sid, secs[(kn, sid)].title] for kn, sid in sids if (kn, sid) in secs]})
     for (part, chap), qs in deck.checks.items():
+        have = {x['q'] for x in out.get(f'{part}-{chap}', [])}
         for ch, q in qs:
+            if q.q in have:  # 手冊的常見問題已經有同一題
+                continue
             out.setdefault(f'{part}-{chap}', []).append({
                 'q': q.q, 'deep': q.deep, 'a': paras(K.faq_answer(ch, q)), 'secs': [],
                 'pages': [[pid, titles[pid]] for kn, pid, _ in q.rel if not kn and pid in titles]})
     return out
+
+
+def qa_appendix(deck):
+    """簡報章檔的自我檢查題目，照部分、主題分組：給問答附錄頁（window.QA）用。全是【深入】題的主題歸在「進階」。"""
+    groups, n = [], 0
+    for (part, chap), qs in sorted(deck.checks.items()):
+        for ch, q in qs:
+            label = '進階' if q.deep else deck.order.parts.get(part, '').split(' · ')[0]
+            if not groups or (groups[-1]['part'], groups[-1]['topic']) != (label, q.topic):
+                groups.append({'part': label, 'topic': q.topic, 'items': []})
+            n += 1
+            groups[-1]['items'].append({'n': n, 'q': q.q, 'a': inline(K.plain(K.faq_answer(ch, q))), 'go': [pid for kn, pid, _ in q.rel if not kn]})
+    return groups
 
 
 # ---------- 簡報 ----------
@@ -166,7 +182,6 @@ SHELL = '''<div id="viewport"><div id="stage"></div></div>
 <div id="overview" hidden></div>'''
 
 START = '''(function () {
-  Deck.addMarkdown(window.DECK_MD);
   /* 依頁序排列；不在頁序裡的頁不播放 */
   const ORDER = %s;
   const pos = new Map(ORDER.map((id, i) => [id, i]));
@@ -187,8 +202,10 @@ def md_page(p):
     d = {'id': p.id, 'part': p.part, 'chap': p.chap, 'title': inline(p.title), 'short': p.short, 'en': p.en,
          'minutes': p.minutes, 'fig': fig, 'figKind': kind, 'cap': cap.strip(),
          'thesis': inline(p.thesis, fns), 'points': [inline(x, fns) for x in p.points],
+         'captions': [[inline(t, fns), inline(d, fns)] for t, d in p.captions],
          'fact': [inline(p.fact[0], fns), inline(p.fact[1], fns)] if p.fact else None,
-         'analogy': [p.analogy[0], inline(p.analogy[1], fns)] if p.analogy else None,
+         'analogy': [p.analogy[0], inline(p.analogy[1], fns), p.analogy[2]] if p.analogy else None,
+         'badge': p.badge, 'src': inline(p.src),
          'notes': inline(p.notes)}
     for name in p.footnotes:  # 只在旁白或沒用到的註腳，也照順序編號
         fns.setdefault(name, len(fns) + 1)
@@ -205,13 +222,16 @@ def build_deck(kb, links):
            'kb': {'name': kb.name, 'title': kb.title}, 'links': links,
            'maps': page_maps(kb, deck, secs), 'groups': groups(kb, deck), 'checks': checks(kb, deck, secs)}
     w, d = kb.dir / 'widgets', kb.dir / 'deck'
-    files = (sorted((w / 'vendor').glob('*.js'))
-             + [ENGINE / 'deck/engine.js', ENGINE / 'widgets/core.js', ENGINE / 'widgets/anim.js', ENGINE / 'deck/pages.js', ENGINE / 'deck/learn.js']
-             + sorted(w.glob('*.js')) + sorted((ENGINE / 'figures').glob('*.js')) + sorted((d / 'figures').glob('*.js'))
-             + sorted((d / 'data').glob('*.js')) + sorted((d / 'slides').glob('*.js')))
+    # 互動圖都註冊好之後才加入 Markdown 頁；deck/slides/ 裡的頁面設定（例如 hub）要在那之後才找得到頁
+    figs = (sorted((w / 'vendor').glob('*.js'))
+            + [ENGINE / 'deck/engine.js', ENGINE / 'widgets/core.js', ENGINE / 'widgets/anim.js', ENGINE / 'deck/pages.js', ENGINE / 'deck/learn.js']
+            + sorted(w.glob('*.js')) + sorted((d / 'data').glob('*.js')) + sorted((ENGINE / 'figures').glob('*.js')) + sorted((d / 'figures').glob('*.js')))
     code = [script('window.DECK_CONFIG = ' + json.dumps(cfg, ensure_ascii=False) + ';'),
-            script(inline_images(kb, 'window.DECK_MD = ' + json.dumps([md_page(p) for p in deck.md_pages.values()], ensure_ascii=False) + ';'))]
-    code += [script(inline_images(kb, read(f))) for f in files]
+            script(inline_images(kb, 'window.DECK_MD = ' + json.dumps([md_page(p) for p in deck.md_pages.values()], ensure_ascii=False) + ';')),
+            script('window.QA = ' + json.dumps(qa_appendix(deck), ensure_ascii=False) + ';')]
+    code += [script(inline_images(kb, read(f))) for f in figs]
+    code.append(script('Deck.addMarkdown(window.DECK_MD);'))
+    code += [script(inline_images(kb, read(f))) for f in sorted((d / 'slides').glob('*.js'))]
     code.append(script(START % json.dumps([p.id for p in order.pages])))
     head = '<style>' + read(ENGINE / 'deck/deck.css') + '</style>'
     return page(cfg['title'], head, SHELL + '\n' + '\n'.join(code))

@@ -1,6 +1,5 @@
 /* 第二部分：2 奈米以下的額外關鍵技術 */
 (function () {
-  const A = Deck.add.bind(Deck);
   const EY = '第二部分 · ⑦ 環繞式電晶體與導線';
   const EY8 = '第二部分 · ⑧ 模擬', EY9 = '第二部分 · ⑨ 檢測量測';
 
@@ -109,20 +108,15 @@
     if (i === 7 && p > 0.5) U.tag(c, '矽片懸空，上下都空了', icx, iy + 18, { align: 'center', size: 13, color: '#b3261e' });
     if (i >= 2 && i <= 6) U.tag(c, '假閘極從三面跨住鰭', icx, iy + 18, { align: 'center', size: 13 });
   }
-  A({
-    id: 'gaaflow', part: 2, chap: 7, eyebrow: EY, minutes: 3.9, short: '環繞式電晶體怎麼做',
-    title: 'GAA 怎麼做？九個步驟', en: 'GAA Nanosheet Process',
-    thesis: '奈米片不是「立起來」的，而是<b>先疊好一層層材料，最後把夾在中間的矽鍺溶掉</b>，讓閘極鑽進去。每一步右邊都會標出<b>用到哪一章的技術</b>，點一下可以跳回去複習。',
-    render: () => `<div class="s-body w66">
+  Fig.add('gaaflow', { body: true,
+    eyebrow: EY, render: () => `<div class="s-body w66">
       <div class="col">${U.figHTML('g1-cv', '左：沿電流方向的剖面　右上：垂直切開閘極的橫切面', '')}${U.stepperHTML('g1-st')}</div>
-      ${U.side({
+      ${U.pageSide({
         top: `<div class="card newcard"><h4>這一步用到的技術（點擊跳回該章）</h4><div id="g1-tech" style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px"></div><p id="g1-why" style="margin:0"></p><p id="g1-m" style="margin:8px 0 0;color:#a8660a;font-weight:600" hidden></p></div>`,
-        points: ['右上的橫切面：看「環繞」怎麼一步步形成'],
         extra: `<div class="legend" style="display:grid;grid-template-columns:auto 1fr;gap:3px 10px;align-items:baseline">${[
           ['si', '奈米片：電流走的路（底下是晶圓）'], ['sige', '犧牲層：先佔位，第 8 步溶掉'], ['nit', '間隔層、內間隔層：隔開閘極和源汲極'], ['poly', '假閘極：耐高溫先佔位，第 7 步拿掉'],
           ['n', '源極、汲極：電流的進出口'], ['ox', '絕緣層：蓋住源汲極，磨平用'], ['hk', '閘極絕緣層：擋住漏電'], ['metal', '真正的閘極：控制電流通不通']
-        ].map(([k, u]) => `<span style="white-space:nowrap"><i style="background:${U.MAT[k]}"></i>${U.MAT_NAME[k]}</span><span>${u}</span>`).join('')}</div><button class="btn" id="g1-3d" type="button">看 3D 模型 →</button>`,
-        analogy: { icon: 'bread', t: '比喻', p: '做千層蛋糕：蛋糕片之間先夾果凍，最後把果凍融掉，再灌進巧克力把每片包住。' }
+        ].map(([k, u]) => `<span style="white-space:nowrap"><i style="background:${U.MAT[k]}"></i>${U.MAT_NAME[k]}</span><span>${u}</span>`).join('')}</div><button class="btn" id="g1-3d" type="button">看 3D 模型 →</button>`
       })}</div>`,
     init(el, ctx) {
       const steps = GSTEP.map((s, i) => ({ t: s.t, d: s.d, draw: (c, w, h, p, tt) => gaa(c, w, h, i, p, tt) }));
@@ -134,30 +128,7 @@
         const gm = U.$(el, '#g1-m'); gm.hidden = !GSTEP[i].m; gm.textContent = GSTEP[i].m ? '👁 怎麼量：' + GSTEP[i].m : '';
       } });
       U.$(el, '#g1-3d').onclick = () => Deck.goId('struct3d');
-    },
-    notes: `第七章：環繞式電晶體與導線。把前面學到的技術組合起來，看環繞式電晶體到底怎麼做。左邊是沿著電流方向切開的剖面，右上角是垂直切開閘極的橫切面，「環繞」要看右上角才看得出來。每一步右邊都會標出用到哪一章的技術，按一下可以跳回去複習，再按 B 回來。
-
-第一步，疊層：用第四章的磊晶，一層矽鍺、一層矽交替長上去，每層只有幾奈米。矽是未來的通道，矽鍺只是佔位的犧牲層。右邊卡片裡的橘字是「怎麼量」：每層多厚、鍺有多少，要用 X 光和光學量測反推。
-
-第二步，切成鰭：用第一章的微影畫出細線，再用第二章的蝕刻往下挖。這一刀是切在另一個方向，所以要看右上角：整片疊層被切成一條細長的鰭。鰭排得非常密，常用一種叫 SAQP 的自對準多重圖案：先印鬆的線，靠兩側長出來的側壁把線距減半、再減半。切完之後，鰭與鰭之間的溝槽填滿氧化矽、磨平再往下蝕刻一點，叫淺溝槽隔離 STI，把相鄰的電晶體隔開；右上角鰭底下淡黃色那一層就是它，之後的閘極就坐在它上面。
-
-第三步，假閘極：先用沉積鋪一層多晶矽，再微影、蝕刻出假閘極，兩側加上間隔層。後面做源汲極要加熱到上千度，真正的高介電層和金屬怕高溫，所以先用耐熱的假閘極撐著。右上角可以看到假閘極從三面跨住鰭。這種先用假的、最後才換成真閘極的做法，叫後閘極，英文 replacement metal gate，鰭式時代就這樣做了。
-
-第四步，挖源汲極：用蝕刻把假閘極兩旁的疊層挖掉。
-
-第五步，內間隔層：這是環繞式特有的。用只吃矽鍺的選擇性蝕刻，把矽鍺兩端往內溶一點，再用 ALD 整片鋪一層絕緣材料，最後把外面多的蝕刻掉，只留下缺口裡的那一小塊。它的作用是防止最後的閘極和源汲極碰在一起短路。往內溶了幾奈米，藏在結構裡面，從上面看不到，只能靠 OCD 反推、TEM 抽查。
-
-第六步，長源汲極：用第四章的選擇性磊晶，從奈米片的兩端長出源極和汲極，一邊長一邊摻雜。
-
-第七步，換掉假閘極：鋪上絕緣層，用第六章的 CMP 磨平，露出假閘極的頂端，再把它蝕刻掉。
-
-第八步最關鍵，溶掉矽鍺：用只吃矽鍺、不傷矽的蝕刻，把夾心全部溶掉。這種蝕刻往四面八方溶，但只溶矽鍺，正是蝕刻那一章說的等向蝕刻的強項，可以用藥水或氣體，各家做法不同、也不公開，但都不是原子層蝕刻。看右上角，矽奈米片懸空了，兩端由源汲極撐著。溶乾淨了沒、矽片有沒有被吃薄，從上面完全看不到，這是量測最難的一步。
-
-第九步，包上閘極：用 ALD 在每片奈米片的四周鋪上第五章的高介電層，再鋪決定 Vt 的功函數金屬，nFET 和 pFET 用不同的金屬，最後填滿、用 CMP 磨平。片與片之間只有十奈米左右，要塞進好幾層，多種 Vt 是最難做的地方之一。右上角可以看到，每一片都被閘極四面包住，這就是「環繞式」。
-
-就像做千層蛋糕：蛋糕片之間先夾果凍，最後把果凍融掉，再灌巧克力把每一片包住。
-
-不過到這裡只完成了「前段」：電晶體做好了，但一條線都還沒接。下一頁看接下來的中段和後段。`
+    }
   });
 
   /* 2. 區域選擇性沉積 */
@@ -167,16 +138,12 @@
     ['③ 長膜＋順手清一下', '重複很多輪，金屬上的膜越長越厚。偶爾在塗層上沾到的小顆粒，用短暫蝕刻清掉。'],
     ['④ 移除防沾塗層', '把塗層洗掉：只有金屬上長了膜，位置完全對齊，不需要光罩。']
   ];
-  A({
-    id: 'asd', part: 2, chap: 3, eyebrow: '第二部分 · ③ 薄膜沉積', minutes: 4.2, short: '區域選擇性沉積（新技術）', badge: '新技術',
-    title: '區域選擇性沉積：只長在需要的地方', en: 'Area-Selective Deposition',
-    thesis: '傳統做法是「全部鋪滿再挖掉」。新方法讓材料<b>只長在金屬上</b>。切到「怎麼做到？」看分子層級的祕密：<b>先幫不要長的地方穿雨衣</b>。',
-    render: () => `<div class="s-body">
+  Fig.add('asd', { body: true,
+    eyebrow: '第二部分 · ③ 薄膜沉積', render: () => `<div class="s-body">
       <div class="col"><div class="controls">${U.seg('a1-m', ['傳統：鋪滿再挖掉', '新方法：只長在金屬上', '怎麼做到？（分子放大）', '困難點'], 0)}<button class="btn" type="button" id="a1-rp">↻ 重播</button></div>${U.figHTML('a1-cv', '表面剖面：橘色是金屬，黃色是絕緣層', '')}<div id="a1-sw" hidden>${U.stepperHTML('a1-st')}</div><div class="controls" id="a1-hc" hidden>${U.range('a1-th', '想長的厚度', 1, 10, 0.5, 3, ' nm')}${U.seg('a1-fix', ['一口氣長完', '邊長邊修'], 0)}</div></div>
-      ${U.side({
+      ${U.pageSide({
         top: `<div class="card key" id="a1-card"><h4 id="a1-h"></h4><div class="bigword" id="a1-t" style="font-size:24px"></div><p id="a1-d" style="font-size:18.5px"></p></div>`,
-        extra: `<div class="card newcard"><h4>新技術：解決什麼問題？</h4><p>2 奈米級的導線間距只剩 20 幾奈米，微影只要對偏幾奈米，上下層就會短路或接不上。選擇性沉積「自己對準」，還省下一整輪微影和蝕刻。</p><h4>用在哪裡？</h4><p>導線層：在銅導線頂端只長一層保護蓋、讓上下層的連接孔自動對準。部分應用已量產，2 奈米之後用得更多。</p></div>`,
-        analogy: { icon: 'seed', t: '比喻', p: '像幫不想淋濕的地方穿上雨衣，再下雨：只有沒穿雨衣的地方會濕。' }
+        extra: `<div class="card newcard"><h4>新技術：解決什麼問題？</h4><p>2 奈米級的導線間距只剩 20 幾奈米，微影只要對偏幾奈米，上下層就會短路或接不上。選擇性沉積「自己對準」，還省下一整輪微影和蝕刻。</p><h4>用在哪裡？</h4><p>導線層：在銅導線頂端只長一層保護蓋、讓上下層的連接孔自動對準。部分應用已量產，2 奈米之後用得更多。</p></div>`
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#a1-cv'));
@@ -287,24 +254,7 @@
         if (stage === 3 && f > 0.6) U.tag(c, '只有金屬上有膜，自動對齊', w / 2, 36, { align: 'center', size: 17, color: '#1f7a4d' });
         U.txt(c, ASD[stage][0], L, 26, { size: 18, w: 700, color: '#17202b' });
       }
-    },
-    notes: `【可略】時間緊時：只講分頁①②（傳統做法和新方法、解決什麼問題），「怎麼做到」「困難點」兩個分頁略過。
-
-這一頁也是新技術：區域選擇性沉積。上一頁的 ALD 還可以再進一步：讓它只長在指定的地方。
-
-先講它解決什麼問題。到了 2 奈米級，導線之間的距離只剩二十幾奈米，上下兩層導線要靠小孔連接。如果用傳統的微影去定位置，光阻只要對偏幾奈米，孔就會碰到隔壁的導線造成短路，或是接不上。選擇性沉積讓材料自己長在對的地方，不用對準，還省下一整輪微影和蝕刻。部分應用已經量產好幾年，2 奈米之後用得更多，主要用在導線層：例如在銅導線頂端只長一層保護蓋，或讓連接孔自動對準下面的導線。
-
-傳統的做法是「由上往下」：先把材料整片鋪滿，再用微影和蝕刻挖掉不要的部分，一共四步。問題是在奈米尺度下，光阻只要對偏一點點，就做壞了。
-
-新方法叫區域選擇性沉積，是「由下往上」：讓材料只黏在金屬上，絕緣層上黏不住，不用微影，而且自動對準。
-
-它是怎麼做到的？方法不只一種：有些材料本身就只愛長在金屬上，在絕緣層上很難起頭；另一種做法是先幫絕緣層穿雨衣。切到「怎麼做到」，看的是穿雨衣這一種，分子層級的放大。第一步，先塗一種長條狀的分子當防沾塗層，它的頭部只會抓住絕緣層表面，排成一片像刷毛的薄層；在金屬上抓不住，就飄走了。第二步，開始沉積：材料分子飛過來，碰到金屬就黏住、起反應；碰到刷毛就滑開彈走。第三步，重複很多輪，金屬上的膜越來越厚；選擇性不是百分之百，偶爾會在塗層上沾到一點，所以中間會穿插很短暫的蝕刻，把這些雜點清掉。第四步，把防沾塗層洗掉，就只剩金屬上的膜。
-
-就像幫不想淋濕的地方穿上雨衣再下雨。
-
-最後切到「困難點」。選擇性不是永遠有效：拖動厚度，長得越厚，絕緣層上越容易冒出零星的小島，這些就是缺陷，夠大的話會讓相鄰導線短路。所以實際上只能長幾奈米。解法是切到「邊長邊修」：每長大約 2 奈米，就用輕微的蝕刻把零星小島清掉，再繼續長。缺陷壓下來了，代價是步驟變多、時間變長。還有一個限制：膜不只往上長，也會往兩旁長，像香菇冒出頭，厚了就蓋到旁邊的絕緣層上。導線間距只有二十幾奈米，這也是只能長幾奈米的原因。
-
-薄膜沉積這一章到這裡。下一章：摻雜與磊晶。`
+    }
   });
 
   /* TCAD 1：在電腦裡先做、先測 */
@@ -333,11 +283,8 @@
     { t: '和真實比對', d: '拿真的晶片量測結果（例如電子顯微鏡照片、電流）來校正，模擬才會越來越準。' }
   ];
   const RECIPE = ['① 磊晶：矽 5 nm／矽鍺 10 nm，各 3 層', '② 蝕刻：切出 40 nm 寬的鰭、做假閘極', '③ 源汲極磊晶：邊長邊摻磷', '④ 加熱：1,000°C、1 秒', '⑤ 換閘極：高介電 1.5 nm＋金屬'];
-  A({
-    id: 'tcad1', part: 2, chap: 8, eyebrow: EY8, minutes: 4.6, short: 'TCAD：電腦裡的虛擬工廠',
-    title: 'TCAD：先在電腦裡把電晶體「做」一次、「測」一次', en: 'Technology CAD',
-    thesis: '真的做一批晶圓要 3–4 個月。TCAD 用電腦<b>模擬製程和電晶體</b>，先把幾百種設計試過，只挑最好的去真做。三個分頁：怎麼模擬、3D 模型、親手做一次虛擬實驗。',
-    render: () => `<div class="s-body w66">
+  Fig.add('tcad1', { body: true,
+    eyebrow: EY8, render: () => `<div class="s-body w66">
       <div class="col"><div class="controls">${U.seg('tc1-m', ['① 怎麼模擬', '② 3D 模型（GAA）', '③ 虛擬實驗：拖拖看'], 0)}</div>
         <div id="tc1-p0" style="display:flex;flex-direction:column;gap:14px;flex:1;min-height:0">${U.figHTML('tc1-cv', '電腦螢幕裡的虛擬工廠', '')}${U.stepperHTML('tc1-st')}</div>
         <div id="tc1-p1" hidden style="display:flex;flex-direction:column;gap:14px;flex:1;min-height:0"><div class="fig grow"><div class="fig-title"><span>TCAD 的 3D 環繞式電晶體模型（示意，可拖曳旋轉）</span></div><div class="fig-canvas" id="tc1-3d" style="position:relative"></div></div>
@@ -345,12 +292,10 @@
         <div id="tc1-p2" hidden style="display:flex;flex-direction:column;gap:14px;flex:1;min-height:0"><div class="controls">${U.seg('tc2-s', ['關閉狀態（閘極給 0）', '打開狀態（閘極給 1）'], 0)}</div>
         ${U.figHTML('tc2-cv', '模擬結果：一片奈米片沿電流方向切開', '')}
         <div class="controls">${U.range('tc2-l', '閘極長度', 8, 20, 1, 14, ' nm')}${U.range('tc2-t', '奈米片厚度', 3, 10, 0.5, 5, ' nm')}</div></div></div>
-      ${U.side({
+      ${U.pageSide({
         top: `<div class="card key"><h4 id="tc1-h"></h4><p id="tc1-d" style="font-size:17px;margin:0"></p></div>`,
         meters: [['tc2-off', '關閉時漏電'], ['tc2-on', '打開時電流']],
-        extra: `<div class="card key" id="tc2-card"><h4>你剛剛做了幾次實驗</h4><div class="bigword" id="tc2-n"></div><p id="tc2-c" style="font-size:17px"></p></div>`,
-        points: ['<b>製程模擬</b>：算出結構長什麼樣子', '<b>元件模擬</b>：算出電流有多大', '要用真實量測來校正，才可信'],
-        analogy: { icon: 'camera', t: '比喻', p: '像飛行模擬器：先在模擬器裡把各種狀況練熟，才開真的飛機；模擬器也要照真飛機的數據不斷調整。' }
+        extra: `<div class="card key" id="tc2-card"><h4>你剛剛做了幾次實驗</h4><div class="bigword" id="tc2-n"></div><p id="tc2-c" style="font-size:17px"></p></div>`
       })}</div>`,
     init(el, ctx) {
       const steps = TC1.map((s, i) => Object.assign({}, s, { draw: (c, w, h, p, t) => {
@@ -475,45 +420,19 @@
           U.setMeter(el, 'tc2-on', of, of > 0.6 ? '大' : of > 0.3 ? '中' : '小', of > 0.3 ? 'good' : 'warn');
         });
       }
-    },
-    notes: `【可略】時間緊時：第②分頁「3D 模型」略過（下一頁會拿 TEM 對照）；第③分頁只示範一次：把閘極拉短、看漏電。
-
-第八章：模擬。先在電腦裡算；下一章再拿真的晶片找缺陷、量尺寸。先看一個工程師每天都在用的工具：TCAD，技術電腦輔助設計。
-
-真的做一批晶圓要三到四個月，每一批都很貴。如果每改一個參數都要真做一次，研發會慢到不行。所以工程師會先在電腦裡把電晶體「做」一次、「測」一次。
-
-第一步寫配方：每一道製程的條件，例如磊晶長多厚、蝕刻挖多深、打多少雜質、加熱多久。第二步是製程模擬：電腦照著配方，一步一步「長」出虛擬的電晶體，連加熱之後雜質往裡面擴散多少都算得出來。順序和[[頁:gaaflow]]一樣：先放假閘極佔位，做完源汲極、加熱之後，最後才換上高介電和金屬閘極。第三步是元件模擬：把結構切成幾萬個小格子，算每一格裡的電子怎麼走，就能得到打開和關閉時的電流。
-
-第四步最重要：模擬不會自動就是對的。要拿真的晶片，例如電子顯微鏡照片（第九章會介紹）、量到的電流，來和模擬比對，調整模型參數，直到誤差夠小。校正好之後，就可以放心拿它來預測還沒做過的新設計。就像飛行模擬器，要照真飛機的數據不斷調整才可信。
-
-切到第二個分頁，3D 模型。前面的動畫是平面剖面，真正的 TCAD 是 3D 的：把整顆環繞式電晶體，三片奈米片、包住它的閘極、兩邊的源汲極，切成幾十萬個小格子，算每一格的電場和電子。可以拖曳旋轉看看。按「切開看奈米片」，就是從閘極中間垂直切開，三片奈米片被閘極四面包住，這個方向和電子顯微鏡 TEM 拍的剖面一樣。
-
-切到第三個分頁，虛擬實驗，讓大家親手用一次 TCAD 的元件模擬。畫面是一片奈米片沿著電流方向切開，上下都是閘極，左邊源極、右邊汲極。藍色越深代表那裡的電子越多。
-
-先看關閉狀態。把閘極長度拉短，通道中央的藍色會越來越深：源極和汲極的影響穿過來了，閘極關不住，紅框的點就是偷溜的電子，右邊的漏電條變紅。再把奈米片調厚，情況更糟，因為片的中央離上下閘極都比較遠，閘極管不到。
-
-那把片做得很薄不就好了？切到打開狀態看看：片越薄，能走電子的空間越小，電流就變小，晶片就變慢。所以長度、厚度之間有取捨，工程師要找平衡點。
-
-右邊還幫大家數了：你剛剛試了幾種設計。在電腦裡每種只要幾分鐘到幾小時；如果每一種都要工廠真做，就是好幾批晶圓、每批三到四個月。這就是 TCAD 的價值。畫面裡是簡化的模型，真正的 TCAD 要解好幾組物理方程，一次模擬可能要算幾個小時。
-
-模擬看起來很強大，但它有一個根本的問題。下一頁看。`
+    }
   });
 
   /* TCAD 的困境：太理想、調不出 TEM 的樣子 → 還是得量測 */
-  A({
-    id: 'tcad2', part: 2, chap: 8, eyebrow: EY8, minutes: 2.5, short: 'TCAD 的困境：太理想',
-    title: 'TCAD 的困境：模擬太理想，調不出真實晶片的樣子', en: 'Simulation vs Reality',
-    thesis: '簡化的模擬用<b>理想形狀和課本參數</b>；真實做出來的晶片有圓角、每片不一樣、邊緣粗糙。拿 TEM 照片來比，<b>這個簡化模型怎麼調都對不上</b>；模型做得再細，旋鈕越多，<b>越需要量測</b>來決定每個值。',
-    render: () => `<div class="s-body w66">
+  Fig.add('tcad2', { body: true,
+    eyebrow: EY8, render: () => `<div class="s-body w66">
       <div class="col"><div class="controls">${U.seg('td-m', ['① 模擬太理想', '② 試著調成 TEM'], 0)}</div>
         <div id="td-p0" style="display:flex;flex-direction:column;gap:14px;flex:1;min-height:0">${U.figHTML('tc1-cmp', '左：簡化模型的理想形狀　右：真實樣品的 TEM 剖面（研究用，同一個方向切開）', '')}</div>
         <div id="td-p1" hidden style="display:flex;flex-direction:column;gap:14px;flex:1;min-height:0">${U.figHTML('tc1-fit', '把 TCAD 的形狀（青色框）疊在 TEM 上，拖動旋鈕試著對齊', '')}
           <div class="controls">${U.range('tc1-w', '奈米片寬度', 20, 45, 0.5, 26, ' nm')}${U.range('tc1-t', '奈米片厚度', 5, 15, 0.2, 7, ' nm')}${U.range('tc1-g', '片與片間距', 10, 24, 0.5, 20, ' nm')}</div></div></div>
-      ${U.side({
+      ${U.pageSide({
         top: `<div class="card key"><h4 id="td-h"></h4><p id="td-d" style="font-size:17px;margin:0"></p></div>`,
-        points: ['簡化模型：直角、每片一樣、參數用標準值', '真實：圓角、每片不同、邊緣粗糙、雜質位置隨機', '調不出來的差距 → 只能靠<b>量測</b>補'],
-        extra: '<button class="btn primary" type="button" data-go="eyes">下一頁：廠裡怎麼量 →</button>',
-        analogy: { icon: 'camera', t: '比喻', p: '像只用方形積木拼一張照片：大小、位置都能調，可是再怎麼拼也拼不出圓角。' }
+        extra: '<button class="btn primary" type="button" data-go="eyes">下一頁：廠裡怎麼量 →</button>'
       })}</div>`,
     init(el, ctx) {
       U.$$(el, '[data-go]').forEach(b => b.onclick = () => Deck.goId(b.dataset.go));
@@ -585,31 +504,18 @@
         U.txt(c, '差一點點形狀，電流和漏電就差很多 → 模擬一定要拿量測來校正（上一頁第 ④ 步）→ 下一頁：量測', w / 2, h - 18, { align: 'center', size: 16, w: 700, color: '#b3541e' });
         U.txt(c, '影像：' + CREDITS.gaatem.by + '（' + CREDITS.gaatem.lic + '）', rx + pw, py + ih + 16, { align: 'right', size: 11, color: '#6a7888' });
       });
-    },
-    notes: `【可略】時間緊時：第②分頁不現場操作，口頭講結論：三個旋鈕調到底，吻合度卡在八成。
-
-上一頁的 TCAD 看起來很強大，但它有一個根本的問題：太理想。
-
-第一個分頁。TCAD 太理想。左邊是簡化模型用的形狀：直角、三片一模一樣、材料參數用標準值。右邊是真實做出來的樣品，用 TEM 拍的剖面；TEM 是一種能看到原子的電子顯微鏡，後面量測會細講，這張是研究用的樣品：奈米片的角是圓的，每一片的厚薄、寬窄都不完全一樣，最底下的結構也變形、不對稱。真實晶片還有看不到的差異：邊緣粗糙、雜質的位置是隨機的、介面有缺陷。這些差一點點，算出來的電流和漏電就差很多，模擬的結果通常比真實晶片好看。所以第四步的校正一定要做，要拿 TEM 看到的真實形狀、量到的電流去修正模型。
-
-切到第二個分頁，親手試試看能不能把模型調成 TEM 的樣子。青色框是 TCAD 的奈米片形狀，疊在 TEM 照片上。手上只有三個旋鈕：寬度、厚度、間距，而且三片一起變。拖一拖，先把寬和厚對上，再對間距，吻合度會一直上升，但到八成左右就卡住了，紅虛線怎麼都過不去。為什麼？因為剩下的差距，模型裡根本沒有對應的旋鈕：真實的角是圓的，模型只有直角；三片各自長得不一樣，模型三片一起變；底部不規則、邊緣粗糙，也畫不進去。真正的 TCAD 也能畫圓角、讓每片不一樣，但難的是每一顆都不一樣，而且旋鈕一多，每個值都要靠量測數據來決定。所以工程師會把剩下的差距記成誤差範圍，或者直接拿量測到的數值去修正模型。
-
-所以 TCAD 再怎麼厲害，最後還是要拿真實晶片來量。下一頁就來看，廠裡是怎麼量的。`
+    }
   });
 
   /* 量測、檢測、WAT 總覽：工廠的三種檢查（接在 TCAD 之後，帶出後面的順序：量尺寸 → 找缺陷 → SPC、APC → 晶圓做完：WAT） */
   const EYE_SITES = [[0, 0], [0.5, 0], [-0.5, 0], [0, 0.5], [0, -0.5], [0.35, 0.35], [-0.35, 0.35], [0.35, -0.35], [-0.35, -0.35]];
-  A({
-    id: 'eyes', part: 2, chap: 9, eyebrow: EY9, minutes: 2.8, short: '三種檢查：量測、檢測、WAT',
-    title: '量測、檢測、WAT：工廠的三種檢查', en: 'Metrology · Inspection · WAT',
-    thesis: 'TCAD 要靠量測校正，但量測更大的工作是<b>每天顧產線</b>。廠裡有三種檢查：製程中，<b>量測</b>問「尺寸對不對」、<b>檢測</b>問「哪裡有缺陷」；晶圓做完後，<b>WAT</b> 直接量「電性對不對」。切換看看三種檢查各看到什麼。',
-    render: () => `<div class="s-body w66">
+  Fig.add('eyes', { body: true,
+    eyebrow: EY9, render: () => `<div class="s-body w66">
       <div class="col"><div class="controls">${U.seg('ey-m', ['① 量測：尺寸對不對', '② 檢測：哪裡有缺陷', '③ WAT：電性對不對'], 0)}</div>
         ${U.figHTML('ey-cv', '同一片晶圓，三種檢查', '')}</div>
-      ${U.side({
+      ${U.pageSide({
         top: `<div class="card"><h4 style="margin-bottom:6px">三種檢查比一比</h4><table style="width:100%;border-collapse:collapse;font-size:14px;line-height:1.35">${[['', '量測', '檢測', 'WAT'], ['問什麼', '尺寸對不對', '哪裡有缺陷', '電性對不對'], ['什麼時候', '製程中', '製程中', '晶圓做完後'], ['得到', '線寬、膜厚、疊對', '缺陷位置和種類', '電壓、電流、電阻'], ['怎麼看', '抽幾片、量幾個點', '抽片後整片掃', '扎切割道測試結構'], ['工具', '膜厚機、CD-SEM、OCD、疊對機（TEM 當參考）', '光學掃描＋複檢 SEM、電子束', '探針卡＋測試機'], ['接下來', '交給 SPC（統計製程管制）、APC', '推回哪台機台', '放行或回推哪一站']].map((r, i) => `<tr style="border-top:${i ? '1px solid var(--line)' : '0'}">${r.map((x, j) => `<${i && j ? 'td' : 'th'} style="text-align:left;padding:4px 6px;${j === 0 ? 'color:var(--ink-3);font-weight:600;white-space:nowrap' : ''}">${x}</${i && j ? 'td' : 'th'}>`).join('')}</tr>`).join('')}</table></div>
-          <div class="card key"><h4>這一章跟著晶圓走</h4><div style="display:flex;flex-direction:column;gap:4px;font-size:15px;line-height:1.45">${[['製程中', '① 量尺寸 → ② 找缺陷 → ③ SPC、APC'], ['晶圓做完', '④ WAT 量電性，對照尺寸'], ['之後', '⑩ 從設計到量產 → CP、封裝（第三部分）']].map(([t, d]) => `<div style="display:flex;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:5px 8px"><b style="flex:none;width:4.5em">${t}</b><span>${d}</span></div>`).join('')}</div></div>`,
-        analogy: { icon: 'eye', t: '比喻', p: '健康檢查：量血壓是量測，照胃鏡找息肉是檢測，抽血化驗是 WAT。' }
+          <div class="card key"><h4>這一章跟著晶圓走</h4><div style="display:flex;flex-direction:column;gap:4px;font-size:15px;line-height:1.45">${[['製程中', '① 量尺寸 → ② 找缺陷 → ③ SPC、APC'], ['晶圓做完', '④ WAT 量電性，對照尺寸'], ['之後', '⑩ 從設計到量產 → CP、封裝（第三部分）']].map(([t, d]) => `<div style="display:flex;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:5px 8px"><b style="flex:none;width:4.5em">${t}</b><span>${d}</span></div>`).join('')}</div></div>`
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#ey-cv'));
@@ -687,16 +593,7 @@
           U.txt(c, '晶圓做完後，扎切割道上的測試結構（金色）', 20, 24, { size: 15, w: 600, color: '#3e4b5b' });
         }
       });
-    },
-    notes: `第九章：檢測量測。前面說 TCAD 要靠量測校正，但這只是量測的一小部分工作。量測更大、每天都在做的事是顧產線：上千道製程裡，每一台機台每天都會慢慢漂，量測就是負責在它變成報廢之前抓到。還記得第一部分[[頁:cost]]嗎？一顆晶片要過一千五百道關卡，每一關 99.9% 都對，全部走完也只剩兩成。量測和檢測，就是讓每一關都守住的人。這是在座很多人未來每天的工作。
-
-廠裡有三種檢查。第一種叫量測：量尺寸對不對。看畫面，量測是抽幾片晶圓、每片量幾個點，每個點得到一個數字，例如線寬 15.1 奈米。量的東西主要是線寬，英文叫 CD，也就是關鍵尺寸，還有膜厚、上下兩層有沒有對準的疊對。產線上的量測機台主要是膜厚機、CD-SEM、OCD 和疊對機；TEM 是實驗室的參考工具。這一章用線寬當代表，膜厚和疊對的道理一樣。
-
-切到第二種：檢測。檢測不量尺寸，而是把整片晶圓掃一遍，找缺陷：微粒、刮痕、不該接的線接起來。得到的是缺陷在哪裡、是什麼。
-
-切到第三種：WAT，晶圓允收測試。前兩種都在製程中途做；WAT 是整片晶圓做完之後，在晶片之間走道上的測試結構扎針，量電壓、電流、電阻，確認電晶體和導線的電性對。三種是不同的機台，在廠裡常常也是不同的團隊。就像健康檢查：量血壓、量身高是量測，照胃鏡找息肉是檢測，抽血化驗是 WAT。
-
-這一章就跟著一片晶圓走，路線在右邊中間那張卡。製程中：先看第一種檢查，量尺寸的三種工具 TEM、SEM、OCD，以及 OCD 背後的模型；再看第二種，檢測怎麼找缺陷、推回是哪台機台；接著看這些數字每天拿來做什麼，也就是 SPC 和 APC。晶圓做完：用第三種檢查 WAT 量電性，再和量到的尺寸對照。晶圓做完之後，第十章把鏡頭拉遠，看一個新製程怎麼從設計走到量產、良率怎麼爬上去；再來的 CP、封裝，就接到第三部分。`
+    }
   });
 
   /* 量測與檢測（兩頁）：mloop 管制圖判定＋APC；insp 缺陷地圖猜原因 */
@@ -759,18 +656,13 @@
   const ML_SC = [[0], [0.3], [0.8], [1.6]];
   // 47、48 共用的分工圖：量測 → SPC（判定有沒有異常，找人處理）→ APC（自動算下一批調多少）→ 機台；on＝這一頁講的那一段
   const ctlFlow = on => `<div class="minimap" style="flex-wrap:wrap">${[['量測', ''], ['SPC 統計製程管制', '判定機台有沒有變，異常就找人處理'], ['APC 先進製程控制', '自動算出下一批要調多少'], ['機台', '']].map(([n, d], i) => `${i ? '<span class="ar">→</span>' : ''}<span class="nd${i === on ? ' on' : ''}" title="${d}">${n}${d && i === on ? `<small style="font-weight:500;margin-left:8px;opacity:.9">${d}</small>` : ''}</span>`).join('')}</div>`;
-  A({
-    id: 'mloop', part: 2, chap: 9, eyebrow: EY9, minutes: 4.8, short: 'SPC：管制圖與判定',
-    title: 'SPC 統計製程管制：量完先判定', en: 'SPC · Statistical Process Control',
-    thesis: '前面量到的數字（線寬、膜厚、疊對，還有每片缺陷數）拿來做什麼？交給 <b>SPC</b>（Statistical Process Control，統計製程管制）：拿數字和<b>三條線</b>比，<b>判定</b>機台有沒有變、這批怎麼處理；自動修正則交給下一頁的 <b>APC</b>。依序按 ①～④ 看一遍。',
-    render: () => `<div class="s-body w66">
+  Fig.add('mloop', { body: true,
+    eyebrow: EY9, render: () => `<div class="s-body w66">
       <div class="col">${ctlFlow(1)}<div class="controls">${U.seg('ml-sc', ['① 機台很穩', '② 開始漂', '③ 超出管制線', '④ 超出規格'], 0)}</div>
         ${U.figHTML('ml-spc', '蝕刻後線寬的管制圖：每個點是一批晶圓的平均（目標 15.0 nm）', '規則與處置為示意，依各廠規範')}
         <div class="controls">${U.range('ml-d', '機台漂移（也可以自己拖）', 0, 2, 0.05, 0, ' nm')}<span id="ml-st">${U.seg('ml-s', ['曝光後量（ADI）', '蝕刻後量（AEI）'], 1)}</span></div></div>
-      ${U.side({
-        top: `<div class="card key"><h4 style="margin-bottom:8px">判定：最新一批（大點）落在哪？</h4><div id="ml-lad" style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px">${ML_LAD.map(([k, d]) => `<div data-v="${k}" style="display:flex;gap:10px;align-items:baseline;padding:3px 8px;border-radius:6px;border:2px solid transparent;transition:.2s"><b style="min-width:9.5em;color:${ML_V[k][0]}">${ML_V[k][1].replace('（多半報廢）', '')}</b><span style="font-size:15px;color:var(--ink-2)">${d}</span></div>`).join('')}</div><p id="ml-dd" style="font-size:16px;margin:0"></p></div>`,
-        points: ['<b>三條線</b>：綠＝目標；橘虛線＝<b>管制線</b>（這台機台平常抖多少）；紅＝<b>規格</b>（產品能接受多少）', '超出管制線＝<b>機台變了</b>；超出規格＝<b>產品不合格</b>'],
-        analogy: { icon: 'eye', t: '比喻', p: '量體溫：37.3 度還不算發燒（規格內），但比你平常高（超出管制線），就該注意了。' }
+      ${U.pageSide({
+        top: `<div class="card key"><h4 style="margin-bottom:8px">判定：最新一批（大點）落在哪？</h4><div id="ml-lad" style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px">${ML_LAD.map(([k, d]) => `<div data-v="${k}" style="display:flex;gap:10px;align-items:baseline;padding:3px 8px;border-radius:6px;border:2px solid transparent;transition:.2s"><b style="min-width:9.5em;color:${ML_V[k][0]}">${ML_V[k][1].replace('（多半報廢）', '')}</b><span style="font-size:15px;color:var(--ink-2)">${d}</span></div>`).join('')}</div><p id="ml-dd" style="font-size:16px;margin:0"></p></div>`
       })}</div>`,
     init(el, ctx) {
       let drift = 0, stn = 1, spc = U.canvas(U.$(el, '#ml-spc')), lastOut = null;
@@ -844,43 +736,18 @@
           rows.forEach(r => { const on = r.dataset.v === V; r.style.opacity = on ? 1 : 0.4; r.style.borderColor = on ? ML_V[V][0] : 'transparent'; r.style.background = on ? '#fff' : ''; });
         }
       });
-    },
-    notes: `尺寸和缺陷都看過了。量測每天量出一大堆數字，拿來做什麼？這就是[[頁:eyes]]說的顧產線。
-
-先看最上面這條分工圖：量測量完的數字，先交給 SPC，英文 Statistical Process Control，統計製程管制，負責判定機台有沒有變、這批要怎麼處理，有異常就找人處理；再交給 APC，先進製程控制，自動算出下一批要調多少，下一頁講。這一頁先看 SPC。
-
-SPC 的核心是這張管制圖，每個點是一批晶圓量出來的平均線寬，目標 15 奈米。先看三條線：綠色點線是目標；紅線是規格，是產品能接受多少，超過紅線產品就不合格；橘色虛線是管制線，是看這台機台平常抖多少算出來的，通常取正負三個標準差。所以管制線比規格嚴，它回答的不是「產品好不好」，而是「機台有沒有變」。打個比方：量體溫，37.3 度還不算發燒，這是規格內；但如果你平常都是 36.5，今天突然 37.3，就該注意了，這是超出管制線。
-
-右邊的判定階梯，就是量完之後要做的決定。我們依序按上面四個按鈕。
-
-① 機台很穩：點都在綠色帶子裡上下抖，判定 PASS，晶圓放行。
-
-② 開始漂：注意紫色框，連續七點都偏在目標上面，雖然還沒超線，在管制圖的規則裡已經算異常，叫偏移或連串，各廠規定連續 7 到 9 點不等。判定變成「放行＋偏移警報」：產品沒問題，但要去查機台，這就是提早發現。
-
-③ 超出管制線：點跑進黃色區，還在規格內，產品通常沒問題，但機台已經變了，判定 ADJUST，要調機台。超出管制線，廠裡叫 OOC；超出規格叫 OOS。
-
-④ 超出規格：點跑進紅色區。這時要看是在哪一站量的。點一超出規格，圖上方就會出現流程條，下面也會出現「曝光後量／蝕刻後量」的切換：曝光之後量一次，蝕刻之後再量一次，廠裡分別叫 ADI 和 AEI。下面切「曝光後量」：流程條亮的是第一個量測站，超規格的點變成綠色空心圈加一個回頭箭頭，因為這時候圖案還只是光阻，洗掉重新曝光就好，叫 REWORK，廠裡說重工，管制圖右下角寫「幾批洗掉重做：救回來了」，代價只是時間和成本。切回「蝕刻後量」：同樣的漂移，同樣幾批，現在變成紅色叉叉，因為圖案已經挖進下面的材料，挖掉的回不來，整批先扣住，工程師評估，多半報廢。所以廠裡會在曝光後先量一次，在還救得回來的時候把關。實際上曝光後量的是光阻線寬，目標值和蝕刻後不一樣，這裡畫在同一個刻度上方便比較。管制圖右下角的計數也看一下：第一次超線之後，如果沒人處理，又跑了十幾批，其中好幾批超出規格，這就是晚處理的代價。
-
-還有一個關鍵：超線的時候，第一步不是怪機台，而是先確認量測本身沒出錯。每一張管制圖都附一份事先寫好的處置清單，超線時照著一步一步查，廠裡叫 OCAP。量測機台每天要量標準片，確認自己沒漂；同一型的幾台機台要互相比對，量同一片要得到一樣的數字；量測本身的誤差也要遠小於規格範圍，量出來的數字才有意義。另外量測都是抽樣：每批抽幾片、每片量幾個到幾十個點，不是每片每顆都量。管制規則和處置流程，各廠都有自己的規範，畫面上是示意。
-
-管制圖上不只放尺寸。檢測掃到的每片缺陷數，也一樣上管制圖：每一站有平常的缺陷基準，叫 baseline；某一批突然暴增，叫 excursion，要馬上扣貨查機台。機台本身每天也要跑一片乾淨的監控片，進機台走一趟再掃一次，看多了幾顆微粒，叫 adder，超線就停機清理。
-
-這一頁的處置都要靠人：工程師看到警報、去查、去調機台。能不能讓系統每批自己修？下一頁就是 APC。`
+    }
   });
 
   /* APC：批次對批次的自動修正（回饋＋前饋）；修正力道、量測準不準、調整量的管制 */
-  A({
-    id: 'apc', part: 2, chap: 9, eyebrow: EY9, minutes: 4.9, short: 'APC：自動修正怎麼算',
-    title: 'APC 先進製程控制：自動算出下一批要調多少', en: 'APC · Advanced Process Control',
-    thesis: '<b>APC</b>（Advanced Process Control，先進製程控制）把量測接回機台：<b>這批偏多少，下一批就反過來補一部分</b>。補多少是門學問：太保守追不上，太衝會<b>來回震盪</b>；量測不準，APC 會把<b>量錯的數字也當真</b>去調。',
-    render: () => `<div class="s-body w66">
+  Fig.add('apc', { body: true,
+    eyebrow: EY9, render: () => `<div class="s-body w66">
       <div class="col">${ctlFlow(2)}${U.figHTML('ap-cv', '上：APC 迴圈　中：每批的線寬（灰＝沒有 APC）　下：APC 每批調了多少', '')}
         <div class="controls">${U.range('ap-g', '修正力道（這批偏多少，下一批補幾成）', 0, 1.8, 0.05, 0.5, '')}${U.seg('ap-n', ['量測準', '量測不準'], 0)}${U.seg('ap-f', ['前饋 關', '前饋 開'], 0)}</div></div>
-      ${U.side({
+      ${U.pageSide({
         top: `<div class="card key"><h4 id="ap-h"></h4><p id="ap-d" style="font-size:16px;margin:0"></p></div>`,
         meters: [['ap-m', '線寬穩定度（比沒有 APC）']],
-        extra: `<div class="card"><h4 style="margin-bottom:6px">SPC 和 APC 怎麼分工</h4><table style="width:100%;border-collapse:collapse;font-size:15px;line-height:1.35">${[['', 'SPC', 'APC'], ['做什麼', '監控：機台有沒有變', '修正：下一批調多少'], ['誰動手', '工程師判定、處置', '系統自動'], ['多快', '看趨勢，超線才動', '每一批都調'], ['怕什麼', '誤報、漏抓', '量不準；把機台問題藏起來']].map((r, i) => `<tr style="border-top:${i ? '1px solid var(--line)' : '0'}">${r.map((x, j) => `<${i && j ? 'td' : 'th'} style="text-align:left;padding:4px 6px;${j === 0 ? 'color:var(--ink-3);font-weight:600;white-space:nowrap' : ''}">${x}</${i && j ? 'td' : 'th'}>`).join('')}</tr>`).join('')}</table></div>`,
-        analogy: { icon: 'eye', t: '比喻', p: '開車握方向盤：偏了就輕輕修回來；修太猛，車子左右蛇行；看不清路（量不準），越修越歪。' }
+        extra: `<div class="card"><h4 style="margin-bottom:6px">SPC 和 APC 怎麼分工</h4><table style="width:100%;border-collapse:collapse;font-size:15px;line-height:1.35">${[['', 'SPC', 'APC'], ['做什麼', '監控：機台有沒有變', '修正：下一批調多少'], ['誰動手', '工程師判定、處置', '系統自動'], ['多快', '看趨勢，超線才動', '每一批都調'], ['怕什麼', '誤報、漏抓', '量不準；把機台問題藏起來']].map((r, i) => `<tr style="border-top:${i ? '1px solid var(--line)' : '0'}">${r.map((x, j) => `<${i && j ? 'td' : 'th'} style="text-align:left;padding:4px 6px;${j === 0 ? 'color:var(--ink-3);font-weight:600;white-space:nowrap' : ''}">${x}</${i && j ? 'td' : 'th'}>`).join('')}</tr>`).join('')}</table></div>`
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#ap-cv'));
@@ -947,40 +814,16 @@ SPC 的核心是這張管制圖，每個點是一批晶圓量出來的平均線�
         const full = msg[0] + (ff ? '（前饋開：進來的晶圓差異先補掉）' : '');
         if (full !== lastMsg) { lastMsg = full; H.textContent = full; D.textContent = msg[1]; H.style.color = /剛好/.test(msg[0]) ? '#1f7a4d' : '#a8660a'; }
       });
-    },
-    notes: `上一頁的機台一直漂，要靠人發現、處理。這一頁看讓系統每批自己修的方法：APC 是 Advanced Process Control，先進製程控制。上面的分工圖現在亮在 APC 這一段。
-
-先講它和上一頁 SPC 的分工，看右邊的表。SPC 是監控：判定機台有沒有變，超線或出現趨勢，由工程師判定、處置，它怕的是誤報和漏抓。APC 是修正：每一批都由系統自動調，它怕的是量不準，以及把機台本身的問題藏起來。一個像警報器，一個像自動駕駛，兩個一起用。
-
-上面是迴圈：曝光機做完一批，晶圓送去量測機量線寬，量到「這批比目標胖了多少」，交給 APC 電腦。APC 算出下一批的曝光劑量要修多少，再送回曝光機。規則很簡單：下一批的修正，等於這批的修正，再加上「修正力道」乘以這批偏了多少。這種一批一批修的方式，叫批次對批次控制，英文 run-to-run；最常用的算法叫 EWMA，畫面上的修正力道就是它的 λ。
-
-中間是每批的線寬，灰線是沒有 APC 的樣子，也就是上一頁那種一直漂、最後漂出規格的情況；藍線是有 APC 的，點被拉回目標附近。
-
-先玩修正力道。拉到 0，就是沒有修，藍線和灰線一樣。拉到兩三成，太保守，追得慢，線寬總是落後一截。拉到五成左右，剛好，點留在目標附近。拉過十成，也就是補的比偏的還多，下一批就偏到另一邊，開始一上一下；拉到十八成左右，越修越糟，來回震盪，比不修還差。開車握方向盤也是這樣：偏了輕輕修回來，修太猛，車子就蛇行。
-
-再切「量測不準」。這是給量測工程師最重要的一點：APC 只看得到量到的數字。量測一不準，APC 就把量錯的部分也當成真的偏差，去「修」本來沒問題的批次，產品反而被調歪。畫面上多了一條淺藍虛線，是量測準的時候；藍線明顯更亂，力道越大越明顯，右上角會算出抖動是量測準時的幾倍。量測準不準，直接決定 APC 能做到多好。
-
-再切「前饋」。前面講的是回饋：看這批的結果修下一批。但有些差異來自進來的晶圓本身，例如上一站鍍的膜每批厚薄不一樣，每批都不同，回饋追不上。前饋就是在上一站先把膜厚量好，這一批進來時直接補掉。還記得 CMP 那頁「磨前先量」嗎？就是前饋。打開後，藍線的上下抖動明顯變小。
-
-最後看最下面那張圖：APC 每批調了多少。機台一直在漂，APC 就一直加大補償，管制圖看起來很漂亮，但機台的問題被藏起來了。所以廠裡也會把調整量本身畫成管制圖，超過上限，代表不是 APC 壞了，而是機台該保養了。
-
-SPC 和 APC 也會互相配合：APC 調了多少，本身就畫成一張 SPC 管制圖來監控。
-
-SPC 和 APC 都建立在一個前提：量到的數字要準，這也是前面花那麼多時間講量測工具和 OCD 模型的原因。製程中的檢查講到這裡；接下來晶圓做完了，看出廠前的最後一關：WAT。`
+    }
   });
 
-  A({
-    id: 'insp', part: 2, chap: 9, eyebrow: EY9, minutes: 3.3, short: '檢測：缺陷地圖',
-    title: '檢測：找出缺陷，推回是哪台機台', en: 'Inspection · Defect Map',
-    thesis: '<b>檢測</b>不量尺寸，而是在整片晶圓上找<b>缺陷</b>：微粒、刮痕、短路。流程是<b>掃描 → 複檢 → 分類</b>，最後看缺陷在晶圓上的<b>分布形狀</b>，就能推回是哪台機台出問題。看完動畫，猜猜看原因。',
-    render: () => `<div class="s-body w66">
+  Fig.add('insp', { body: true,
+    eyebrow: EY9, render: () => `<div class="s-body w66">
       <div class="col"><div class="controls">${U.seg('ml-w', 'ABCDEFGH'.split(''), 0)}<button class="btn" type="button" id="ml-rp">↻ 重播</button></div>
         ${U.figHTML('ml-map', '缺陷地圖（wafer map）：光學掃描 → SEM 複檢 → 分類 → 猜是哪台機台', '')}
         <div class="controls"><span style="font-size:17px;color:var(--ink-2)">猜原因：</span><span id="ml-g" style="display:flex;gap:6px;flex-wrap:wrap"></span><span id="ml-sc2" style="margin-left:auto;font-size:16px;color:var(--ink-2)"></span></div></div>
-      ${U.side({
-        top: `<div class="card key"><h4 id="ml-h"></h4><p id="ml-dd" style="font-size:17px;margin:0"></p></div>`,
-        points: ['光學掃描：每顆晶粒和<b>隔壁晶粒比對</b>，不一樣的地方就是可疑點（盲點：光罩上的缺陷每顆都有，比不出來，第十章講光罩）', '靈敏度兩難：調太高<b>誤報</b>一堆，調太低會<b>漏抓</b>', '抽片後整片掃；複檢 SEM 才抽點放大看', '藏在裡面的缺陷（片下殘留、接觸孔沒通）光學看不到 → <b>電子束檢測</b>：看得更小、還看得出電性，但很慢，只抽關鍵區', '量產時<b>每片缺陷數也上管制圖</b>：某批突然暴增（excursion）就扣貨查機台'],
-        analogy: { icon: 'eye', t: '比喻', p: '健康檢查：量血壓是量測（數字對不對）；照胃鏡找息肉是檢測（哪裡有異常）。' }
+      ${U.pageSide({
+        top: `<div class="card key"><h4 id="ml-h"></h4><p id="ml-dd" style="font-size:17px;margin:0"></p></div>`
       })}</div>`,
     init(el, ctx) {
       let pi = 0, pt = 0, guess = -1;
@@ -1048,24 +891,7 @@ SPC 和 APC 都建立在一個前提：量到的數字要準，這也是前面�
           if (guess >= 0 && WM[pi].ans === guess) U.txt(c, '→ 通知該機台：停機檢查、修好再放行', rx, y0 + 66, { size: 15, color: '#1f7a4d' });
         }
       });
-    },
-    notes: `【可略】時間緊時：只讓台下猜 A、B 兩張，另外六張留給課後。
-
-尺寸量完，接著看第二種檢查：檢測。量測問的是「尺寸對不對」，檢測問的是「哪裡有缺陷」，像微粒、刮痕、不該接的線接起來。
-
-看動畫，分四步。
-
-第一步，光學掃描。光學檢測機台把整片晶圓掃一遍。它不知道正確答案長怎樣，方法是把每一顆晶粒和隔壁晶粒比對：右邊三顆晶粒，圖案本來一模一樣，中間這顆多了一個點，和左右都不一樣，就標成可疑點。這時候只知道哪裡怪怪的，不知道是什麼。靈敏度調太高，會抓到一大堆其實沒事的誤報；調太低又會漏抓，這是檢測工程師每天在拿捏的。這招也有盲點：如果缺陷來自光罩，每一顆晶粒同一個位置都有，和隔壁比對完全一樣，就比不出來；一格只放一顆大晶片時特別麻煩。光罩怎麼另外檢查，第十章會講。
-
-第二步，複檢。用複檢 SEM 抽幾個可疑點放大看，到底是刮痕、短路、微粒，還是其實沒事。注意它和前面量線寬的 CD-SEM 是不同用途的機台。
-
-第三步，分類。哪些是這次要找的缺陷，標紅色；哪些是其他來源，標灰色。
-
-第四步，看紅點在晶圓上的分布形狀，推回是哪台機台出問題。請大家猜：一條弧線，通常是 CMP 刮傷；每個曝光格同一個位置都有，是光罩髒了；集中在外圈，是邊緣的蝕刻或沉積不均，或晶邊的膜剝落；一團擠在一起，是機台掉了微粒。後面還有四張進階題：集中在正中央，是塗佈機或沉積噴頭；一條筆直的線，是搬運手臂刮到，和 CMP 的弧線不一樣，因為手臂是直線移動；半徑中間繞一整圈，是 CMP 研磨頭某一圈壓力不對；只有半邊，是晶圓放偏或夾盤一邊溫度不同。每張只給四個選項，右下角會記錄破解幾張。時間緊的話，猜前兩張就好，其他留給有興趣的人課後玩。
-
-量產時，檢測最大量的工作其實是天天數缺陷：每一站每片掃到幾顆，也畫成管制圖，平常的水準叫 baseline，某一批突然暴增叫 excursion，就扣貨、查機台；機台每天也跑乾淨的監控片，看多掉了幾顆微粒。下一頁的管制圖，就是這樣用的。
-
-量測的數字、檢測的缺陷地圖，每天都在大量產生。接下來看這些數字拿來做什麼：SPC。`
+    }
   });
 
   /* 4. 量測 */
@@ -1074,18 +900,13 @@ SPC 和 APC 都建立在一個前提：量到的數字要準，這也是前面�
     { k: 'sem', n: '電子顯微鏡 SEM', d: '用電子束從上方掃描，看線寬（CD）有沒有對。只看得到表面。', speed: .6, model: .35, real: .7, harm: .1 },
     { k: 'ocd', n: '光學散射 OCD', d: '打一道光到切割道上的週期性量測靶，分析反射光譜，用模型反推 3D 形狀。', speed: .95, model: .9, real: .2, harm: 0 }
   ];
-  A({
-    id: 'metro', part: 2, chap: 9, eyebrow: EY9, minutes: 2.5, short: '量測：怎麼看見奈米',
-    title: '量尺寸的三種工具：TEM、SEM、OCD', en: 'Metrology Toolbox',
-    thesis: '量測最常量的是 <b>CD</b>（Critical Dimension，關鍵尺寸，例如線寬）。TEM、SEM 用電子<b>直接看</b>；OCD 打光、再用模型<b>反推</b>。沒有一種全能：越快的越依賴模型，越直接的越慢、越要破壞。',
-    render: () => `<div class="s-body">
+  Fig.add('metro', { body: true,
+    eyebrow: EY9, render: () => `<div class="s-body">
       <div class="col"><div class="controls">${U.seg('m1-m', MET.map(m => m.n), 0)}</div>${U.figHTML('m1-cv', '量測方式示意', '')}</div>
-      ${U.side({
+      ${U.pageSide({
         top: `<div class="card key"><p id="m1-d" style="font-size:20px;margin:0"></p></div>`,
         meters: [['m1-a', '速度'], ['m1-b', '靠模型反推'], ['m1-e', '量真實電路'], ['m1-c', '會破壞晶片']],
-        points: ['生產線上主要用快速、不破壞的 SEM、OCD', 'TEM 是參考：校正別人、找問題原因', '<b>疊對</b>：上下兩層有沒有對準，要控制在幾奈米內；有拍照比對的，也有像 OCD 一樣看繞射光的'],
-        extra: '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-go="tem" type="button">TEM 詳解 →</button><button class="btn" data-go="sem" type="button">SEM 詳解 →</button><button class="btn" data-go="ocd" type="button">OCD 詳解 →</button></div>',
-        analogy: { icon: 'eye', t: '比喻', p: '接續健康檢查：切片化驗最準但要開刀（TEM）、照相看外觀（SEM）、體脂計量電阻再用模型推算（OCD，最快，但準不準看模型）。' }
+        extra: '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-go="tem" type="button">TEM 詳解 →</button><button class="btn" data-go="sem" type="button">SEM 詳解 →</button><button class="btn" data-go="ocd" type="button">OCD 詳解 →</button></div>'
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#m1-cv'));
@@ -1120,30 +941,16 @@ SPC 和 APC 都建立在一個前提：量到的數字要準，這也是前面�
           U.tag(c, '真實 TEM 照片：環繞式電晶體剖面，三片奈米片被閘極包住（研究樣品，Qian et al.，CC BY 4.0）', w / 2, h - 14, { align: 'center', size: 13 });
         }
       });
-    },
-    notes: `先看第一種檢查：量測，量尺寸。第八章說 TCAD 要拿真實晶片來校正，靠的也是這些工具。量測最常量的就是 CD，也就是線寬。尺寸只有十幾奈米，用什麼量？三種工具，從最清楚講到最快。
-
-第一種是穿透式電子顯微鏡 TEM，要把晶片切成極薄的片，可以直接看到原子。畫面上是一顆環繞式電晶體的 TEM 照片，三片奈米片被閘極包住，連一奈米的絕緣層都看得到。但晶片切開就毀了，所以它是「參考」：用來校正其他工具、找出問題的原因。
-
-第二種是電子顯微鏡 SEM，用電子束從上方掃描，看線寬對不對，不用切開，速度中等，但只看得到表面。第三種是光學散射 OCD，打一道光到切割道上專門做的量測靶，分析反射光譜，用模型反推出 3D 形狀，速度最快；要量 3D 形狀時，生產線上最常用它。順帶一提，廠裡最常量的還有膜厚和疊對：膜厚也是打光、用模型反推；疊對是上下兩層有沒有對準，要控制在幾奈米內：有拍照比對兩層標記位置的，也有像 OCD 一樣看繞射光的；EUV 多重曝光的時代，疊對是曝光站最要命的量測。
-
-右邊四個量條要一起看：OCD 最快、不破壞，但最依賴模型，而且量的是測試靶，不是真正的電路。沒有一種工具是全能的，所以要搭配使用。
-
-接續健康檢查的比喻：TEM 像切片化驗，最準但要開刀；SEM 像照相看外觀；OCD 像體脂計，量電阻再用模型推算，最快，但準不準要看模型。接下來五頁：TEM、SEM、OCD，最後兩頁深入 OCD 的模型。`
+    }
   });
 
   /* 量測 A：SEM */
-  A({
-    id: 'sem', back: 'metro', part: 2, chap: 9, eyebrow: EY9 + '：量測', minutes: 2.2, short: '量測②：電子顯微鏡 SEM',
-    title: '電子顯微鏡 SEM：用電子束「掃」過表面，量出線寬', en: 'CD-SEM',
-    thesis: 'TEM 要把晶片切開；SEM 不用切，用聚焦到約 1 奈米的電子束<b>從上方掃描表面</b>。電子打到<b>邊緣會噴出特別多電子</b>，所以邊緣最亮；再用<b>演算法</b>從亮度曲線判定邊在哪裡，算出線寬。',
-    render: () => `<div class="s-body">
+  Fig.add('sem', { body: true,
+    back: 'metro', eyebrow: EY9 + '：量測', render: () => `<div class="s-body">
       <div class="col">${U.figHTML('sm-cv', '左：電子束掃描（剖面）　右：一點一點拼出來的影像與亮度曲線', '')}
         <div class="controls">${U.range('sm-w', '實際線寬', 10, 40, 1, 22, ' nm')}</div></div>
-      ${U.side({
-        top: `<div class="fact"><div class="v" id="sm-v">—</div><div class="d" id="sm-vd">SEM 報出的線寬（演算法從亮邊判定）</div></div>`,
-        points: ['電子束直徑約 1 nm，比光細幾百倍', '線寬靠演算法從亮度曲線判定兩個邊', '限制：只看得到表面；電子會讓光阻縮一點'],
-        analogy: { icon: 'eye', t: '比喻', p: '用手電筒斜照一塊浮雕：凸起的邊緣最亮。但亮邊本身有寬度，邊要畫在哪裡，得先定好一套規則。' }
+      ${U.pageSide({
+        top: `<div class="fact"><div class="v" id="sm-v">—</div><div class="d" id="sm-vd">SEM 報出的線寬（演算法從亮邊判定）</div></div>`
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#sm-cv'));
@@ -1180,16 +987,7 @@ SPC 和 APC 都建立在一個前提：量到的數字要準，這也是前面�
           U.$(el, '#sm-v').textContent = (lw + Math.sin(t * 2) * 0.2).toFixed(1) + ' nm';
         } else U.$(el, '#sm-v').textContent = '掃描中…';
       });
-    },
-    notes: `量測第二種工具：掃描式電子顯微鏡 SEM。上一頁的 TEM 要把晶片切開，SEM 不用切，直接從上面掃描表面，所以生產線上可以大量使用。晶圓廠裡最常用的是專門量線寬的 CD-SEM；後面檢測會講到的複檢 SEM 是另一種機台，用來看缺陷長什麼樣子。
-
-為什麼用電子？光的粗細大約幾百奈米，看不清十幾奈米的線條；電子束可以聚焦到大約一奈米。左邊是剖面：電子束從左到右掃過表面，打到材料會噴出一些電子，偵測器就收集這些電子。關鍵是：打到平面時噴出的電子少，打到邊緣時噴出特別多，所以影像上邊緣特別亮。
-
-右邊是一點一點拼出來的影像和亮度曲線。每條線都有兩條亮邊，但亮邊有寬度，「邊到底在哪裡」要靠演算法判定，例如取亮度的某個比例當邊界。所以 SEM 報出的線寬是演算法定義的，同一套規則量出來的數字才能互相比較。右上角就是 SEM 報出的線寬。
-
-還有兩個限制。第一，SEM 只看得到表面，洞底、奈米片底下看不到。第二，量光阻時，電子會讓光阻縮一點，量越多次縮越多，所以同一個點不能一直量。實務上每批抽幾片、每片抽幾十個點，不是每片都量。
-
-就像用手電筒斜照浮雕，邊緣最亮，但邊要畫在哪裡，得先定好規則。下一頁看最快、完全不接觸的方法：OCD。`
+    }
   });
 
   /* 量測 B：TEM */
@@ -1223,29 +1021,17 @@ SPC 和 APC 都建立在一個前提：量到的數字要準，這也是前面�
       U.tag(c, '真實 TEM 影像：連 1 nm 的絕緣層都看得清楚', cx, h - 12, { align: 'center', size: 15, color: '#1f7a4d' });
     }
   }
-  A({
-    id: 'tem', back: 'metro', part: 2, chap: 9, eyebrow: EY9 + '：量測', minutes: 1.9, short: '量測①：穿透式電子顯微鏡 TEM',
-    title: '穿透式電子顯微鏡 TEM：讓電子穿過超薄切片', en: 'TEM',
-    thesis: '想看清電晶體內部，只能把它<b>切開、削到比電晶體還薄</b>，再讓電子穿過去成像。最清楚，但晶片就毀了。',
-    render: () => `<div class="s-body w66">
+  Fig.add('tem', { body: true,
+    back: 'metro', eyebrow: EY9 + '：量測', render: () => `<div class="s-body w66">
       <div class="col">${U.figHTML('tm-cv', 'TEM 樣品製作與成像（逐步）', '')}${U.stepperHTML('tm-st')}</div>
-      ${U.side({
-        points: ['看得到原子，是校正其他工具的「參考」', '要把晶片切壞，一個樣品要幾小時到一天', '也有誤差：影像是整片薄片的投影，切的位置也會影響'],
-        fact: { v: '約 10–30 nm', d: '樣品要削到的厚度，比一顆電晶體還薄，電子才穿得過' },
-        analogy: { icon: 'eye', t: '比喻', p: '切片化驗：最準，但要開刀取樣；而且要切成像紙一樣薄的一片，對著光才看得清楚每一層。' }
+      ${U.pageSide({
+        
       })}</div>`,
     init(el, ctx) {
       const img = new Image(); img.src = CREDITS.gaatem.f;
       const steps = ['找到位置', '挖兩個坑', '削成薄片', '電子穿過', '看到結果'].map((t, i) => ({ t, d: '', draw: (c, w, h, p, tt) => temStep(c, w, h, i, p, tt, img) }));
       U.animSteps(el, ctx, { canvas: 'tm-cv', stepper: 'tm-st', steps, interval: 2800 });
-    },
-    notes: `量測第一種工具：穿透式電子顯微鏡 TEM，上一頁和第一部分時間軸那張環繞式電晶體的剖面照，就是用它拍的。
-
-它最大的特點是：電子要「穿過」樣品。電晶體被包在晶片深處，所以得先把它挖出來。第一步，在晶圓上找到想看的那一顆電晶體。第二步，用聚焦離子束，也就是一道很細的離子光束，在它兩側挖出兩個坑。第三步，把中間那一片削薄，薄到大約十到三十奈米，比電晶體本身還薄。第四步，讓電子束穿過這片薄片，穿過多少電子就決定影像的明暗。第五步就是結果：連一奈米的絕緣層都看得清清楚楚。
-
-代價是晶片被切壞了，而且一個樣品要花幾小時到一天。所以 TEM 用在研發、找問題原因，以及當作其他量測的「參考」，不能每片都做。
-
-注意，TEM 也不是絕對的真值。影像是整片薄片疊起來的投影，薄片裡如果包含不只一個結構，邊界就會糊掉；切在哪個位置、薄片多厚，也會影響量到的數字。所以業界叫它「參考量測」。下一頁看不用切開的方法：SEM。`
+    }
   });
 
   /* 量測 C：OCD */
@@ -1253,18 +1039,12 @@ SPC 和 APC 都建立在一個前提：量到的數字要準，這也是前面�
   const OCD_Q = [{ wd: 17, ht: 42 }, { wd: 11, ht: 52 }, { wd: 25, ht: 30 }, { wd: 20, ht: 46, foot: 1 }];
   const OCD_S = [[26, 28], [20, 30], [12, 55], [14, 30]];
   const spec = (lam, wd, ht) => 0.5 + 0.22 * Math.cos(4 * Math.PI * ht * 15 / lam + wd * 0.04) + 0.14 * Math.cos(2 * Math.PI * wd * 25 / lam);
-  A({
-    id: 'ocd', back: 'metro', part: 2, chap: 9, eyebrow: EY9 + '：量測', minutes: 3.7, short: '量測③：光學散射 OCD',
-    title: '光學散射 OCD：從反射光的顏色反推形狀', en: 'Optical CD / Scatterometry',
-    thesis: 'OCD 不用看清楚，而是靠<b>反推</b>：不同形狀的結構，反射出來的各種顏色強弱都不一樣。試著調整左邊的猜測，<b>讓藍線和黑線重疊</b>，就找到了模型裡最像的形狀。',
-    render: () => `<div class="s-body">
+  Fig.add('ocd', { body: true,
+    back: 'metro', eyebrow: EY9 + '：量測', render: () => `<div class="s-body">
       <div class="col">${U.figHTML('oc-cv', '左：形狀（實際的看不到）　右：反射光譜（各種顏色的強弱）', '')}
         <div class="controls">${U.range('oc-w', '猜測：鰭的寬度', 8, 30, 0.5, 26, ' nm')}${U.range('oc-h', '猜測：鰭的高度', 20, 60, 0.5, 28, ' nm')}<button class="btn primary" id="oc-auto" type="button">電腦自動比對</button><button class="btn" id="oc-q" type="button">出題：下一題 ▶</button></div></div>
-      ${U.side({
-        meters: [['oc-m', '吻合程度']],
-        points: ['不接觸、不破壞，幾秒就量完', '量的是切割道上的<b>週期性量測靶</b>，得到整塊的平均', '要先建好準確的「形狀—光譜」模型'],
-        fact: { v: '幾秒 vs 幾小時', d: 'OCD 量一個點的時間，對比 TEM 做一個樣品的時間' },
-        analogy: { icon: 'eye', t: '比喻', p: '體脂計：不用開刀，量身體的電阻，再用模型推算體脂。推得準不準，要看模型。' }
+      ${U.pageSide({
+        meters: [['oc-m', '吻合程度']]
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#oc-cv'));
@@ -1320,22 +1100,7 @@ SPC 和 APC 都建立在一個前提：量到的數字要準，這也是前面�
         if (done && Q.foot) { U.tag(c, `最像也只有 ${Math.round(best.m * 100)}%：模型裡沒有「腳」這個參數`, gx + gw / 2, gy + gh - 46, { align: 'center', size: 16, color: '#b3261e' }); U.tag(c, `硬對最像的：寬 ${wd.toFixed(1)} nm，真的上寬是 ${Q.wd} nm → 把腳算成整根變胖`, gx + gw / 2, gy + gh - 18, { align: 'center', size: 15, color: '#b3261e' }); }
         U.setMeter(el, 'oc-m', match, done && Q.foot ? '對不齊' : match > .95 ? '吻合' : match > .6 ? '接近' : '差很多', done && Q.foot ? 'warn' : match > .95 ? 'good' : match > .6 ? 'warn' : 'bad');
       });
-    },
-    notes: `【可略】時間緊時：出題只做第三題（有「腳」的陷阱題），第一、二題留給課後玩。
-
-量測第三種工具：光學散射，業界叫 OCD。前兩種都是用電子直接看，OCD 改成用光反推。要量 3D 形狀時，它是生產線上最常用的方法，因為它不接觸、不破壞，而且幾秒鐘就量完。
-
-先講它量在哪裡。光斑大約幾十微米，比一顆電晶體大上千倍，所以 OCD 不是量某一顆電晶體，而是量切割道上專門做的量測靶：一整排一模一樣、週期性排列的線條。量到的是這一整塊的平均。真正電路裡的結構，要靠它和量測靶長得夠像來代表。
-
-原理是這樣：打一道包含各種顏色的光到量測靶上，不同形狀的結構，反射回來的各種顏色強弱都不一樣，這條「顏色強弱曲線」叫光譜，就是右邊的黑線。問題是：光譜不會直接告訴你形狀，要反推。
-
-請試試看：調整左邊猜測的寬度和高度，電腦會算出這個形狀應該產生的光譜，也就是藍色虛線。當藍線和黑線完全重疊，就找到模型裡最像的形狀，實際形狀就會顯示出來。但「最像」一定對嗎？兩頁後會看到陷阱。或者按「電腦自動比對」，看電腦怎麼一步步找到答案。
-
-實際上電腦會事先算好幾十萬組形狀的光譜，量到之後很快找出最像的那一個。它也是抽樣：每批抽幾片、每片量幾個量測靶。實際機台還會看不同偏振、不同入射角的光，資訊更多，才分得出複雜的 3D 形狀。就像體脂計，不用開刀，量電阻再用模型推算。
-
-想多玩的話，按「出題：下一題」。每題藏一個不同的形狀，對到吻合就會揭曉答案。第三題是陷阱：真實形狀的底部多了一個「腳」，這是模型裡沒有的參數，所以怎麼調都對不齊，最像也只有八成左右；硬對出最像的那組，電腦會把底部的腳當成整根變胖，寬度多算三奈米多。這就是 OCD 的風險：模型少一個參數，量出來的數字照樣很漂亮，但它是錯的。
-
-所以前提是模型要準：藍線是怎麼算出來的？下一頁來看。`
+    }
   });
 
   /* 第二部分小結 */
@@ -1351,21 +1116,13 @@ SPC 和 APC 都建立在一個前提：量到的數字要準，這也是前面�
     ['eyes', '⑨ 檢測量測', '工廠的三種檢查', '量尺寸、找缺陷，SPC 判定、APC 修正；做完用 WAT 量電性', 'eye'],
     ['d2m', '⑩ 從設計到量產', '從設計圖到量產', 'PDK 定規則、下線做光罩；靠 TV 和良率學習爬到量產', 'road']
   ];
-  A({
-    id: 'p2sum', part: 2, eyebrow: '第二部分 · 小結', minutes: 1.5, short: '第二部分總整理',
-    title: '第二部分小結：十件事，一頁看完', en: 'Part 2 Recap',
-    thesis: '這些技術不是各做各的，而是<b>在同一個循環裡反覆搭配</b>：鋪、畫、挖、改、磨，重複上千步，每一步都要精準到原子。就像蓋一棟很多層的大樓，每層都走同一套工序。點任一格，可以回到那一章。',
-    render: () => `<div style="flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;min-height:0">
+  Fig.add('p2sum', { body: true,
+    eyebrow: '第二部分 · 小結', render: () => `<div style="flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;min-height:0">
       ${RECAP.map(([id, n, what, key, ic]) => `<button type="button" class="fig" data-go="${id}" style="text-align:left;cursor:pointer;font:inherit;gap:10px;justify-content:flex-start;padding:22px 16px">
         <div style="display:flex;gap:12px;align-items:center"><div class="analogy" style="padding:0;border:0;background:none;grid-template-columns:44px"><div class="ic" style="width:44px;height:44px">${U.icon(ic)}</div></div><div class="bigword" style="font-size:22px">${n}</div></div>
         <div style="font-size:19px;color:var(--accent);font-weight:700">${what}</div>
         <div style="font-size:18.5px;color:var(--ink-2);line-height:1.5">${key}</div></button>`).join('')}
 </div>`,
-    init(el) { U.$$(el, '[data-go]').forEach(b => b.onclick = () => Deck.goId(b.dataset.go)); },
-    notes: `第二部分到這裡結束，用一頁回顧。
-
-微影用光畫圖，光越細畫得越細；蝕刻用電漿挖出又直又深的溝；沉積鋪上薄膜，ALD 一輪一薄層、每個角落都一樣厚；摻雜與磊晶調整矽的導電性、長出晶體，源汲極改成長晶體時就摻好；閘極換成高介電材料，擋住穿牆漏電；平坦化把每一層磨平；第七章把這些技術組合起來：疊千層、挖夾心做出環繞式電晶體，再用中段、後段接上十幾層導線；第八章 TCAD 先在電腦裡模擬，但它太理想，最後要靠第九章：工廠的三種檢查，製程中量測量尺寸、檢測找缺陷，數字交給 SPC 判定、APC 修正；晶圓做完再用 WAT 量電性，合格才送去 CP、封裝；量測工程師做四件事：選工具和量測點、設管制線、判定並回饋機台、量不準時追原因。OCD 最快，但答案來自模型，要定期拿 TEM 對答案。第十章把鏡頭拉遠：設計者照 PDK 畫圖、下線做光罩，新製程靠 TV 和可靠度驗證走到量產，再靠良率學習把缺陷一個個抓掉。
-
-記住一句話：鋪一層、畫圖、挖掉、調整、磨平，重複上千步，每一步都要精準到原子，也都要量得到。`
+    init(el) { U.$$(el, '[data-go]').forEach(b => b.onclick = () => Deck.goId(b.dataset.go)); }
   });
 })();

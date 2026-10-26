@@ -26,10 +26,7 @@
     ['TSMC CyberShuttle 共乘下線（MPW）服務', 'https://www.tsmc.com/english/dedicatedFoundry/services/cyberShuttle'],
     ['Synopsys（2015）：PDK V0.9／V1.0 版本命名例', 'https://news.synopsys.com/2015-09-17-TSMC-Certifies-Synopsys-Design-Tools-for-10-nm-FinFET-Technology']
   ];
-  Deck.add({
-    id: 'refs', part: 9, minutes: 0.5, short: '參考資料與圖片來源',
-    title: '參考資料與圖片來源', en: 'References & Credits',
-    thesis: '產業資料整理至 2026 年 9 月；成本與密度等數字為業界估計，動畫為示意。',
+  Fig.add('refs', { body: true,
     render: () => `<div class="s-body w50">
       <div class="col" style="min-height:0;overflow:auto"><div class="fig-title"><span>產業與技術資料</span></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;font-size:12.5px;line-height:1.25">${REFS.map(([t, u]) => `<div style="border-bottom:1px solid var(--line);padding:2px 0">${t}<div class="mono" style="color:var(--ink-3);font-size:10px;word-break:break-all">${u}</div></div>`).join('')}</div>
@@ -37,7 +34,6 @@
       <div class="col" style="min-height:0;overflow:auto"><div class="fig-title"><span>照片與顯微影像</span></div>
         <table class="t" style="font-size:12.5px;line-height:1.2"><tbody>${Object.values(CREDITS).map(c => `<tr><td style="padding:1px 6px">${c.t} · <span style="color:var(--ink-3)">${c.by}</span>${c.url ? `<div class="mono" style="color:var(--ink-3);font-size:10px;word-break:break-all">${c.url}</div>` : ''}</td><td style="white-space:nowrap;padding:1px 6px">${c.licUrl ? `<a href="${c.licUrl}" target="_blank" rel="noopener noreferrer">${c.lic}</a>` : c.lic}</td></tr>`).join('')}</tbody></table>
         <p class="gloss" style="margin:0">標「縮圖」「裁切」的為本簡報修改過的版本；其餘圖解、動畫與 3D 模型皆為本簡報自行繪製。</p></div>
-    </div>`,
-    notes: `最後一頁是參考資料和圖片來源。產業資料整理到 2026 年 9 月，路線圖隨時可能變動；成本、密度等數字是業界估計；動畫是為了幫助理解的示意，不是精確的模擬。謝謝大家，歡迎提問。`
+    </div>`
   });
 })();

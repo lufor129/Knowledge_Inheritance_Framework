@@ -2,7 +2,6 @@
    ① 是什麼：晶圓出廠前的健康檢查（最後一步帶到 CP、FT）　② 量什麼：把電晶體當水龍頭　④ 和線上量測對照（③ 猜謎已拿掉）
    頁序：接在 APC 之後，三頁連續，當第九章收尾（index.html） */
 (function () {
-  const A = Deck.add.bind(Deck);
   const EY = '第二部分 · ⑨ 檢測量測';
   const hr = v => { const q = Math.sin(v * 12.9898 + 4.1) * 43758.5453; return q - Math.floor(q); };
 
@@ -154,38 +153,16 @@
       c.globalAlpha = 1;
     }
   }
-  A({
-    id: 'wat', part: 2, chap: 9, eyebrow: EY, minutes: 3.8, short: 'WAT①：出廠前的健康檢查',
-    title: 'WAT：晶圓出廠前的健康檢查', en: 'Wafer Acceptance Test',
-    thesis: '量測看「尺寸」、檢測找「缺陷」，<b>WAT 直接量「電」</b>：整片晶圓做完後，在晶片之間走道上的<b>測試結構</b>扎針，量電晶體和導線的電性。合格才放行；不合格就扣住、回推是哪一站出問題。按「下一步」一步步看。',
-    render: () => `<div class="s-body w66">
+  Fig.add('wat', { body: true,
+    eyebrow: EY, render: () => `<div class="s-body w66">
       <div class="col">${U.figHTML('w0-cv', '', '')}${U.stepperHTML('w0-st')}</div>
-      ${U.side({
-        points: ['<b>WAT</b>：Wafer Acceptance Test，晶圓允收測試', '量的是<b>切割道上的測試結構</b>，不是真正的晶片', 'WAT 管<b>製程</b>、CP 管<b>每一顆晶片</b>、FT 管<b>成品</b>'],
-        extra: `<div class="card"><h4 style="margin-bottom:6px">三關測試比一比</h4><table style="width:100%;border-collapse:collapse;font-size:14px;line-height:1.35">${[['', '測誰', '什麼時候', '不合格'], ['WAT', '切割道的測試結構，每片幾點', '晶圓做完', '整片扣住，回推哪一站'], ['CP', '每一顆晶片的功能', '切割前', '那一顆做記號，不封裝'], ['FT', '每一顆成品', '封裝後', '淘汰或降級']].map((r, i) => `<tr style="border-top:${i ? '1px solid var(--line)' : '0'}">${r.map((x, j) => `<${i && j ? 'td' : 'th'} style="text-align:left;padding:4px 6px;${j === 0 ? 'white-space:nowrap' : ''}">${x}</${i && j ? 'td' : 'th'}>`).join('')}</tr>`).join('')}</table></div>`,
-        analogy: { icon: 'faucet', t: '比喻', p: '房子蓋好後的水電驗收：不拆牆，用預留的測試插座量電壓、試水壓。驗收過了才交屋；哪一路不對，就找負責的師傅。' }
+      ${U.pageSide({
+        extra: `<div class="card"><h4 style="margin-bottom:6px">三關測試比一比</h4><table style="width:100%;border-collapse:collapse;font-size:14px;line-height:1.35">${[['', '測誰', '什麼時候', '不合格'], ['WAT', '切割道的測試結構，每片幾點', '晶圓做完', '整片扣住，回推哪一站'], ['CP', '每一顆晶片的功能', '切割前', '那一顆做記號，不封裝'], ['FT', '每一顆成品', '封裝後', '淘汰或降級']].map((r, i) => `<tr style="border-top:${i ? '1px solid var(--line)' : '0'}">${r.map((x, j) => `<${i && j ? 'td' : 'th'} style="text-align:left;padding:4px 6px;${j === 0 ? 'white-space:nowrap' : ''}">${x}</${i && j ? 'td' : 'th'}>`).join('')}</tr>`).join('')}</table></div>`
       })}</div>`,
     init(el, ctx) {
       const steps = ['晶圓做完了', '晶片之間的走道：切割道', '走道上的測試結構', '探針扎下去，量電', '和規格比：放行或扣住', '後面還有兩關：CP、FT'].map((t, i) => ({ t, d: '', draw: (c, w, h, p, tt) => watStep(c, w, h, i, p, tt) }));
       U.animSteps(el, ctx, { canvas: 'w0-cv', stepper: 'w0-st', steps, interval: 3600, dur: 1.6 });
-    },
-    notes: `【可略】時間緊時，第六步 CP、FT 只唸右邊表格那一行：WAT 管製程、CP 管每一顆、FT 管成品。
-
-製程中的檢查講完了。最後看晶圓做完之後的第三種檢查，也是出廠前的最後一關：WAT，Wafer Acceptance Test，晶圓允收測試。前面的量測和檢測，都是在製程中途看尺寸、找缺陷；WAT 是整片晶圓上千道步驟全部做完之後，直接量「電」，確認做出來的電晶體和導線，電性真的對。
-
-一步一步看。第一步，晶圓做完了：前面七章的步驟全部走完，一片晶圓上有幾百顆晶片。
-
-第二步，放大看晶片和晶片之間：中間有一條走道，叫切割道。之後切晶片的時候，這條走道會被切掉，所以廠裡拿它來放測試用的東西。
-
-第三步，再放大這條走道：一排金色的測試墊，中間夾著小電晶體、電阻、把很多導線孔串起來的導線孔鏈。它們和晶片裡真正的電晶體、導線，是用同一套製程、同時做出來的，所以量它，就知道晶片做得對不對，又不用去碰真正的晶片。這一整組測試結構，廠裡叫 test key。
-
-第四步，探針卡壓下來，探針扎在測試墊上，加電壓、量電流，讀出一串數字：臨界電壓、開啟電流、關閉漏電、電阻。下一頁用水龍頭來解釋這些數字各代表什麼。每片晶圓通常量幾個點。
-
-第五步，每一項都和規格比。全部合格，晶圓放行，送去下一關 CP。有一項超出規格，晶圓先扣住，看是哪幾項超、出現在晶圓哪裡，回推是哪一站出問題；下一頁會看每一項不合格代表什麼。
-
-第六步，WAT 之後還有兩關。CP，英文 Chip Probing，晶圓針測：晶圓還沒切開，換一張對準每一顆晶片焊墊的探針卡，一顆一顆跑功能測試，電路會不會動、速度夠不夠、待機漏電多少。注意差別：WAT 量的是走道上的測試結構，回答「這片晶圓的製程對不對」；CP 測的是每一顆真正的晶片，回答「這一顆能不能用」。壞的晶片在電子晶圓圖上做記號，好的比例就是良率。記憶體晶片還可以在這一步啟用備用電路，把壞掉的部分修起來。接著切割，只把好的晶片拿去封裝，這就是第三部分的主題。封裝完再做 FT，Final Test，成品測試：每一顆成品再測一次，包括高溫、低溫，並依速度分等級，跑得快的賣得比較貴。
-
-所以三關各管一件事：WAT 管製程、CP 管每一顆晶片、FT 管成品。就像房子蓋好後的水電驗收：不拆牆，用預留的測試插座量電壓、試水壓，過了才交屋。`
+    }
   });
 
   /* ---------- ② WAT 量什麼：把電晶體當成水龍頭 ---------- */
@@ -292,17 +269,12 @@
     HL.forEach(([x, y, ww, hh]) => { c.beginPath(); c.moveTo(bx, by - 24); c.lineTo(x + ww / 2, y + hh + 8); c.stroke(); }); c.setLineDash([]);
     U.tag(c, '量這裡：' + lab, bx, by, { align: 'center', size: 18, color: '#b3541e' });
   }
-  A({
-    id: 'wat2', part: 2, chap: 9, eyebrow: EY, minutes: 2.5, short: 'WAT②：量什麼（水龍頭）',
-    title: 'WAT 量什麼：把電晶體當成水龍頭', en: 'What WAT Measures',
-    thesis: '還記得第一部分嗎？電晶體就是<b>用電壓控制的水龍頭</b>：源極是水塔、閘極是把手、汲極是出水口。WAT 量的，就是這個水龍頭<b>開得對不對、關得緊不緊、接頭和水管通不通</b>。點每一項看看。',
-    render: () => `<div class="s-body w66">
+  Fig.add('wat2', { body: true,
+    eyebrow: EY, render: () => `<div class="s-body w66">
       <div class="col"><div class="controls">${U.seg('w2-k', WI.map(x => x.n), 0)}</div>
         ${U.figHTML('w2-cv', '左：水龍頭（比喻）　右：真的電晶體（亮起的就是這一項在量的地方）', '')}</div>
-      ${U.side({
-        top: `<div class="card key"><h4 id="w2-h" style="text-transform:none;letter-spacing:0;font-family:inherit;font-size:20px;font-weight:700"></h4><p id="w2-a" style="font-size:18px;margin:0 0 8px;color:var(--accent-2);font-weight:700"></p><p id="w2-d" style="font-size:16px;margin:0"></p></div>`,
-        points: ['前三項看<b>開關本身</b>：開得動、開得夠大、關得緊', '後三項看<b>周邊</b>：墊片漏不漏、接頭和水管通不通', '每一項都有規格範圍，超出就是不合格'],
-        analogy: { icon: 'faucet', t: '比喻', p: '驗收一個水龍頭：轉多少才出水、全開水量多大、關緊會不會滴、把手會不會漏、接頭和水管有沒有堵。' }
+      ${U.pageSide({
+        top: `<div class="card key"><h4 id="w2-h" style="text-transform:none;letter-spacing:0;font-family:inherit;font-size:20px;font-weight:700"></h4><p id="w2-a" style="font-size:18px;margin:0 0 8px;color:var(--accent-2);font-weight:700"></p><p id="w2-d" style="font-size:16px;margin:0"></p></div>`
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#w2-cv'));
@@ -321,16 +293,7 @@
         U.txt(c, '實際：電晶體剖面（示意）', LW + 24, 16, { size: 15, w: 700, color: '#17202b' });
         device(c, LW + 24, y0 + 30, w - LW - 40, H - 40, k, t);
       });
-    },
-    notes: `WAT 量的那一串數字，各代表什麼？用第一部分的水龍頭來看：源極是水塔，通道是水管，閘極是把手，汲極是出水口，絕緣層是把手和水管之間的墊片。左邊是水龍頭，右邊是真的電晶體，亮起來的就是這一項在量的地方。
-
-前三項看開關本身。第一項 Vt，臨界電壓：把手要轉多少才開始出水。實際上是慢慢加大閘極電壓，看電流什麼時候開始變大。太低，輕輕一碰就出水、關不緊；太高，要轉很多才出水、開得慢。第二項 Ion，開啟電流：把手全開時水流多大，越大電晶體越快。第三項 Ioff，關閉漏電：把手關緊了，還在滴水，滴越多，手機放著不用也越耗電。
-
-後三項看周邊。第四項 Ig，閘極漏電：水從把手的墊片漏出來，就是[[頁:hk1]]電子穿過絕緣牆。第五項 Rc，接觸電阻：水管的接頭太窄、卡卡的，電晶體本身沒事，但水送不進去、出不來。第六項是導線孔鏈：把整棟樓上千個水管接頭串成一條來量，只要有一個堵住，總阻力就變大，代表有導線孔沒填滿或斷掉。
-
-每一項都有規格範圍。WAT 不合格時，就是看哪幾項超、出現在晶圓哪裡，回推是哪一站出問題：例如 Vt 偏低加上漏電變大，多半是閘極做太細；只有接觸電阻高，是中段接點。
-
-下一頁是第九章最後一頁：把 WAT 量到的電性，和前面 OCD 量到的尺寸放在一起看。`
+    }
   });
 
   /* ---------- ④ 用：測試點與電性模型（示意） ---------- */
@@ -357,18 +320,13 @@
     { s: 2, n: '③ 接點電阻高', h: '線寬正常，電流卻掉到線下方', d: '尺寸量起來都對，電流卻整批偏低 → 不是閘極尺寸的問題，要往尺寸以外找：WAT 的接觸電阻偏高，指向中段接點。' },
     { s: 5, n: '④ 一邊偏', h: '線寬一樣，電流卻上下散開', d: '每個點的線寬都差不多，電流卻上下散開 → 也不是尺寸的問題。查 WAT 的 Vt 在晶圓上的分布：一邊高一邊低，指向閘極金屬（功函數金屬）厚度或退火不均。' }
   ];
-  A({
-    id: 'wat4', part: 2, chap: 9, eyebrow: EY, minutes: 3, short: 'WAT④：和線上量測對照',
-    title: 'WAT 和線上量測對照：尺寸和電性對得上嗎？', en: 'Inline Metrology vs WAT',
-    thesis: '每個測試點都有兩個數字：製程中 <b>OCD 量到的線寬</b>，和最後 <b>WAT 量到的電流</b>。正常時兩者排成<b>一條線</b>：線寬細一點，電流大一點。<b>點沿著線跑，問題就是尺寸；點離開這條線，就要往尺寸以外找。</b>',
-    render: () => `<div class="s-body w66">
+  Fig.add('wat4', { body: true,
+    eyebrow: EY, render: () => `<div class="s-body w66">
       <div class="col"><div class="controls">${U.seg('w4-s', WR.map(x => x.n), 0)}<button class="btn" type="button" id="w4-rp">↻ 重畫</button></div>
         ${U.figHTML('w4-cv', '每個點是一個量測位置（累積很多片晶圓）：橫軸＝線上量到的閘極線寬，縱軸＝WAT 量到的開啟電流', '')}</div>
-      ${U.side({
+      ${U.pageSide({
         top: `<div class="card key"><h4 id="w4-h" style="text-transform:none;letter-spacing:0;font-family:inherit;font-size:19px;font-weight:700"></h4><p id="w4-d" style="font-size:16px;margin:0"></p></div>`,
-        points: ['<b>沿著線跑</b> → 問題就是尺寸', '<b>尺寸正常、電流離開線</b> → 往尺寸以外找', '廠裡也用這條線，決定線上量測的規格要訂多嚴'],
-        extra: `<div class="card" style="padding:10px 14px"><h4 style="margin-bottom:6px">第九章收尾：量測工程師的四件事</h4><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;font-size:15.5px;line-height:1.4">${['① 選工具和量測點', '② 設管制線', '③ 判定並回饋機台', '④ 量不準時追原因'].map(x => `<span>${x}</span>`).join('')}</div></div>`,
-        analogy: { icon: 'ruler', t: '比喻', p: '體重和跑步成績：體重重一點，通常跑慢一點。體重正常卻跑很慢，就不是體重的問題，要找別的原因，例如腳受傷。' }
+        extra: `<div class="card" style="padding:10px 14px"><h4 style="margin-bottom:6px">第九章收尾：量測工程師的四件事</h4><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;font-size:15.5px;line-height:1.4">${['① 選工具和量測點', '② 設管制線', '③ 判定並回饋機台', '④ 量不準時追原因'].map(x => `<span>${x}</span>`).join('')}</div></div>`
       })}</div>`,
     init(el, ctx) {
       const { c, w, h } = U.canvas(U.$(el, '#w4-cv'));
@@ -406,21 +364,6 @@
         const tip = [['沿著線跑', '問題就是尺寸'], ['尺寸正常、離開線', '往尺寸以外找']];
         tip.forEach(([a, b], k) => { U.txt(c, a, rx, y1 - 70 + k * 44, { size: 14, w: 700, color: '#17202b' }); U.txt(c, '→ ' + b, rx, y1 - 50 + k * 44, { size: 14, color: '#3e4b5b' }); });
       });
-    },
-    notes: `第九章最後一頁，把 WAT 和前面的 OCD 放在一起看。每個測試點都有兩個數字：製程中 OCD 量到的閘極線寬，和最後 WAT 量到的開啟電流。橫軸是線寬，縱軸是電流，每個點是一個量測位置，累積了很多片晶圓，還有故意做粗、做細的實驗批，線才畫得出來。
-
-① 正常的時候，點會排成一條線：線寬細一點，電流就大一點。這條線本身，就是廠裡拿線上量測和 WAT 一起畫出來的。
-
-② 閘極太細：點沿著這條線往左上跑，線寬變細、電流變大，兩邊對得上，所以問題就是閘極線寬。接著要問：線上量測早就看到線寬偏了，為什麼 SPC 沒攔下來？常見原因有兩個：線上量測每片只抽幾個點，偏最多的外圈沒抽到；或管制線訂得比電性需要的鬆。所以廠裡會拿這條線，回頭決定線上量測的規格要訂多嚴。
-
-③ 接點電阻高：線寬都正常，電流卻整批掉到線下方。尺寸量起來都對，電流卻不對，就不是尺寸的問題，要往尺寸以外找，WAT 的接觸電阻偏高，指向中段接點。
-
-④ 一邊偏：線寬都差不多，電流卻上下散開，也不是尺寸的問題，查 WAT 的 Vt 在晶圓上的分布，一邊高一邊低。環繞式的通道幾乎不摻雜，Vt 主要由閘極金屬決定，所以指向閘極金屬的厚度或退火不均。
-
-就像體重和跑步成績：體重重一點，通常跑慢一點；體重正常卻跑很慢，就要找別的原因。廠裡也靠這條線決定線上量測的規格要訂多嚴：線寬差多少，電流就會超規格。WAT 量到的電流和漏電，也是第八章 TCAD 校正、以及給晶片設計者用的元件模型的重要資料。數字都是示意。
-
-第九章到這裡。右邊這張小卡把整章收成一句：量測工程師每天做四件事，選工具和量測點、設管制線、判定並回饋機台、量不準時追原因。你們之後的工作，大概就是這四件事的組合。
-
-WAT 合格之後，晶圓送去 CP、切割、封裝，封裝就是第三部分要講的。在那之前，下一章先把鏡頭拉遠：一顆晶片從設計圖到量產的整條路，這些量測數據最後又怎麼變成良率。`
+    }
   });
 })();
