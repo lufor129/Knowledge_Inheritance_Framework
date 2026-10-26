@@ -1,4 +1,5 @@
-/* 給新人的按鈕和進度：旁白、看詳細和出處、問 Agent；記住看過哪些頁（入口網站讀同一份紀錄）；點註腳小標號看出處。
+/* 給新人的按鈕和進度：旁白、看深入、看詳細和出處、問 Agent；深入頁上還有說明、跳過深入、回主頁。
+   記住看過哪些頁（入口網站讀同一份紀錄）；點註腳小標號看出處。
    進度存在瀏覽器的 localStorage：kif.<知識庫>.seen（看過的頁 id）、kif.<知識庫>.last（最後看的頁 id）。 */
 (function () {
   const CFG = window.DECK_CONFIG || {};
@@ -29,6 +30,7 @@
   }
 
   function maps(s) { return (CFG.maps || {})[s.id] || []; }
+  const deepOf = s => Deck.slides.filter(x => x.deep && x.deep === s.id);
 
   function askText(s) {
     return `我在看〈${KB.title}〉簡報的〈${strip(s.title)}〉這一頁（頁 id：${s.id}），想問：`;
@@ -46,8 +48,12 @@
 
   function update(s) {
     if (!bar) return;
-    bar.querySelector('[data-b=src]').hidden = !maps(s).length;
-    bar.querySelector('[data-b=narr]').classList.toggle('on', Deck.notesOpen() === 'narr');
+    const b = k => bar.querySelector(`[data-b=${k}]`), n = deepOf(s).length;
+    b('src').hidden = !maps(s).length;
+    b('deep').hidden = !n; b('deep').textContent = `看深入（${n} 頁）`;
+    ['more', 'skip', 'main'].forEach(k => { b(k).hidden = !s.deep; });
+    b('narr').classList.toggle('on', Deck.notesOpen() === 'narr');
+    b('more').classList.toggle('on', Deck.notesOpen() === 'more');
     closePop();
   }
   Deck.onGo.push(update);
@@ -55,6 +61,10 @@
   function makeBar() {
     bar = document.createElement('div'); bar.id = 'learn';
     bar.innerHTML = `<button type="button" data-b="narr" title="打開或收起這一頁的解說">旁白</button>
+      <button type="button" data-b="more" title="打開或收起這一頁的長說明">說明</button>
+      <button type="button" data-b="deep" title="這一頁後面有深入頁：比較長的說明和推導">看深入</button>
+      <button type="button" data-b="skip" title="跳過這幾頁深入頁，到下一個主頁">跳過深入</button>
+      <button type="button" data-b="main" title="回到這一頁接著的主頁">回主頁</button>
       <button type="button" data-b="src" title="打開手冊網站裡對應的小節">看詳細和出處</button>
       <button type="button" data-b="ask" title="複製這一頁的位置，貼到 Claude Code 接著問">問 Agent</button>`;
     pop = document.createElement('div'); pop.id = 'learn-pop'; pop.hidden = true;
@@ -63,6 +73,10 @@
       const b = e.target.closest('button'); if (!b) return;
       const s = Deck.slides[Deck.cur];
       if (b.dataset.b === 'narr') { closePop(); Deck.toggleNotes('narr'); return; }
+      if (b.dataset.b === 'more') { closePop(); Deck.toggleNotes('more'); return; }
+      if (b.dataset.b === 'deep') { Deck.goId(deepOf(s)[0].id); return; }
+      if (b.dataset.b === 'main') { Deck.goId(s.deep); return; }
+      if (b.dataset.b === 'skip') { const k = Deck.slides.findIndex((x, j) => j > Deck.cur && !x.deep); Deck.go(k < 0 ? Deck.slides.length - 1 : k); return; }
       if (!pop.hidden && pop.dataset.for === b.dataset.b) { closePop(); return; }
       pop.dataset.for = b.dataset.b;
       if (b.dataset.b === 'src') {
@@ -80,7 +94,7 @@
 
   /* ---------- 註腳：點小標號看出處 ---------- */
   document.addEventListener('click', e => {
-    const f = e.target.closest('#stage .fn'); if (!f || !pop) return;
+    const f = e.target.closest('#stage .fn, #notes .fn'); if (!f || !pop) return;
     const s = Deck.slides[Deck.cur], fn = ((s.md && s.md.fns) || []).find(x => x[1] === f.dataset.fn);
     if (!fn) return;
     pop.dataset.for = 'fn';
@@ -91,7 +105,10 @@
   const toggleNotes = Deck.toggleNotes;
   Deck.toggleNotes = function (mode) {
     const open = toggleNotes.call(Deck, mode);
-    if (bar) bar.querySelector('[data-b=narr]').classList.toggle('on', Deck.notesOpen() === 'narr');
+    if (bar) {
+      bar.querySelector('[data-b=narr]').classList.toggle('on', Deck.notesOpen() === 'narr');
+      bar.querySelector('[data-b=more]').classList.toggle('on', Deck.notesOpen() === 'more');
+    }
     return open;
   };
 

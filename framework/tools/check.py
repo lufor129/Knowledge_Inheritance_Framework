@@ -238,6 +238,8 @@ def check_deck_md(kb, in_order, r):
     for f in sorted((K.ROOT / 'framework/engine/figures').glob('*.js')) + sorted((kb.dir / 'deck/figures').glob('*.js')):
         figs.update(FIG_ADD.findall(f.read_text(encoding='utf-8')))
     changed = changed_pages(kb)
+    check_deep(deck, r)
+    check_pre(kb, deck, r)
     todo = []
     for p in deck.md_pages.values():
         if p.id not in in_order:
@@ -245,6 +247,8 @@ def check_deck_md(kb, in_order, r):
         name = p.fig.partition('｜')[0].strip()
         if not name:
             r.err(p.file, p.line, f'簡報頁「{p.id}」沒有圖：寫「- 圖：」，放互動圖、圖片或影片')
+        elif p.deep and name in (K.SAME_FIG, K.TABLE_FIG):
+            pass  # 深入頁沿用主頁的圖、或用表格當圖：check_deep 檢查
         elif not name.startswith('assets/') and name not in figs:
             r.err(p.file, p.line, f'簡報頁「{p.id}」的「圖：{name}」找不到；互動圖要在 deck/figures/*.js 用 Fig.add(\'{name}\', …) 註冊')
         # 數字要附出處：這次新寫或改到的說法擋下來；原本就有的列成可以做的工作
@@ -277,6 +281,52 @@ def claims(p):
     if p.fact:
         items.append(('數字卡', '｜'.join(p.fact)))
     return [(label, t) for label, t in items if t]
+
+
+def check_deep(deck, r):
+    """深入頁：「深入：」指到的主頁要在頁序裡、在同一個章檔；深入頁要緊接在主頁後面（中間只能是同一個主頁的深入頁）。
+    「圖：同主頁」主頁要有圖，「圖：表格」說明裡要有表格；「說明：」只用在深入頁。"""
+    order = [p.id for p in deck.order.pages]
+    pages = {p.id: p for p in deck.pages}
+    for p in deck.md_pages.values():
+        if not p.deep:
+            if p.body:
+                r.err(p.file, p.line, f'簡報頁「{p.id}」寫了「說明：」；說明只用在深入頁（加上「- 深入：<主頁 id>」），一般的頁放旁白')
+            continue
+        main = pages.get(p.deep)
+        if not main:
+            r.err(p.file, p.line, f'深入頁「{p.id}」的「深入：{p.deep}」指到的頁不在頁序裡')
+            continue
+        if main.deep:
+            r.err(p.file, p.line, f'深入頁「{p.id}」接在「{p.deep}」後面，但「{p.deep}」本身也是深入頁；深入頁要接在主頁後面')
+        if main.file != p.file:
+            r.err(p.file, p.line, f'深入頁「{p.id}」要寫在主頁「{p.deep}」同一個章檔（{K.rel(main.file)}）')
+        if p.id in order:
+            i, j = order.index(main.id), order.index(p.id)
+            between = order[i + 1:j]
+            if j < i or any((pages.get(x) and pages[x].deep) != p.deep for x in between):
+                r.err(deck.order.file, next(x.line for x in deck.order.pages if x.id == p.id), f'頁序裡，深入頁「{p.id}」要緊接在主頁「{p.deep}」後面（中間只能是「{p.deep}」的其他深入頁）')
+        name = p.fig.partition('｜')[0].strip()
+        if name == K.SAME_FIG and not main.fig.partition('｜')[0].strip():
+            r.err(p.file, p.line, f'深入頁「{p.id}」寫了「圖：同主頁」，但主頁「{p.deep}」沒有圖')
+        if name == K.TABLE_FIG and not any(l.lstrip().startswith('|') for l in p.body.splitlines()):
+            r.err(p.file, p.line, f'深入頁「{p.id}」寫了「圖：表格」，但「說明：」裡沒有表格')
+
+
+def check_pre(kb, deck, r):
+    """章檔開頭的「先修：」要指到存在的章；別的知識庫的章寫成「cv › 影像分類」。"""
+    names = {kb.name: K.chapter_names(deck)}
+    for key, ch in deck.chapters.items():
+        for kname, name, line in ch.pre:
+            other = kname or kb.name
+            if other not in names:
+                o = next((x for x in K.all_kbs() if x.name == other), None)
+                names[other] = K.chapter_names(K.load_deck(o)) if o and o.has_deck else None
+            if names[other] is None:
+                r.err(ch.file, line, f'「先修：」的「{kname} › {name}」：沒有「{kname}」這個知識庫，或它還沒有簡報')
+            elif K.chapter_name(name) not in names[other]:
+                where = f'知識庫「{other}」' if kname else '這份簡報'
+                r.err(ch.file, line, f'「先修：」的「{name}」在{where}裡找不到這一章；寫章檔的「# 章名」，別的知識庫寫成「cv › 影像分類」')
 
 
 def unsourced(p):

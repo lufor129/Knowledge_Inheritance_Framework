@@ -1,6 +1,7 @@
 /* 簡報引擎（所有知識庫共用）：翻頁、縮放、講稿和旁白、總覽、章節列
    每頁用 Deck.add({ id, part, title, minutes, render(h) -> html, init(el, ctx), notes }) 註冊；
-   Markdown 寫的頁由 pages.js 註冊，給新人的按鈕（旁白、看詳細和出處、問 Agent）和進度在 learn.js */
+   Markdown 寫的頁由 pages.js 註冊，給新人的按鈕（旁白、說明、看深入、問 Agent）和進度在 learn.js
+   深入頁（s.deep）的長說明（s.more）放在畫面下方的面板，預設展開；展開時簡報縮到面板上面，不會被蓋住 */
 (function () {
   const W = 1600, H = 900;
   /* 由 build.py 從頁序（deck/order.md）產生：部分、章節列、浮水印 */
@@ -42,7 +43,7 @@
     return `<header class="s-head">
       <div class="s-eyebrow"><span class="num">${String(i + 1).padStart(2, '0')}</span><span>${esc(s.eyebrow || PARTS[s.part] || '')}</span></div>
       ${flow}
-      <h2 class="s-title">${s.title}${s.badge ? `<span class="newtag">${s.badge}</span>` : ''}${s.en ? `<span class="en">${s.en}</span>` : ''}</h2>
+      <h2 class="s-title">${s.title}${s.deep ? '<span class="newtag deeptag">深入・可略過</span>' : ''}${s.badge ? `<span class="newtag">${s.badge}</span>` : ''}${s.en ? `<span class="en">${s.en}</span>` : ''}</h2>
       ${s.thesis ? `<p class="s-thesis">${s.thesis}</p>` : ''}
     </header>`;
   };
@@ -57,7 +58,7 @@
   let startTime = null;
 
   function fit() {
-    const vw = window.innerWidth, vh = window.innerHeight;
+    const vp = stage.parentElement, vw = vp.clientWidth || window.innerWidth, vh = vp.clientHeight || window.innerHeight;
     const sc = Math.min(vw / W, vh / H);
     stage.style.transform = `translate(${-W * sc / 2}px, ${-H * sc / 2}px) scale(${sc})`;
     Deck.scale = sc;
@@ -117,8 +118,12 @@
     const old = stage.querySelector('section.slide');
     if (old && Deck.slides[Deck.cur]) { try { Deck._state[Deck.slides[Deck.cur].id] = snapState(old); } catch (e) { console.error(e); } }
     runCleanups();
-    Deck.cur = i; Deck._builtScale = Deck.scale;
     const s = Deck.slides[i];
+    // 深入頁：說明面板預設展開（使用者收起過就先收著）；離開深入頁時收起。先縮好畫面再畫這一頁，圖才不會糊
+    if (s.more && !moreOff) { notesMode = 'more'; notesEl.hidden = false; }
+    else if (notesMode === 'more') notesEl.hidden = true;
+    dock();
+    Deck.cur = i; Deck._builtScale = Deck.scale;
     const el = document.createElement('section');
     el.className = 'slide enter ' + (s.cls || '');
     el.setAttribute('aria-label', `第 ${i + 1} 頁：${String(s.title).replace(/<[^>]+>/g, '')}`);
@@ -207,16 +212,27 @@
 
   // 旁白：講稿拿掉給講者看的【可略】【提示】段落，也不顯示計時
   let notesMode = 'talk';
+  let moreOff = false;   // 收起過深入頁的說明：之後的深入頁也先收著，按「說明」再打開
+  function dock() {
+    const on = !notesEl.hidden && notesMode === 'more';
+    notesEl.classList.toggle('narr', notesMode === 'narr');
+    notesEl.classList.toggle('more', notesMode === 'more');
+    if (document.body.classList.contains('docked') !== on) { document.body.classList.toggle('docked', on); fit(); }
+  }
   const narrHTML = s => {
     const ps = Deck.ref(s.notes || '').trim().split(/\n\s*\n/).map(p => p.trim()).filter(p => p && !/^【(可略|提示)】/.test(p));
     return ps.length ? ps.map(p => `<p>${p}</p>`).join('') : '<p>（這一頁沒有旁白）</p>';
   };
   Deck.toggleNotes = function (mode) {
     const same = !notesEl.hidden && notesMode === mode;
+    if (mode === 'more' && !Deck.slides[Deck.cur].more) return false;
     notesMode = mode;
     notesEl.hidden = same;
-    notesEl.classList.toggle('narr', mode === 'narr');
+    if (mode === 'more') moreOff = same;
+    const before = Deck.scale;
+    dock();
     renderNotes();
+    if (Math.abs(Deck.scale / before - 1) > 0.1) Deck.go(Deck.cur, { force: true, from: Deck._back, keep: true }); // 畫面縮放變了：重畫這一頁，圖才不會糊
     return !notesEl.hidden;
   };
   Deck.notesOpen = () => !notesEl.hidden && notesMode;
@@ -224,6 +240,7 @@
     if (notesEl.hidden) return;
     const s = Deck.slides[Deck.cur];
     if (notesMode === 'narr') { notesEl.innerHTML = `<div class="nh"><span>旁白 · ${String(s.short || s.title).replace(/<[^>]+>/g, '')}</span><span>再按一次「旁白」收起</span></div>${narrHTML(s)}`; return; }
+    if (notesMode === 'more') { notesEl.innerHTML = `<div class="nh"><span>說明 · ${String(s.short || s.title).replace(/<[^>]+>/g, '')}</span><span>再按一次「說明」收起</span></div><div class="md">${Deck.ref(s.more || '')}</div>`; notesEl.scrollTop = 0; return; }
     const total = planAt(Deck.slides.length);
     const el = startTime ? (Date.now() - startTime) / 60000 : 0;
     const paras = notesHTML(s);
@@ -287,7 +304,7 @@
         const pm = Deck.slides.filter(x => x.part === part).reduce((a, x) => a + (x.minutes || 0), 0);
         html += `<h3>${PARTS[part]} · ${fmtMin(pm)}</h3><div class="og">`;
       }
-      html += `<div class="oc ${i === Deck.cur ? 'cur' : ''}" data-i="${i}"><span class="i">${i + 1}</span><span>${String(s.short || s.title).replace(/<[^>]+>/g, '')}</span><span class="m">${s.minutes || 0}′</span></div>`;
+      html += `<div class="oc ${i === Deck.cur ? 'cur' : ''}${s.deep ? ' deep' : ''}" data-i="${i}"><span class="i">${i + 1}</span><span>${s.deep ? '<small>深入</small> ' : ''}${String(s.short || s.title).replace(/<[^>]+>/g, '')}</span><span class="m">${s.minutes || 0}′</span></div>`;
     });
     html += '</div>';
     overviewEl.innerHTML = html;
