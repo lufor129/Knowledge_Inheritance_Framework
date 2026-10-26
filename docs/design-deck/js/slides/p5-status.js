@@ -88,7 +88,7 @@
         if (i === 0) box.innerHTML = `<div class="flowrow" style="row-gap:12px">${[['重置測試 repo', 'prog'], ['建立前置狀態', 'prog'], ['全新的 Claude Code', 'ag'], ['另一個模型扮演使用者', 'ag'], ['程式檢查＋評分模型', 'prog'], ['報告', 'core']].map(([t, c]) => `<span class="st ${c}">${t}</span>`).join('<span class="ar">→</span>')}</div>
           <ul class="points tight"><li>情境照 docs/design.md：新人第一天、看不懂、簡報沒寫、覺得寫錯、傳承者開工、研究、訪談、審核、刪除深入頁、兩頁說法不同……</li><li>給 Agent 的複本只拉這次重置之後的歷史，看不到別的情境留下的東西</li><li>程式檢查結果（issue、提案、留言），評分模型看對話判斷做得對不對</li><li>結果的格式和 skill-creator 一樣，可以用它的檢視頁面看</li></ul>`;
         if (i === 1) { box.innerHTML = `<div class="controls">${U.seg('ts-m', ['通過', '花費', '要按「允許」'], met)}</div><div class="caption" id="ts-cap"></div><div id="ts-bars" style="display:flex;flex-direction:column;gap:14px"></div>
-          <p class="caption" style="margin-top:auto">10-25 改進 skill 時的結果（新人以簡報為主之前）。舊版是改進之前；新版是改進後、修完測試找到的問題再跑的結果，94 個檢查項裡各剩 1 項沒過。新人以簡報為主之後情境加到 17 個、109 個檢查項：規則改之前的版本過 90 項，#19 全部通過。只留簡報之後，情境改成只用簡報；#22 和改之前（#21）各跑一次：RESULT_TBD。</p>`; U.onSeg(el, 'ts-m', j => { met = j; bars(); }); }
+          <p class="caption" style="margin-top:auto">10-25 改進 skill 時的結果（新人以簡報為主之前）。舊版是改進之前；新版是改進後、修完測試找到的問題再跑的結果，94 個檢查項裡各剩 1 項沒過。新人以簡報為主之後情境加到 17 個、109 個檢查項：規則改之前的版本過 90 項，#19 全部通過。只留簡報的 #22 也是 109 項全過（$7.81、按「允許」57 次）；改之前的 #21 過 107 項（$8.29、56 次）。</p>`; U.onSeg(el, 'ts-m', j => { met = j; bars(); }); }
         if (i === 2) box.innerHTML = `<table class="t" style="font-size:16.5px"><tbody>${TOOLS.map(([n, d]) => `<tr><td style="width:28%;font-family:var(--font-mono)"><b>${n}</b></td><td>${d}</td></tr>`).join('')}</tbody></table>
           <p class="caption" style="margin:0">Agent 每次都要做的事寫成工具，結果一樣、不用每次重寫；skill 裡寫清楚什麼時候用、做到哪裡算完成。</p>`;
         if (i === 3) box.innerHTML = `<div class="cards"><div class="card key"><h4>Sonnet</h4><div class="big" style="font-size:30px">93 / 94</div><p>15 個情境約 $5.55</p></div><div class="card"><h4>Opus</h4><div class="big" style="font-size:30px">93 / 94</div><p>15 個情境約 $16.08</p></div></div>
@@ -103,7 +103,9 @@
 
 新人以簡報為主之後，情境加到 17 個，多了「從簡報問 Agent」和「簡報和手冊說法不同」。改規則的 #19 全部通過；第一次跑時還抓到一個問題：一頁只要改過就要求整頁數字附出處，Agent 為了過檢查刪了舊說法，所以改成只管這次改到的句子。
 
-只留簡報之後，情境也改成只用簡報：「刪除小節」改成「刪除深入頁」，「簡報和手冊說法不同」改成「兩頁說法不同」。#22 和改之前的 #21 各跑一次：RESULT_TBD。`
+只留簡報之後，情境也改成只用簡報：「刪除小節」改成「刪除深入頁」，「簡報和手冊說法不同」改成「兩頁說法不同」。#22 和改之前的 #21 各跑一次：#22 全部 109 項通過，花費 $7.81，要按「允許」57 次；#21 過 107 項，花費 $8.29、56 次。#21 沒過的兩項，一項是新人第一天還在講手冊的「看詳細」；另一項是改引擎時沒提到入口網站是共用的，屬於每次跑不一樣的地方。
+
+深入頁改成平常不經過之後，三個新人情境又重跑一次。第一天的 Agent 只開了簡報，沒介紹入口網站的全景圖，所以 kb-learn 補了一句，再跑兩次都通過。`
   });
 
   /* ---------- 只留簡報：26 件事做成什麼樣，多做的，和 10-25 第一步對照 ---------- */
