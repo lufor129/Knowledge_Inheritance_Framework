@@ -19,9 +19,9 @@
     ['#14', '10-25', '框架', '加上情境測試'],
     ['#15', '10-25', '框架', '重複的工作做成工具，skill 寫清楚什麼時候用、做到哪裡算完成'],
     ['#16', '10-25', '框架', '首頁註明 Sonnet 和 Opus 都測過'],
-    ['#17', '', '框架', '提案①：入口網站、簡報下面的旁白／看詳細和出處／問 Agent、章末自我檢查、出處頁'],
-    ['提案②', '', '半導體', '90 頁的文字搬到 15 個簡報章檔，互動圖改成 Fig.add；197 題搬進各章的自我檢查'],
-    ['提案③', '', '框架', '規則和五個 skill 改成新人以簡報為主；ADR-0006 取代 ADR-0002；check.py 新規則、雙向指紋']
+    ['#17', '10-26', '框架', '入口網站、簡報下面的旁白／看詳細和出處／問 Agent、章末自我檢查、出處頁'],
+    ['#18', '10-26', '半導體', '90 頁的文字搬到 15 個簡報章檔，互動圖改成 Fig.add；197 題搬進各章的自我檢查'],
+    ['#19', '10-26', '框架', '規則和五個 skill 改成新人以簡報為主；ADR-0006 取代 ADR-0002；check.py 新規則、雙向指紋']
   ];
   const KIND = ['全部', '框架', '半導體', '電腦視覺'];
   A({
@@ -48,7 +48,7 @@
 
 半導體的 90 頁簡報都寫成 Markdown，放在 15 個簡報章檔；手冊有微影、閘極、檢測量測三章，共 28 個小節。每一種流程都真的走過一次：新人問倒手冊開待回答 #4，傳承者回答成 #6；勘誤 #5 修正成 #8；也試過刪除一個小節（#13）。電腦視覺只有手冊骨架，內容和簡報還沒做。
 
-最後三筆是新人以簡報為主的三個提案：#17 做入口網站和給新人的按鈕，提案②把簡報搬成 Markdown，提案③改規則和流程。`
+最後三筆是新人以簡報為主的三個提案：#17 做入口網站和給新人的按鈕，#18 把簡報搬成 Markdown，#19 改規則和流程。`
   });
 
   /* ---------- 情境測試和工具（#14、#15、#16） ---------- */
@@ -62,7 +62,7 @@
   A({
     id: 'tests', part: 5, minutes: 2.5, short: '情境測試和工具',
     title: '情境測試：改了規則，跑一次就知道有沒有變好', en: 'Scenario Tests',
-    thesis: '全新的 Claude Code 跑 15 個情境，另一個模型<b>扮演使用者</b>，程式和評分模型打分；改之前、改之後各跑一次比較。',
+    thesis: '全新的 Claude Code 跑一組情境（現在 17 個），另一個模型<b>扮演使用者</b>，程式和評分模型打分；改之前、改之後各跑一次比較。',
     render: () => `<div class="s-body">
       <div class="col"><div class="controls">${U.seg('ts-v', ['怎麼測', '比較結果', '工具', '模型'], 1)}</div>
         <div class="fig grow"><div class="fig-title"><span id="ts-h"></span><span></span></div><div id="ts-b" style="flex:1;min-height:0;display:flex;flex-direction:column;gap:10px"></div></div></div>
@@ -85,7 +85,7 @@
         if (i === 0) box.innerHTML = `<div class="flowrow" style="row-gap:12px">${[['重置測試 repo', 'prog'], ['建立前置狀態', 'prog'], ['全新的 Claude Code', 'ag'], ['另一個模型扮演使用者', 'ag'], ['程式檢查＋評分模型', 'prog'], ['報告', 'core']].map(([t, c]) => `<span class="st ${c}">${t}</span>`).join('<span class="ar">→</span>')}</div>
           <ul class="points tight"><li>情境照 docs/design.md：新人第一天、看不懂、手冊沒寫、覺得寫錯、傳承者開工、研究、訪談、審核、刪除小節……</li><li>給 Agent 的複本只拉這次重置之後的歷史，看不到別的情境留下的東西</li><li>程式檢查結果（issue、提案、留言），評分模型看對話判斷做得對不對</li><li>結果的格式和 skill-creator 一樣，可以用它的檢視頁面看</li></ul>`;
         if (i === 1) { box.innerHTML = `<div class="controls">${U.seg('ts-m', ['通過', '花費', '要按「允許」'], met)}</div><div class="caption" id="ts-cap"></div><div id="ts-bars" style="display:flex;flex-direction:column;gap:14px"></div>
-          <p class="caption" style="margin-top:auto">10-25 改進 skill 時的結果（新人以簡報為主之前）。舊版是改進之前；新版是改進後、修完測試找到的問題再跑的結果，94 個檢查項裡各剩 1 項沒過。</p>`; U.onSeg(el, 'ts-m', j => { met = j; bars(); }); }
+          <p class="caption" style="margin-top:auto">10-25 改進 skill 時的結果（新人以簡報為主之前）。舊版是改進之前；新版是改進後、修完測試找到的問題再跑的結果，94 個檢查項裡各剩 1 項沒過。新人以簡報為主之後情境加到 17 個、109 個檢查項：規則改之前的版本過 90 項，#19 全部通過。</p>`; U.onSeg(el, 'ts-m', j => { met = j; bars(); }); }
         if (i === 2) box.innerHTML = `<table class="t" style="font-size:16.5px"><tbody>${TOOLS.map(([n, d]) => `<tr><td style="width:28%;font-family:var(--font-mono)"><b>${n}</b></td><td>${d}</td></tr>`).join('')}</tbody></table>
           <p class="caption" style="margin:0">Agent 每次都要做的事寫成工具，結果一樣、不用每次重寫；skill 裡寫清楚什麼時候用、做到哪裡算完成。</p>`;
         if (i === 3) box.innerHTML = `<div class="cards"><div class="card key"><h4>Sonnet</h4><div class="big" style="font-size:30px">93 / 94</div><p>15 個情境約 $5.55</p></div><div class="card"><h4>Opus</h4><div class="big" style="font-size:30px">93 / 94</div><p>15 個情境約 $16.08</p></div></div>
@@ -96,7 +96,9 @@
 
 切到「比較結果」：同樣 15 個情境、94 個檢查項，舊版過 88 項；改進後的新版，Opus 和 Sonnet 都過 93 項。花費也降了，最明顯的是同仁要按「允許」的次數，從 174 次降到 43 次，因為重複的工作做成了工具，事先放進允許清單。
 
-「工具」是那九個工具；「模型」是結論：兩個模型結果差不多，Sonnet 的花費大約三分之一，所以首頁寫明日常用 Sonnet 就夠。之後改規則，都先跑一次跟改之前比。`
+「工具」是那九個工具；「模型」是結論：兩個模型結果差不多，Sonnet 的花費大約三分之一，所以首頁寫明日常用 Sonnet 就夠。之後改規則，都先跑一次跟改之前比。
+
+新人以簡報為主之後，情境加到 17 個，多了「從簡報問 Agent」和「簡報和手冊說法不同」。改規則的 #19 全部通過；第一次跑時還抓到一個問題：一頁只要改過就要求整頁數字附出處，Agent 為了過檢查刪了舊說法，所以改成只管這次改到的句子。`
   });
 
   /* ---------- 新人以簡報為主：23 件事做成什麼樣，和多做的 ---------- */
@@ -123,7 +125,7 @@
     ['新增知識', '每頁都要有圖，機制類要能操作', 'check.py 擋沒有圖的頁；能不能操作由維護者審核時看'],
     ['新增知識', '先整理互動圖樣板', 'Fig.canvas、Fig.steps、Fig.parts；說明文字寫在章檔的「圖說：」'],
     ['工程', '簡報頁文字搬到 Markdown', '90 頁搬到 15 個章檔；互動圖改成 Fig.add，放在 deck/figures/'],
-    ['工程', '分三個提案', '#17 引擎和入口網站、提案② 搬移、提案③ 規則和流程，都合併了']
+    ['工程', '分三個提案', '#17 引擎和入口網站、#18 搬移、#19 規則和流程，都合併了']
   ];
   const EXTRA = [
     ['網址記頁 id', '簡報網址寫 deck.html#hk1，頁序調整了連結也不會跳錯；舊的頁碼網址（#36）照樣能開。'],
