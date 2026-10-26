@@ -63,26 +63,7 @@ def check_kb(kb, secs, r):
                 if (kname or kb.name, sid) not in secs:
                     where = f'知識庫「{kname}」裡' if kname else '這個知識庫裡'
                     r.err(ch.file, line, f'常見問題「{q.q}」的「相關：」指向「{sid}」，但{where}沒有這個小節')
-        # 出處註腳
-        lines = ch.text.splitlines()
-        defs = {}
-        for i, l in enumerate(lines, 1):
-            m = K.FOOTDEF.match(l)
-            if m:
-                defs[m.group(1)] = i
-                if not m.group(2).strip():
-                    r.err(ch.file, i, f'出處註腳 [^{m.group(1)}] 沒有寫出處')
-        used = set()
-        for i, l in enumerate(lines, 1):
-            if K.FOOTDEF.match(l):
-                continue
-            for name in K.FOOTREF.findall(l):
-                used.add(name)
-                if name not in defs:
-                    r.err(ch.file, i, f'用了出處註腳 [^{name}]，但這一章沒有寫「[^{name}]: 出處」')
-        for name, i in defs.items():
-            if name not in used:
-                r.warn(ch.file, i, f'出處註腳 [^{name}] 沒有被任何地方用到')
+        check_footnotes(ch, r)
         # 數字沒附出處：只提醒
         for s in ch.sections:
             for para, line in paragraphs(s):
@@ -97,6 +78,29 @@ def check_kb(kb, secs, r):
     check_images(kb, r)
     if (kb.dir / 'deck').exists():
         check_deck(kb, secs, r)
+
+
+def check_footnotes(ch, r):
+    """出處註腳：用到的都要有定義，定義了要有出處、要有地方用到。"""
+    lines = ch.text.splitlines()
+    defs = {}
+    for i, l in enumerate(lines, 1):
+        m = K.FOOTDEF.match(l)
+        if m:
+            defs[m.group(1)] = i
+            if not m.group(2).strip():
+                r.err(ch.file, i, f'出處註腳 [^{m.group(1)}] 沒有寫出處')
+    used = set()
+    for i, l in enumerate(lines, 1):
+        if K.FOOTDEF.match(l):
+            continue
+        for name in K.FOOTREF.findall(l):
+            used.add(name)
+            if name not in defs:
+                r.err(ch.file, i, f'用了出處註腳 [^{name}]，但這一章沒有寫「[^{name}]: 出處」')
+    for name, i in defs.items():
+        if name not in used:
+            r.warn(ch.file, i, f'出處註腳 [^{name}] 沒有被任何地方用到')
 
 
 def paragraphs(s):
@@ -200,9 +204,58 @@ def check_deck(kb, secs, r):
     for n, name, first in order.chaps:
         if first not in seen:
             r.err(of, 0, f'章節列第 {n} 章「{name}」的第一頁「{first}」不在頁序裡')
+    check_deck_md(kb, seen, r)
     if stale:
         pages = ' '.join(dict.fromkeys(stale))
         r.errors.append(f'  → 重看並改好上面點名的簡報頁之後，執行：python3 framework/tools/check.py --fp {kb.name} {pages}')
+
+
+FIG_ADD = re.compile(r"Fig\.add\(\s*'([^']+)'")
+PAGE_REF = re.compile(r'\[\[頁:([A-Za-z0-9_-]+)\]\]')
+
+
+def check_deck_md(kb, in_order, r):
+    """Markdown 寫的簡報頁（deck/<部分>/<章>.md）：格式、互動圖、註腳、自我檢查的「相關：」，和所有簡報檔裡的頁碼引用。"""
+    deck = K.load_deck(kb)
+    for f, line, msg in deck.problems:
+        r.err(f, line, msg)
+    figs = set()
+    for f in sorted((K.ROOT / 'framework/engine/figures').glob('*.js')) + sorted((kb.dir / 'deck/figures').glob('*.js')):
+        figs.update(FIG_ADD.findall(f.read_text(encoding='utf-8')))
+    for p in deck.md_pages.values():
+        if p.id not in in_order:
+            r.warn(p.file, p.line, f'簡報頁「{p.id}」不在頁序 deck/order.md 裡，不會播放')
+        name = p.fig.partition('｜')[0].strip()
+        if name and not name.startswith('assets/') and name not in figs:
+            r.err(p.file, p.line, f'簡報頁「{p.id}」的「圖：{name}」找不到；互動圖要在 deck/figures/*.js 用 Fig.add(\'{name}\', …) 註冊')
+    for f in K.deck_files(kb):
+        check_footnotes(K.load_chapter(f, [], K.CHECK_HEAD), r)
+    for ch, q in [x for qs in deck.checks.values() for x in qs]:
+        for kname, pid, line in q.rel:
+            if kname or pid not in in_order:
+                r.err(ch.file, line, f'自我檢查「{q.q}」的「相關：」指向「{pid}」，但頁序裡沒有這一頁')
+    d = kb.dir / 'deck'
+    for f in sorted(d.rglob('*.js')) + K.deck_files(kb):
+        for i, l in enumerate(f.read_text(encoding='utf-8').splitlines(), 1):
+            for pid in PAGE_REF.findall(l):
+                if pid not in in_order:
+                    r.err(f, i, f'頁碼引用 [[頁:{pid}]] 指到的頁不在頁序裡')
+
+
+def check_paths(r):
+    """入口網站的角色路徑（framework/paths.md）：每一步要指到存在的知識庫和頁。"""
+    pages = {}
+    for kb in K.all_kbs():
+        if kb.has_deck:
+            pages[kb.name] = {p.id for p in K.load_order(kb).pages}
+    for role in K.load_paths():
+        for kname, pid, _, line in role['steps']:
+            if kname is None:
+                r.err(K.PATHS, line, f'角色路徑「{role["name"]}」這一步要寫成「- 知識庫/頁 id」：{pid}')
+            elif kname not in pages:
+                r.err(K.PATHS, line, f'角色路徑「{role["name"]}」的「{kname}/{pid}」：知識庫「{kname}」不存在，或還沒有簡報')
+            elif pid not in pages[kname]:
+                r.err(K.PATHS, line, f'角色路徑「{role["name"]}」的「{kname}/{pid}」：{kname} 的頁序裡沒有這一頁')
 
 
 def check_readme(r):
@@ -233,6 +286,7 @@ def main(argv):
         check_kb(kb, secs, r)
     if not argv:
         check_readme(r)
+        check_paths(r)
     for l in r.errors + r.warns:
         print(l)
     names = '、'.join(k.name for k in kbs)

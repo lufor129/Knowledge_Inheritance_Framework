@@ -65,7 +65,7 @@
         m = i; const s = SEG[i];
         U.$(el, '#fm-h').textContent = i ? s.n : '三段各做什麼';
         U.$(el, '#fm-p').textContent = i ? `${s.what}。關鍵技術：${s.key}。` : '由下往上：前段做電晶體、中段接端點、後段拉導線。';
-        U.$(el, '#fm-go').innerHTML = (s.go || [['回到第 3 頁', 'scale']]).map(([t, id]) => `<button class="btn" data-go="${id}" type="button">${t} →</button>`).join('');
+        U.$(el, '#fm-go').innerHTML = (s.go || [['回到[[頁:scale]]', 'scale']]).map(([t, id]) => `<button class="btn" data-go="${id}" type="button">${t} →</button>`).join('');
         U.$$(el, '#fm-go [data-go]').forEach(b => b.onclick = () => Deck.goId(b.dataset.go));
       });
       ctx.raf((dt, t) => {

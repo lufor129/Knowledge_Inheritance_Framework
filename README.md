@@ -4,7 +4,7 @@
 
 ## 第一天
 
-1. **挑一個知識庫**：在下面的清單下載手冊網站或簡報。兩個都是單一 HTML 檔，離線就能打開。先看全景圖和各章速覽，再進細節。
+1. **打開入口網站**：在下面「知識庫清單」下載 portal.zip，解開後用 Chrome 或 Edge 打開 index.html，離線也能看。挑一個知識庫，照學習路徑看簡報；簡報下面有「旁白」「看詳細和出處」「問 Agent」，每章最後有自我檢查。看過哪些頁會記在你的瀏覽器裡。
 2. **想問問題、想補充知識**：
    1. 安裝 [Claude Code](https://claude.com/claude-code) 和 [GitHub CLI](https://cli.github.com/)，登入：`gh auth login`
       - 模型：Sonnet 和 Opus 都用情境測試（framework/tests/）測過，結果差不多；Sonnet 的花費大約是 Opus 的三分之一，日常用 Sonnet 就夠。
@@ -19,7 +19,9 @@
 ## 知識庫清單
 
 <!-- 知識庫清單：由 build.py --readme 產生，請勿手改 -->
-| 知識庫 | 介紹 | 維護者 | 簡報 | 下載 |
+**入口網站**：[下載 portal.zip](https://github.com/lufor129/Knowledge_Inheritance_Framework/releases/latest/download/portal.zip)，解開後用 Chrome 或 Edge 打開裡面的 index.html。所有知識庫的簡報、手冊網站、學習路徑和搜尋都在裡面。
+
+| 知識庫 | 介紹 | 維護者 | 簡報 | 單一檔案 |
 |---|---|---|---|---|
 | [電腦視覺](kb/cv/) | 給剛進團隊、會寫 Python 但沒做過電腦視覺專案的工程師與研究生：讀完能依任務選方法、讀懂主流模型架構，並從資料準備、訓練、評估做到部署。 | lufor129 | 還沒有 | [手冊網站](https://github.com/lufor129/Knowledge_Inheritance_Framework/releases/latest/download/cv-handbook.html) |
 | [半導體製程](kb/semiconductor/) | 給半導體新人的知識庫：從電晶體結構演進、十章製程與量產，到先進封裝與背面供電。 | lufor129 | 有 | [手冊網站](https://github.com/lufor129/Knowledge_Inheritance_Framework/releases/latest/download/semiconductor-handbook.html)・[簡報](https://github.com/lufor129/Knowledge_Inheritance_Framework/releases/latest/download/semiconductor-deck.html) |
