@@ -392,6 +392,15 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
 .wcard .ch { display: block; font: 13px var(--font-mono); color: var(--ink-3); }
 .asg { font: 600 14.5px var(--font-cjk); padding: 3px 12px; border-radius: 12px; white-space: nowrap; }
 .asg.set { background: var(--accent-soft); color: var(--accent); } .asg.none { background: #f7ead3; color: var(--warn); } .asg.risk { background: #f6dcda; color: var(--bad); }
+
+/* ===== 10-26 更新：現況頁用的元件 ===== */
+.newtag.upd { background: var(--warn); }
+.sbar { display: flex; height: 26px; border-radius: 4px; overflow: hidden; background: var(--panel-2); }
+.sbar i { display: block; height: 100%; transition: width .3s; }
+.tl { display: flex; flex-direction: column; gap: 5px; overflow: auto; min-height: 0; }
+.tl .ev { display: grid; grid-template-columns: 74px 1fr auto; gap: 10px; align-items: baseline; padding: 6px 10px; border: 1px solid var(--line); border-radius: 4px; background: #fff; font-size: 16px; }
+.tl .ev .no { font: 600 13px var(--font-mono); color: var(--ink-3); }
+.tl .ev.hide { display: none; }
 </style>
 
 <div id="viewport"><div id="stage"></div></div>
@@ -409,7 +418,7 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
   const CHAPS = [
     [1, '知識怎麼存', 'struct'], [2, '新增', 'modes'], [3, '修改與刪除', 'refs'], [4, '檢查與審核', 'gates'], [5, '新人怎麼學', 'learn']
   ];
-  const PARTS = { 0: '開場', 1: '第一部分 · 為什麼、給誰', 2: '第二部分 · 怎麼運作', 3: '第三部分 · 跟 Git 主機結合', 4: '第四部分 · 怎麼開始', 9: '結尾' };
+  const PARTS = { 0: '開場', 1: '第一部分 · 為什麼、給誰', 2: '第二部分 · 怎麼運作', 3: '第三部分 · 跟 Git 主機結合', 4: '第四部分 · 怎麼開始', 5: '第五部分 · 現況', 9: '結尾' };
 
   const Deck = {
     slides: [],
@@ -490,7 +499,7 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
     try {
       el.innerHTML = s.raw ? s.render(i) : Deck.head(s, i) + s.render(i) + Deck.foot(s);
     } catch (e) { el.innerHTML = `<pre>${e.stack}</pre>`; console.error(e); }
-    el.insertAdjacentHTML('beforeend', '<div class="wm">知識傳承框架 · 設計說明（2026-10-24 討論結果）· 對話、數字與情境皆為示意</div>'); // 每頁上方的浮水印
+    el.insertAdjacentHTML('beforeend', '<div class="wm">知識傳承框架 · 設計說明（10-24 定案，10-26 更新）· 對話與情境為示意</div>'); // 每頁上方的浮水印
     stage.innerHTML = '';
     stage.appendChild(el);
     backButton(el, s, opts);
@@ -1021,6 +1030,7 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
 <script>/* 開場：封面、議程 */
 (function () {
   const A = Deck.add.bind(Deck);
+  const total = () => `${Deck.slides.length} 頁，約 ${Math.round(Deck.slides.reduce((a, x) => a + (x.minutes || 0), 0))} 分鐘`;
 
   /* 1. 封面：右側是一筆知識從傳承者流到新人、再從新人的問題流回來的示意圖 */
   A({
@@ -1032,21 +1042,22 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
           <div>
             <div class="s-eyebrow">KNOWLEDGE INHERITANCE FRAMEWORK · 2026</div>
             <h1>知識傳承框架</h1>
-            <div class="sub">老手的經驗，變成新人看得懂的手冊和簡報；<br>增刪修改，跟 Agent 說就好</div>
+            <div class="sub">老手的經驗，變成新人看得懂的簡報和手冊；<br>增刪修改，跟 Agent 說就好</div>
           </div>
           <div class="cards" style="margin-top:28px;grid-template-columns:repeat(2,1fr)">
             <div class="card"><h4>第一部分</h4><p><b>為什麼、給誰</b><br>知識只在人腦袋裡、給主管的總覽、四種角色與使用情境、全景圖</p></div>
             <div class="card"><h4>第二部分</h4><p><b>怎麼運作</b><br>五章：知識怎麼存、新增、修改與刪除、檢查與審核、新人怎麼學</p></div>
             <div class="card"><h4>第三部分</h4><p><b>跟 Git 主機結合</b><br>對到 Git 上、誰能合併、待回答與勘誤</p></div>
             <div class="card"><h4>第四部分</h4><p><b>怎麼開始</b><br>技術選擇、skill 設計、搬半導體、新增知識庫</p></div>
+            <div class="card" style="grid-column:1/-1;background:var(--accent-2-soft);border-color:#eccab4"><h4>第五部分</h4><p><b>現況</b><br>已合併的 17 個變更提案、情境測試、新人以簡報為主（ADR-0006）實際做成的樣子，和之後還可以做的事</p></div>
           </div>
-          <div class="meta">設計說明 · 2026-10-24 討論結果 · 25 頁，約 51 分鐘<br>每頁左邊的互動元件都可以操作；對話、數字與情境皆為示意</div>
+          <div class="meta">設計說明 · 10-24 定案，10-26 更新 · ${total()}<br>每頁左邊的互動元件都可以操作；對話與情境為示意</div>
         </div>
         <div class="cover-right">
           <div style="position:absolute;left:50px;right:50px;top:50px;bottom:200px"><canvas id="cv-cover" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas></div>
           <div style="position:absolute;left:50px;right:50px;bottom:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-            <div class="card key"><h4>放在哪</h4><div class="big" style="font-size:28px">1 個 repo</div><p style="margin:0;font-size:14px">全公司都能看</p></div>
-            <div class="card key"><h4>標準答案</h4><div class="big" style="font-size:28px">手冊</div><p style="margin:0;font-size:14px">是正本，簡報以它為準</p></div>
+            <div class="card key"><h4>從哪開始</h4><div class="big" style="font-size:28px">入口網站</div><p style="margin:0;font-size:14px">一個壓縮檔，離線能看</p></div>
+            <div class="card key"><h4>新人主要看</h4><div class="big" style="font-size:28px">簡報</div><p style="margin:0;font-size:14px">簡報必備、手冊選配</p></div>
             <div class="card key"><h4>怎麼改</h4><div class="big" style="font-size:28px">跟 Agent 說</div><p style="margin:0;font-size:14px">維護者核准才算數</p></div>
           </div>
         </div>
@@ -1087,33 +1098,36 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
         U.txt(c, '待回答：新人問倒了手冊，就變成下一筆要補的知識', w * .52, h * .9, { align: 'center', size: 15, w: 600, color: '#b3541e', bg: 'rgba(242,245,248,.94)' });
         node(A0, '傳承者', '老手的經驗', 140, '#b3541e');
         node(B0, 'Agent', '研究・整理・訪談', 160, '#1f4fb5');
-        node(C0, '手冊', '正本', 120, '#17202b');
+        node(C0, '簡報＋手冊', '新人看這裡', 150, '#17202b');
         L.forEach(p => node(p, '新人', '', 96, '#1f4fb5'));
       });
     },
-    notes: `大家好，今天介紹「知識傳承框架」：讓 Agent 幫忙，把各領域老手的經驗整理成新人看得懂的手冊和簡報。
+    notes: `大家好，今天介紹「知識傳承框架」：讓 Agent 幫忙，把各領域老手的經驗整理成新人看得懂的簡報和手冊。
 
-右邊這張圖就是整件事。藍點是知識，從傳承者出發，經過 Agent 整理、維護者核准，進到手冊，再流到新人身上。橘點反過來走：新人問倒了手冊，問題回到傳承者手上，變成下一筆要補的知識。
+右邊這張圖就是整件事。藍點是知識，從傳承者出發，經過 Agent 整理、維護者核准，進到簡報和手冊，再流到新人身上。橘點反過來走：新人問倒了簡報和手冊，問題回到傳承者手上，變成下一筆要補的知識。
 
-今天分四部分：為什麼、怎麼運作、怎麼跟 Git 主機結合、怎麼開始。這份簡報用的是半導體範例的引擎，每頁左邊都可以動手操作。`
+這份是 10-24 定案的設計說明，10-26 更新成現在的樣子。最大的改變是 10-25 定案的「新人以簡報為主」（ADR-0006）：新人從入口網站開始看簡報，簡報必備、手冊選配，兩邊一樣重要。這件事分三個變更提案做完了。
+
+前四部分講設計，第五部分講已經做完的、實際做成什麼樣子，和之後還可以做的事。每頁左邊都可以動手操作。`
   });
 
   /* 2. 議程 */
   A({
     id: 'agenda', part: 0, minutes: 1, short: '議程',
     title: '今天的路線：從為什麼講到第一步',
-    thesis: '主角是<b>新人</b>；增刪修改知識，是讓新人一直學得到東西的手段。',
+    thesis: '主角是<b>新人</b>；增刪修改知識，是讓新人一直學得到東西的手段。第五部分是<b>現況</b>。',
     render: () => {
       const parts = [
         { n: '1', t: '為什麼、給誰', m: '約 12 分', to: 'why', items: ['知識只在人腦袋裡', '給主管的總覽', '四種角色與使用情境', '全景圖'] },
         { n: '2', t: '怎麼運作', m: '約 19 分', to: 'struct', items: ['① 知識怎麼存　② 新增', '③ 修改與刪除', '④ 檢查與審核', '⑤ 新人怎麼學'] },
         { n: '3', t: '跟 Git 主機結合', m: '約 6 分', to: 'gitmap', items: ['對到 Git 上', '誰能合併', '待回答與勘誤'] },
-        { n: '4', t: '怎麼開始', m: '約 11 分', to: 'tools', items: ['技術選擇', '要設計的 skill 與參考', '把半導體搬進來', '新增一個知識庫'] }
+        { n: '4', t: '怎麼開始', m: '約 11 分', to: 'tools', items: ['技術選擇', '要設計的 skill 與參考', '把半導體搬進來', '新增一個知識庫'] },
+        { n: '5', t: '現況', m: '約 10 分', to: 'status', items: ['已經做完的', '情境測試和工具', '新人以簡報為主：做成什麼樣', '之後還可以做的事'] }
       ];
-      return `<div class="s-body three" style="grid-template-columns:repeat(4,1fr)">${parts.map(p => `
+      return `<div class="s-body three" style="grid-template-columns:repeat(5,1fr)">${parts.map(p => `
         <div class="fig" style="cursor:pointer" data-go="${p.to}">
           <div class="fig-title"><span>PART ${p.n}</span><span>${p.m}</span></div>
-          <div style="font-size:28px;font-weight:700;line-height:1.3">${p.t}</div>
+          <div style="font-size:26px;font-weight:700;line-height:1.3">${p.t}</div>
           <ul class="points">${p.items.map(i => `<li>${i}</li>`).join('')}</ul>
           <div style="margin-top:auto" class="caption">點一下跳到這個部分 →</div>
         </div>`).join('')}</div>`;
@@ -1121,7 +1135,7 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
     init(el) { U.$$(el, '[data-go]').forEach(c => c.onclick = () => Deck.goId(c.dataset.go)); },
     notes: `今天分四部分。第一部分講為什麼需要這套框架、誰會用它，最後用一張全景圖串起來。第二部分是重點，分五章講它怎麼運作。
 
-第三部分講怎麼跟 GitHub 或 GitLab 結合；第四部分講技術選擇、要設計的 skill，和第一步要做什麼。點任何一張卡片可以直接跳過去。`
+第三部分講怎麼跟 GitHub 或 GitLab 結合；第四部分講技術選擇、要設計的 skill，和第一步要做什麼。第五部分是現況：已經合併了哪些變更提案、情境測試的結果、「新人以簡報為主」實際做成什麼樣子，以及之後還可以做的事。點任何一張卡片可以直接跳過去。`
   });
 })();
 </script>
@@ -1133,14 +1147,14 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
   A({
     id: 'why', part: 1, minutes: 2, short: '知識只在人腦袋裡',
     title: '為什麼：知識只在人腦袋裡，人一調走就沒了', en: 'Why',
-    thesis: '把經驗寫成<b>有版本紀錄的手冊</b>，人換了，知識還在。',
+    thesis: '把經驗寫成<b>有版本紀錄的簡報和手冊</b>，人換了，知識還在。',
     render: () => `<div class="s-body">
       <div class="col"><div class="controls">${U.seg('w-m', ['沒有框架', '有框架'], 0)}</div>
         ${U.figHTML('w-cv', '一位老手、三位新人', '藍點＝知識')}
         <div class="controls">${U.range('w-t', '時間（往右拖）', 0, 100, 1, 20, '')}</div></div>
       ${U.side({
         meters: [['w-m1', '新人拿得到']],
-        points: ['經驗散在<b>腦袋、個人筆記、舊簡報</b>裡', '新人不知道從哪看起，也不知道問誰', '寫成<b>手冊</b>：人調走了，知識留下來'],
+        points: ['經驗散在<b>腦袋、個人筆記、舊簡報</b>裡', '新人不知道從哪看起，也不知道問誰', '寫成<b>簡報和手冊</b>：人調走了，知識留下來'],
         fact: { v: '版本紀錄', d: '每次修改都記一筆，誰改了什麼都查得到' },
         analogy: { icon: 'bread', t: '比喻', p: '阿嬤的拿手菜：只靠口述，阿嬤不在就失傳；寫成食譜本，每次改良記一筆，孫子照著做也做得出來。' }
       })}</div>`,
@@ -1210,9 +1224,9 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
 
   /* 四種角色 */
   const ROLES = [
-    { n: '新人', does: ['主要看簡報，沒有簡報就看手冊網站', '先看全景圖和速覽，再進細節', '看不懂就請 Agent 查找或帶讀', '手冊沒寫或寫錯，跟 Agent 說一聲'], say: ['打開半導體的簡報', 'OPC 是什麼？跟光罩有什麼關係？', 'hk1 這一句好像寫錯了'], cmd: '/kb-learn' },
-    { n: '傳承者', does: ['開工時看待回答和勘誤，認領要回答的題目', '用研究、整理、訪談新增知識', '修改、刪除或合併小節', '維護者留意見時，請 Agent 照意見改'], say: ['有什麼待回答是我可以回答的？', '我來回答 #12', '幫我研究 High-NA EUV，放進微影那章'], cmd: '/kb-add、/kb-change、/kb-new' },
-    { n: '維護者', does: ['每個知識庫至少一位，名單寫在 README', '審核變更提案：核准，或退回並附上意見', '自己的提案自己審', '來歷是「研究」的提案要特別仔細看'], say: ['幫我審這個變更提案', '第二段說錯了，請他修改並附上意見'], cmd: '/kb-review' },
+    { n: '新人', does: ['從入口網站挑知識庫，照學習路徑看簡報', '看簡報時打開旁白、看詳細和出處，或按「問 Agent」', '看不懂就請 Agent 查找或帶讀', '簡報或手冊沒寫、寫錯，跟 Agent 說一聲'], say: ['打開入口網站', 'OPC 是什麼？跟光罩有什麼關係？', '我在看〈半導體製程〉簡報的〈絕緣牆的兩難〉這一頁（頁 id：hk1），想問：……'], cmd: '/kb-learn' },
+    { n: '傳承者', does: ['開工時看待回答、勘誤和可以補出處的簡報頁，認領要做的', '用研究、整理、訪談新增知識：先做簡報頁，一頁放不下才寫手冊', '修改、刪除或合併簡報頁和小節', '維護者留意見時，請 Agent 照意見改'], say: ['有什麼我可以做的？', '我來回答 #12', '幫我研究 High-NA EUV，放進微影那章'], cmd: '/kb-add、/kb-change、/kb-new' },
+    { n: '維護者', does: ['每個知識庫至少一位，名單寫在 README', '審核變更提案：打開改過的簡報頁，核准或退回附意見', '自己的提案自己審', '來歷是「研究」的提案要特別仔細看'], say: ['幫我審這個變更提案', '第二段說錯了，請他修改並附上意見'], cmd: '/kb-review' },
     { n: '框架維護者', does: ['一開始就是建立框架的人', '核准規則、範本、引擎的修改', '核准新知識庫的建立', '先看到錯誤，才決定要不要加規則'], say: ['阿哲想開「電腦視覺」知識庫，幫我看骨架', '這個錯出現第二次了，要不要加規則？'], cmd: '/kb-review' }
   ];
   A({
@@ -1247,15 +1261,15 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
   const FLOW = [
     { t: '傳承者', who: '人', lane: 'in', d: '想補充或修改知識的人，包括新人，用中文跟 Agent 說。' },
     { t: '研究・整理・訪談', who: 'Agent', lane: 'in', d: '給主題、給資料，或口述經驗。' },
-    { t: '草稿', who: 'Agent → 人', lane: 'in', d: 'Agent 寫好草稿，傳承者改到滿意才往下走。' },
+    { t: '草稿', who: 'Agent → 人', lane: 'in', d: 'Agent 先做簡報頁草稿，一頁放不下才寫手冊小節；傳承者改到滿意才往下走。' },
     { t: '檢查＋讀者測試', who: '程式＋Agent', lane: 'in', d: '程式擋判斷得準的錯誤；讀者測試看寫得清不清楚。' },
     { t: '變更提案', who: 'Agent', lane: 'in', d: 'Agent 開變更提案，寫好說明和來歷。' },
     { t: '維護者審核', who: '人＋Agent', lane: 'in', d: 'Agent 用白話整理改了什麼，維護者核准或退回。' },
-    { t: '正式內容', who: '手冊＝正本', lane: 'core', d: '核准後併入主線，就是正式內容；說法不一致時，以手冊為準。' },
-    { t: '手冊網站・簡報', who: 'CI', lane: 'out', d: '主線一更新，CI 就重新建置，放在 Git 主機上供人下載。' },
-    { t: '新人', who: '人', lane: 'out', d: '先看全景圖和速覽，再進細節。' },
-    { t: '查找・帶讀', who: 'Agent', lane: 'out', d: '查找只根據手冊回答；帶讀用白話解釋、出小題目。' },
-    { t: '待回答', who: 'Agent → 人', lane: 'out', d: '手冊沒寫到的問題開成 issue，等傳承者認領，回到第一格。' }
+    { t: '正式內容', who: '簡報＋手冊', lane: 'core', d: '核准後併入主線，就是正式內容。簡報必備、手冊選配，兩邊一樣重要；說法不同時兩種都列（ADR-0006）。' },
+    { t: '入口網站', who: 'CI', lane: 'out', d: '主線一更新，CI 就重新建置簡報和手冊網站，打包成入口網站 portal.zip，放在 Git 主機上供人下載。' },
+    { t: '新人', who: '人', lane: 'out', d: '從入口網站照學習路徑看簡報；看不懂就按簡報下面的「問 Agent」。' },
+    { t: '查找・帶讀', who: 'Agent', lane: 'out', d: '查找根據簡報和手冊回答、附出處，說法不同兩種都列；帶讀用白話解釋、出小題目。' },
+    { t: '待回答', who: 'Agent → 人', lane: 'out', d: '簡報和手冊都沒寫的問題開成 issue，等傳承者認領，回到第一格。' }
   ];
   A({
     id: 'map', part: 1, minutes: 2.5, short: '全景圖',
@@ -1266,7 +1280,7 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
         <div class="fig-canvas" id="mp-box"><svg id="mp-svg"></svg></div></div>
         ${U.stepperHTML('mp-st')}</div>
       ${U.side({
-        points: ['<b>寫進去</b>：傳承者 → Agent → 草稿 → 檢查 → 提案 → 審核', '<b>正式內容</b>：核准後的手冊，是唯一的標準答案', '<b>學出來</b>：手冊網站、簡報 → 新人 → 查找、帶讀'],
+        points: ['<b>寫進去</b>：傳承者 → Agent → 草稿 → 檢查 → 提案 → 審核', '<b>正式內容</b>：核准後的簡報和手冊，兩邊一樣重要', '<b>學出來</b>：入口網站、簡報 → 新人 → 查找、帶讀'],
         fact: { v: '4 個地方要人', d: '提問、認領、確認草稿、核准，其他交給 Agent 和 CI' },
         analogy: { icon: 'rain', t: '比喻', p: '像水循環：海水蒸發成雲、下雨流成河，最後又回到海裡。知識也在圈裡轉，越轉越完整。' }
       })}</div>`,
@@ -1294,9 +1308,9 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
       nodes.forEach((b, k) => b.onclick = () => st.show(k));
       ctx.raf((dt, t) => flow.setAttribute('stroke-dashoffset', String(-t * 30)));
     },
-    notes: `這張全景圖把整件事畫成一個圈。上半圈是寫進去：傳承者跟 Agent 說，Agent 寫草稿，傳承者確認，跑過檢查和讀者測試，開變更提案，等維護者審核。核准後就是右邊的正式內容，也就是手冊。
+    notes: `這張全景圖把整件事畫成一個圈。上半圈是寫進去：傳承者跟 Agent 說，Agent 先做簡報頁草稿，傳承者確認，跑過檢查和讀者測試，開變更提案，等維護者審核。核准後就是右邊的正式內容：簡報和手冊。
 
-下半圈是學出來：CI 把手冊建置成手冊網站和簡報，新人來讀，不懂就請 Agent 查找或帶讀。手冊沒寫到的問題記成待回答，回到起點等傳承者補。每一站後面都會細講，先按「自動播放」走一圈。`
+下半圈是學出來：CI 把它們建置好、打包成入口網站，新人從入口網站照學習路徑看簡報，不懂就請 Agent 查找或帶讀。沒寫到的問題記成待回答，回到起點等傳承者補。每一站後面都會細講，先按「自動播放」走一圈。`
   });
 })();
 </script>
@@ -1312,32 +1326,32 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
   const P31 = { no: 31, closes: 12, tags: ['訪談'], ci: 'ok' }, P32 = { no: 32, tags: ['研究'], ci: 'ok' }, P33 = { no: 33, who: '小陳', tags: ['整理'], ci: 'ok' };
   const UC = [
     { n: '新人', person: '小美，製程整合部新人', cases: [
-      { n: '第一天', r: ['小美剛進製程整合部，主管請她先熟悉半導體。', '「打開半導體的簡報。」或從首頁的知識庫清單下載。', '從 Git 主機拿 CI 建好的簡報；沒有的話，Agent 現場建置後打開。', '先看全景圖和每章速覽，兩小時內抓到全貌；看不懂的術語查術語表。'],
-        g: [{}, {}, { release: 1, dl: 1, note: 'CI 在主線更新後建好簡報，放在 Release' }, { release: 1, dl: 1, note: '小美下載單一 HTML，離線也能看' }] },
-      { n: '看不懂', r: ['讀到 OPC，看不懂它跟光罩有什麼關係。', '「OPC 是什麼？跟光罩有什麼關係？」', '只根據手冊回答，附上出處：微影 › litho6；要的話接著帶讀，出一題小題目。', '懂了，也知道要回哪一節再看一次。'],
-        g: [{ read: 1, note: '這個情境不動 Git' }, { read: 1, note: '這個情境不動 Git' }, { read: 1, note: 'Agent 只讀主線上的手冊來回答' }, { read: 1, note: '這個情境不動 Git' }] },
-      { n: '手冊沒寫', r: ['想知道機台保養多久做一次，手冊沒寫。', '「機台保養（PM）多久做一次？」接著說「好，記下來」。', '直說手冊沒寫、不自己編；查過沒有一樣的題目，開成 issue，標上待回答和 kb:semiconductor。', '傳承者認領回答，合併後小美收到通知，常見問題多了一題。'],
-        g: [{ read: 1, note: 'Agent 先讀主線上的手冊：沒有寫' }, { read: 1, note: 'Agent 先讀主線上的手冊：沒有寫' }, { issues: [I12('open')], note: '開 issue #12，標上待回答和 kb:semiconductor' }, { issues: [I12('closed', '老王')], br: 2, pr: PR(P31, 'ok'), merged: 1, release: 1, note: '老王回答、合併後，#12 自動關閉' }] },
-      { n: '覺得寫錯', r: ['hk1 寫漏電多 10 倍，小美看到另一份資料寫 5 倍。', '「hk1 這一句好像寫錯了。」', '開成勘誤 issue，附上是哪一節、哪一句、為什麼覺得不對。', '傳承者認領修正，出處一起補上；小美不用自己改。'],
+      { n: '第一天', r: ['小美剛進製程整合部，主管請她先熟悉半導體。', '從首頁下載 portal.zip 解開；或跟 Agent 說「打開入口網站」。', '從 Git 主機拿 CI 打包好的入口網站；下載不到的話，Agent 在本機建置後打開。', '照學習路徑一章一章看簡報，看過的章自動打勾；每章最後做自我檢查。'],
+        g: [{}, {}, { release: 1, dl: 1, note: 'CI 在主線更新後打包入口網站，放在 Release' }, { release: 1, dl: 1, note: '小美下載 portal.zip，離線也能看' }] },
+      { n: '看不懂', r: ['讀到 OPC，看不懂它跟光罩有什麼關係。', '在簡報上按「問 Agent」，貼上後問：「OPC 跟光罩有什麼關係？」', '先讀那一頁和對應的小節，根據簡報和手冊回答，附上出處：微影 › litho6；要的話接著帶讀，出一題小題目。', '懂了，也知道要回哪一頁、哪一節再看一次。'],
+        g: [{ read: 1, note: '這個情境不動 Git' }, { read: 1, note: '這個情境不動 Git' }, { read: 1, note: 'Agent 只讀主線上的簡報和手冊來回答' }, { read: 1, note: '這個情境不動 Git' }] },
+      { n: '都沒寫', r: ['想知道機台保養多久做一次，簡報和手冊都沒寫。', '「機台保養（PM）多久做一次？」接著說「好，記下來」。', '直說沒寫、不自己編；查過沒有一樣的題目，開成 issue，標上待回答和 kb:semiconductor。', '傳承者認領回答，合併後小美收到通知，簡報多了一頁和一題自我檢查。'],
+        g: [{ read: 1, note: 'Agent 先讀主線上的簡報和手冊：沒有寫' }, { read: 1, note: 'Agent 先讀主線上的簡報和手冊：沒有寫' }, { issues: [I12('open')], note: '開 issue #12，標上待回答和 kb:semiconductor' }, { issues: [I12('closed', '老王')], br: 2, pr: PR(P31, 'ok'), merged: 1, release: 1, note: '老王回答、合併後，#12 自動關閉' }] },
+      { n: '覺得寫錯', r: ['hk1 寫漏電多 10 倍，小美看到另一份資料寫 5 倍。', '「hk1 這一句好像寫錯了。」', '開成勘誤 issue，附上是哪一頁或哪一節、哪一句、為什麼覺得不對。', '傳承者認領修正，出處一起補上；小美不用自己改。'],
         g: [{ read: 1, note: '小美讀的是主線上的手冊' }, { read: 1, note: '小美讀的是主線上的手冊' }, { issues: [I15('open')], note: '開 issue #15，標上勘誤和 kb:semiconductor' }, { issues: [I15('closed', '老王')], br: 1, pr: PR({ no: 35, closes: 15, tags: ['研究'], ci: 'ok' }, 'ok'), merged: 1, release: 1, note: '修正合併後，#15 自動關閉' }] }] },
     { n: '傳承者', person: '老王，資深製程工程師', cases: [
       { n: '開工', r: ['老王早上打開 Claude Code。', '「有什麼待回答是我可以回答的？」', '列出他關心的知識庫的 issue：#12 機台保養多久做一次、#15 勘誤 hk1。', '老王說「我來回答 #12」，issue 指派給他。'],
         g: [{ issues: [I12('open'), I15('open')] }, { issues: [I12('open'), I15('open')] }, { issues: [I12('open'), I15('open')], note: 'Agent 用標籤 kb:semiconductor 篩出待回答和勘誤' }, { issues: [I12('open', '老王'), I15('open')], note: '#12 指派給老王' }] },
-      { n: '回答待回答', r: ['#12 只有老王知道，沒有任何文件寫過。', '口述：「保養週期要看機台類型，例如……」', '用訪談反問三題，寫成常見問題的一題，出處寫「老王（製程整合）口述，2026-10」；跑檢查和讀者測試，開變更提案連到 #12，貼上「訪談」。', '維護者核准合併，#12 自動關閉，小美收到通知。'],
+      { n: '回答待回答', r: ['#12 只有老王知道，沒有任何文件寫過。', '口述：「保養週期要看機台類型，例如……」', '用訪談反問三題，寫成一頁簡報和一題自我檢查，出處寫「老王（製程整合）口述，2026-10」；跑檢查和讀者測試，開變更提案連到 #12，貼上「訪談」。', '維護者核准合併，#12 自動關閉，小美收到通知。'],
         g: [{ issues: [I12('open', '老王')] }, { issues: [I12('open', '老王')], br: 1, note: 'Agent 開一個分支，開始寫' }, { issues: [I12('open', '老王')], br: 2, pr: PR(P31, 'wait'), note: '變更提案連到 #12；CI 檢查通過，等維護者審' }, { issues: [I12('closed', '老王')], br: 2, pr: PR(P31, 'ok'), merged: 1, release: 1, note: '合併後 #12 自動關閉，CI 重新建置' }] },
-      { n: '研究新主題', r: ['主管希望大家了解 High-NA EUV。', '「幫我研究 High-NA EUV，放進微影那章。」', '用自己的知識和找到的資料寫草稿，數字附出處；老王確認後開變更提案，貼上「研究」。', '維護者特別仔細審；核准後成為正式內容，對應的簡報頁被點名要重看。'],
+      { n: '研究新主題', r: ['主管希望大家了解 High-NA EUV。', '「幫我研究 High-NA EUV，放進微影那章。」', '先做簡報頁草稿，數字附出處；一頁放不下時建議寫手冊小節。老王確認後開變更提案，貼上「研究」。', '維護者打開改過的頁特別仔細審；核准後成為正式內容。'],
         g: [{}, { br: 1, note: 'Agent 開一個分支，開始寫' }, { br: 2, pr: PR(P32, 'wait'), note: '變更提案貼上「研究」；CI 檢查通過' }, { br: 2, pr: PR(P32, 'ok'), merged: 1, release: 1, note: '核准合併，成為正式內容' }] },
       { n: '被要求修改', r: ['維護者在提案上留意見：「第二段的數字要補出處。」', '「照維護者的意見改。」', '讀提案上的意見，補上出處，重新跑檢查，推上去。', '維護者核准合併。'],
         g: [{ br: 2, pr: PR(P32, 'chg'), note: '維護者要求修改，附上意見' }, { br: 2, pr: PR(P32, 'chg'), note: '維護者要求修改，附上意見' }, { br: 3, pr: PR(P32, 'wait'), note: '補上出處，再推一次，CI 重跑' }, { br: 3, pr: PR(P32, 'ok'), merged: 1, release: 1, note: '核准合併' }] }] },
     { n: '維護者', person: '老王，半導體製程的維護者', cases: [
-      { n: '審別人的提案', r: ['小陳開了一個變更提案，主機請老王審。', '「幫我審這個變更提案。」', '用白話整理改了什麼、來歷是整理、影響哪幾頁簡報和哪幾題常見問題；CI 檢查已經通過。', '老王核准、合併；CI 重新建置手冊網站和簡報。'],
+      { n: '審別人的提案', r: ['小陳開了一個變更提案，主機請老王審。', '「幫我審這個變更提案。」', '用白話整理改了什麼、來歷是整理，打開改過的簡報頁給老王看；CI 檢查已經通過。', '老王核准、合併；CI 重新建置入口網站。'],
         g: [{ br: 2, pr: PR(P33, 'wait'), note: '主機請維護者審' }, { br: 2, pr: PR(P33, 'wait'), note: '主機請維護者審' }, { br: 2, pr: PR(P33, 'wait'), note: 'Agent 用白話整理這個提案' }, { br: 2, pr: PR(P33, 'ok'), merged: 1, release: 1, note: '核准合併，CI 重新建置' }] },
       { n: '研究來的提案', r: ['這個提案貼著「研究」標籤。', '「把研究來的段落列給我看。」', '逐段列出 Agent 自己寫的說法和出處，標出沒有出處的數字。', '老王發現一個數字不對，要求修改並附上意見。'],
         g: [{ br: 2, pr: PR(P32, 'wait') }, { br: 2, pr: PR(P32, 'wait') }, { br: 2, pr: PR(P32, 'wait'), note: '逐段看研究來的說法和出處' }, { br: 2, pr: PR(P32, 'chg'), note: '要求修改，附上意見' }] },
       { n: '自己的提案', r: ['老王自己補了一節。', '「開變更提案，檢查過了就合併。」', '開提案、CI 檢查通過；再把研究來的段落列出來，讓他多看一眼。', '自己合併，不用等別人。'],
         g: [{ br: 1, note: '老王的分支' }, { br: 2, pr: PR({ no: 34, tags: ['整理'], ci: 'run' }, 'self'), note: '開變更提案，CI 檢查中' }, { br: 2, pr: PR({ no: 34, tags: ['整理'], ci: 'ok' }, 'self'), note: 'CI 檢查通過' }, { br: 2, pr: PR({ no: 34, tags: ['整理'], ci: 'ok' }, 'self'), merged: 1, release: 1, note: '檢查過了，自己合併' }] }] },
     { n: '框架維護者', person: '你，框架維護者', cases: [
-      { n: '核准新知識庫', r: ['阿哲想開「電腦視覺」知識庫，骨架已經建好。', '「幫我看 CV 的骨架提案。」', '整理骨架：部分和章、維護者、全景圖草稿、術語表；檢查已經通過。', '核准合併，CV 知識庫成立，首頁的知識庫清單自動多一列。'],
+      { n: '核准新知識庫', r: ['阿哲想開「電腦視覺」知識庫，骨架已經建好。', '「幫我看 CV 的骨架提案。」', '整理骨架：簡報的頁序和章檔、手冊的部分和章、維護者、全景圖草稿、術語表；檢查已經通過。', '核准合併，CV 知識庫成立，首頁的知識庫清單自動多一列。'],
         g: [{ br: 1, pr: PR({ no: 40, title: 'CV 骨架', tags: ['kb:cv'], ci: 'ok' }, 'wait') }, { br: 1, pr: PR({ no: 40, title: 'CV 骨架', tags: ['kb:cv'], ci: 'ok' }, 'wait') }, { br: 1, pr: PR({ no: 40, title: 'CV 骨架', tags: ['kb:cv'], ci: 'ok' }, 'wait'), note: 'Agent 整理骨架的內容' }, { br: 1, pr: PR({ no: 40, title: 'CV 骨架', tags: ['kb:cv'], ci: 'ok' }, 'ok'), merged: 1, kbList: 1, note: 'CV 成立，首頁清單多一列' }] },
       { n: '改引擎', r: ['有人想讓簡報引擎支援影片。', '「這個修改會影響哪些知識庫？」', 'CI 把每個知識庫的手冊網站和簡報都建置一次，列出結果。', '全部建置成功才核准，不會弄壞別的知識庫。'],
         g: [{ br: 1, pr: PR({ no: 41, title: '引擎支援影片', ci: 'run' }, 'wait') }, { br: 1, pr: PR({ no: 41, title: '引擎支援影片', ci: 'run' }, 'wait') }, { br: 1, pr: PR({ no: 41, title: '引擎支援影片', ci: 'ok' }, 'wait'), ciAll: 1, note: 'CI 把每個知識庫都建置一次' }, { br: 1, pr: PR({ no: 41, title: '引擎支援影片', ci: 'ok' }, 'ok'), ciAll: 1, merged: 1, release: 1, note: '全部成功才核准合併' }] },
@@ -1371,7 +1385,7 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
     const gx0 = 250, gx1 = w - 180, my = h - 62, by = h - 132;
     c.strokeStyle = s.read ? C.acc : C.ink3; c.lineWidth = s.read ? 5 : 3; c.beginPath(); c.moveTo(gx0, my); c.lineTo(gx1, my); c.stroke();
     U.txt(c, 'main（正式內容）', gx0, my + 26, { size: 13, w: 600, color: s.read ? C.acc : C.ink3 });
-    if (s.read) U.txt(c, '← Agent 讀這裡的手冊', gx0 + 150, my + 26, { size: 13, w: 700, color: C.acc });
+    if (s.read) U.txt(c, '← Agent 讀這裡的簡報和手冊', gx0 + 150, my + 26, { size: 13, w: 700, color: C.acc });
     [0, 60, 120].forEach(dx => { U.dot(c, gx0 + 20 + dx, my, 7, C.ink3); });
     const bx0 = gx0 + 140, bx1 = gx1 - 70;
     if (s.br) {
@@ -1406,7 +1420,7 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
       c.strokeStyle = C.ink3; c.lineWidth = 2; U.arrow(c, gx1, my, rx - 4, my, C.ink3, 2);
       c.fillStyle = '#fff'; c.strokeStyle = C.good; c.lineWidth = 1.5; U.rrect(c, rx, my - 34, 156, 64, 6); c.fill(); c.stroke();
       U.txt(c, s.kbList ? '首頁知識庫清單' : 'Release', rx + 78, my - 10, { align: 'center', size: 14.5, w: 700, color: C.ink });
-      U.txt(c, s.kbList ? '多了一列：CV' : '手冊網站、簡報', rx + 78, my + 14, { align: 'center', size: 13, color: C.ink2 });
+      U.txt(c, s.kbList ? '多了一列：CV' : '入口網站 portal.zip', rx + 78, my + 14, { align: 'center', size: 13, color: C.ink2 });
     }
     if (s.dl) { U.arrow(c, rx + 78, my + 32, rx + 78, h - 10, C.acc, 2); U.txt(c, '小美下載', rx + 70, h - 14, { align: 'right', size: 13, w: 700, color: C.acc }); }
     if (s.note) U.txt(c, s.note, gx0, 18, { size: 14.5, w: 600, color: C.ink, bg: 'rgba(242,245,248,.95)' });
@@ -1456,7 +1470,7 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
     },
     notes: `這一頁用情境看四種角色實際怎麼用。上面先選角色、再選情境，按「下一步」依序看：情境、你說什麼、Agent 做什麼、最後的結果。下方的圖是 Git 主機上同時發生的事：左邊是 issue，中間是主線和分支、變更提案、CI 和審核，右邊是 CI 建好的 Release。
 
-新人小美：第一天從 Release 下載簡報；看不懂就問，Agent 只讀主線上的手冊；手冊沒寫就開 issue #12；覺得寫錯就開勘誤 #15。傳承者老王：開工時認領 #12，開分支、開變更提案連到 #12，合併後 issue 自動關閉。維護者：審別人的提案，研究來的逐段看，自己的提案自己合併。框架維護者：核准新知識庫、看引擎修改有沒有弄壞別的知識庫、同一個錯出現第二次才加規則。
+新人小美：第一天從 Release 下載入口網站；看不懂就在簡報上按「問 Agent」，Agent 只讀主線上的簡報和手冊；都沒寫就開 issue #12；覺得寫錯就開勘誤 #15。傳承者老王：開工時認領 #12，開分支、開變更提案連到 #12，合併後 issue 自動關閉。維護者：審別人的提案，研究來的逐段看，自己的提案自己合併。框架維護者：核准新知識庫、看引擎修改有沒有弄壞別的知識庫、同一個錯出現第二次才加規則。
 
 圖上的 Git 操作全部由 Agent 代勞，四種角色都只要跟 Agent 說話。`
   });
@@ -1479,18 +1493,28 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
 ├─ README.md         第一天指南、知識庫清單、框架維護者
 ├─ GLOSSARY.md       用語表
 ├─ docs/adr/         決策紀錄
-├─ .claude/skills/   kb-add、kb-change、kb-learn、kb-review、kb-new
-├─ framework/        共用引擎、範本、check.py、build.py
-├─ CI 設定           GitHub Actions 或 GitLab CI：檢查、建置、發布
+├─ .claude/          skills/（五個流程）、settings.json（允許清單、擋危險 git 指令）
+├─ .github/          CI：檢查、建置、發布到 Release
+├─ framework/
+│  ├─ engine/        入口網站、簡報、手冊網站的共用引擎；
+│  │                 figures/ 是互動圖樣板
+│  ├─ tools/         check、build、read、index、who、proposal、
+│  │                 get、reader_test、new_kb
+│  ├─ guide/         簡報、寫作、讀者測試、Git 主機、改框架
+│  ├─ templates/     新知識庫的範本
+│  ├─ tests/         情境測試
+│  └─ paths.md       入口網站的角色路徑
 └─ kb/
-   └─ semiconductor/
-      ├─ README.md   介紹、維護者、全景圖
-      ├─ terms.md    術語表
-      ├─ handbook/   部分 → 章 → 小節
-      ├─ widgets/    互動元件
-      ├─ assets/     圖片＋SOURCES.md
-      ├─ deck/       order.md、slides/、presenter-guide.md
-      └─ dist/       建置結果，不進版控` },
+   ├─ semiconductor/
+   │  ├─ README.md   介紹、維護者、全景圖
+   │  ├─ terms.md    術語表
+   │  ├─ deck/       order.md（頁序）、<部分>/<章>.md（15 個章檔，
+   │  │              90 頁的文字和自我檢查）、figures/（互動圖）
+   │  ├─ handbook/   部分 → 章 → 小節（3 章、28 個小節）
+   │  ├─ widgets/    互動圖共用的程式
+   │  ├─ assets/     圖片＋SOURCES.md
+   │  └─ dist/       建置結果，不進版控
+   └─ cv/            電腦視覺：手冊骨架（4 個部分、15 章），還沒有簡報` },
     { label: 'kb/semiconductor/README.md', d: 1, note: '知識庫的首頁：介紹、維護者名單，以及全景圖（建議有）。', code: `# 半導體製程
 
 給半導體新人的知識庫：從電晶體結構演進、
@@ -1507,15 +1531,17 @@ flowchart LR
 \`\`\`
 部分和章的方塊由程式從資料夾自動產生，
 人只補上「章和章之間的關係」。` },
-    { label: 'handbook/2-manufacturing/', d: 1, note: '部分就是一個資料夾，只用來分組；資料夾名稱前的數字決定順序，沒有程度高低。', code: `handbook/
-├─ 1-evolution/          演進與現況
+    { label: 'handbook/2-manufacturing/', d: 1, note: '部分就是一個資料夾，只用來分組；編號跟簡報一樣。手冊是選配：半導體寫了 3 章。', code: `handbook/
+├─ 1-evolution/          演進與現況（只有部分的簡介）
 ├─ 2-manufacturing/      製造：從電晶體到量產
 │  ├─ README.md          這個部分的簡介
 │  ├─ 01-litho.md        微影
-│  ├─ 02-etch.md         蝕刻
-│  ├─ …
-│  └─ 05-gate.md         閘極
-└─ 3-beyond-moore/       突破摩爾定律` },
+│  ├─ 05-gate.md         閘極
+│  └─ 09-metrology.md    檢測量測
+└─ 3-beyond-moore/       突破摩爾定律（只有部分的簡介）
+
+其他章只有簡報頁。手冊是選配：
+一頁簡報放不下的細節才寫，不用每章都有。` },
     { label: '05-gate.md', d: 2, note: '一章一個檔案：速覽（建議有）、小節、常見問題（有題目才建）。小節內容格式自由。', code: `# 閘極
 
 > 速覽：閘極隔著一道很薄的絕緣牆，用電場開關電晶體。
@@ -1539,19 +1565,68 @@ flowchart LR
 正常使用可以用十年以上……
 相關：hk1、wat
 </details>` },
-    { label: 'deck/order.md', d: 1, note: '簡報自己的頁序：由上到下就是播放順序，每頁記錄對應的小節和指紋。', code: `# 頁序（格式示意）
+    { label: 'deck/order.md', d: 1, note: '頁序：由上到下就是播放順序；有對應小節的頁記下兩邊的指紋，哪一邊改了，檢查程式就點名另一邊。', code: `# 頁序（節錄）
 
-## 第一場（約 2 小時）
+## 章節列
+- 1：微影 → litho1
+- 5：閘極 → hk1
+（沒寫的話，照簡報章檔的「# 章名」自動產生）
+
+## 頁面
 - cover
-- mosfet   → mosfet@3fa2, nfetpfet@91c0
-- hk1      → hk1@7d4e
+- etch1
+- hk1@f0cc3a → hk1@4c046b, hk2@b86b6a, hk3@e3a45c, hk4@9e6156
+- ocd@c8420c → ocd@7654cc
 
-## 第二場
-- ocd      → ocd@b12a
-- ocdb     → ocd@b12a, tem@44f1
-- refs
+頁 id@頁的指紋 → 小節@小節的指紋：
+簡報頁改了，點名小節；小節改了，點名簡報頁。
+指紋由 check.py --fp 產生，人不用管。` },
+    { label: 'deck/2-manufacturing/05-gate.md', d: 1, note: '簡報章檔：一章一個檔，編號跟手冊一樣。一頁是「錨點＋## 標題」，底下是欄位；最後的「## 自我檢查」是這一章的題目。', code: `# 閘極
 
-@ 後面是小節文字的指紋，由程式產生，人不用管。` },
+<a name="hk1"></a>
+## 絕緣牆的兩難：電場要過得去，電子不要過去
+
+- 短標題：閘極絕緣層：電場過、電子不過
+- 建議：5.2 分
+- 圖：hk1              互動圖在 deck/figures/
+
+結論：閘極隔著一道絕緣牆，用**電場**控制通道……
+
+重點：
+- **電場要過得去**：牆越薄，閘極越控制得住通道
+- 二氧化鉿傳電場的能力約是二氧化矽的 **4–6 倍**
+
+數字卡：約 1.2 nm｜2000 年代初期二氧化矽已經薄到這裡
+
+比喻（wall）：隔著牆用磁鐵（閘極）吸鐵片……
+
+旁白：
+第五章：閘極。回到電晶體的核心……
+
+## 自我檢查
+
+<details>
+<summary>為什麼選二氧化鉿？</summary>
+它傳遞電場的能力約是二氧化矽的 4–6 倍……
+相關：hk1
+</details>` },
+    { label: 'deck/figures/', d: 1, note: '互動圖只畫圖、管操作；要讓新人讀的文字寫在章檔（重點、圖說、旁白）。新做的頁先套三種樣板。', code: `// 拉桿看變化、切換比較
+Fig.add('hk-wall', Fig.canvas({
+  title: '閘極與通道之間',
+  segs: [{ id: 'k', items: ['二氧化矽', '二氧化鉿'] }],
+  sliders: [{ id: 't', label: '厚度', min: 0.6, max: 4,
+              step: 0.1, value: 2.5, unit: ' nm' }],
+  draw(c, w, h, v) { … }
+}));
+
+// 一步步播放：每一步的說明寫在章檔的「圖說：」
+Fig.add('gaa-flow', Fig.steps({ … }));
+
+// 可以點的結構圖：每個零件的說明也寫在「圖說：」
+Fig.add('mos-parts', Fig.parts({ … }));
+
+套不上的才自己寫 Fig.add('名稱', { render, init })。
+樣板在 framework/engine/figures/templates.js。` },
     { label: 'assets/SOURCES.md', d: 1, note: '圖片清單：每張圖片的說明和出處；不在清單上的圖片不能用。', code: `# 圖片清單
 
 | 檔名             | 說明         | 出處           |
@@ -1563,8 +1638,8 @@ flowchart LR
   ];
   A(Object.assign({
     id: 'struct', part: 2, minutes: 2, short: '知識怎麼存',
-    title: '知識怎麼存：部分 → 章 → 小節', en: 'Structure',
-    thesis: '小節內容<b>格式自由</b>，固定的只有 id、常見問題的格式和數字的出處註腳。',
+    title: '知識怎麼存：簡報章檔和手冊，編號一樣', en: 'Structure',
+    thesis: '簡報頁寫在<b>簡報章檔</b>，手冊分<b>部分 → 章 → 小節</b>；固定的只有 id、題目的格式和數字的出處註腳。',
     render: () => `<div class="s-body w66">
       <div class="col"><div class="fig grow"><div class="fig-title"><span>點左邊的檔案看內容</span><span>路徑英文、內容繁中</span></div>
         <div style="flex:1;min-height:0;display:grid;grid-template-columns:290px 1fr;gap:14px">
@@ -1572,67 +1647,71 @@ flowchart LR
           <div style="display:flex;flex-direction:column;gap:8px;min-height:0;min-width:0"><p class="caption" id="st-note" style="margin:0;font-size:16px"></p><pre class="code" id="st-code" style="flex:1;min-height:0"></pre></div>
         </div></div></div>
       ${U.side({
-        points: ['<b>一個 repo</b> 放所有知識庫，全公司都能看', '小節 id 用短英文（hk1），<b>建立後不改名</b>', '數字用註腳附出處；圖片要列進<b>圖片清單</b>'],
-        fact: { v: '3 層', d: '部分是資料夾、章是檔案、小節是一個概念' },
+        points: ['<b>一個 repo</b> 放所有知識庫，全公司都能看', '頁 id、小節 id 用短英文（hk1），<b>建立後不改名</b>', '數字用註腳附出處；圖片要列進<b>圖片清單</b>', '簡報頁的文字寫在 <b>Markdown</b>，互動圖寫在程式'],
+        fact: { v: '15 個章檔', d: '半導體 90 頁簡報的文字和 197 題自我檢查' },
         analogy: { icon: 'tile', t: '比喻', p: '像一座書架：一層放一個部分，一本書是一章，書裡每一節都有固定的頁籤，別人引用時說「第幾節」就找得到。' }
       })}</div>`,
     init(el) {
       const btns = U.$$(el, '#st-tree button');
       const show = i => { btns.forEach((b, k) => b.classList.toggle('on', k === i)); U.$(el, '#st-note').textContent = FILES[i].note; U.$(el, '#st-code').textContent = FILES[i].code; };
       btns.forEach((b, i) => b.onclick = () => show(i));
-      show(3);
+      show(5);
     },
     notes: `第一章，知識怎麼存。框架和所有知識庫都放在同一個 repo，每個知識庫是 kb 底下的一個資料夾。手冊分三層：部分是資料夾，只用來分組；章是檔案；小節是一個概念。
 
-點左邊的 05-gate.md 看一章的樣子：開頭是速覽，中間是小節，最後是常見問題。小節 id 寫在標題前一行，建立之後就不改名。內容格式自由，固定的只有 id、常見問題的格式和出處註腳；路徑用英文，內容用繁體中文。`
+點左邊的 deck/2-manufacturing/05-gate.md 看簡報章檔：一頁是一個錨點加標題，底下是結論、重點、數字卡、比喻、旁白這些欄位，最後是這一章的自我檢查題目。互動圖寫在 deck/figures/，先套樣板。頁 id 和小節 id 一樣，建立之後就不改名。
+
+手冊照舊是部分、章、小節，編號跟簡報一樣；手冊是選配，半導體寫了微影、閘極、檢測量測三章。頁序 order.md 記下每一頁對應哪些小節，和兩邊的指紋。路徑用英文，內容用繁體中文。`
   }, C1));
 
-  /* ① 正本與指紋 */
-  const CN_SECS = [{ id: 'hk1', t: '閘極絕緣層', fp: '7d4e' }, { id: 'ocd', t: 'OCD 光學量測', fp: 'b12a', fp2: 'c9e0' }, { id: 'tem', t: 'TEM 電子顯微鏡', fp: '44f1' }];
-  const CN_PAGES = [{ id: 'cover', s: [] }, { id: 'hk1', s: ['hk1'] }, { id: 'ocd', s: ['ocd'] }, { id: 'ocdf', s: ['ocd'] }, { id: 'ocdb', s: ['ocd', 'tem'] }, { id: 'tem', s: ['tem'] }];
+  /* ① 簡報和手冊：簡報必備、手冊選配，兩邊一樣重要，雙向點名（ADR-0006） */
+  const CN_SECS = [{ id: 'hk1', t: '閘極絕緣層' }, { id: 'ocd', t: 'OCD 光學量測' }, { id: 'tem', t: 'TEM 電子顯微鏡' }];
+  const CN_PAGES = [{ id: 'cover', s: [] }, { id: 'hk1', s: ['hk1'] }, { id: 'ocd', s: ['ocd'] }, { id: 'ocdf', s: ['ocd'] }, { id: 'ocdb', s: ['ocd', 'tem'] }, { id: 'etch1', s: [] }];
+  const CN_EV = [
+    { n: '原本', p: {}, s: {}, m: '<b style="color:var(--good)">✓ 全部對得上</b>：頁序記的兩邊指紋都和現在一樣。etch1 沒有對應小節，照樣算數。' },
+    { n: '改了簡報頁 ocdb', p: { ocdb: 'sel' }, s: { ocd: 'hit', tem: 'hit' }, m: '<b>點名小節</b>：簡報頁 ocdb 改了，它對應的小節 ocd、tem 要重看，說法要一致。Agent 對照好兩邊，跑 check.py --fp 更新指紋，才能開提案。' },
+    { n: '改了小節 ocd', p: { ocd: 'hit', ocdf: 'hit', ocdb: 'hit' }, s: { ocd: 'sel' }, m: '<b>點名簡報頁</b>：小節 ocd 改了，對應的 3 頁簡報要重看。' },
+    { n: '兩邊說法不一樣', p: { hk1: 'hit' }, s: { hk1: 'hit' }, m: '<b>兩種都列</b>：Agent 查找時發現兩邊寫的不一樣，兩種說法都告訴使用者、各附出處，再問要不要記成勘誤。沒有哪一邊自動算對。' },
+    { n: '新增小節沒做簡報頁', p: {}, s: { hk5: 'hit del' }, m: '<b>擋下</b>：每個小節都要有簡報頁講到。反過來可以：簡報頁可以沒有小節（例如 etch1）。' }
+  ];
   A(Object.assign({
-    id: 'canon', part: 2, minutes: 2, short: '手冊是正本',
-    title: '手冊是正本：簡報可以自己寫，但要跟得上', en: 'Source of Truth',
-    thesis: '簡報可以改寫講法，<b>說法以手冊為準</b>；小節一改，檢查程式用<b>指紋</b>點名要重看的簡報頁。',
+    id: 'canon', part: 2, minutes: 2.5, short: '簡報和手冊', badge: '10-25 起',
+    title: '簡報和手冊：簡報必備、手冊選配，兩邊一樣重要', en: 'Deck & Handbook',
+    thesis: '<b>每個小節都要有簡報頁</b>，簡報頁可以沒有小節；頁序記下兩邊的指紋，<b>哪一邊改了，另一邊就要重看</b>。',
     render: () => `<div class="s-body">
-      <div class="col"><div class="controls">${U.seg('cn-seg', ['原本', '改了小節 ocd', 'Agent 跟上了'], 0)}</div>
-        <div class="fig grow"><div class="fig-title"><span>手冊小節 ⇄ 簡報頁序（@ 後面是指紋）</span><span></span></div>
+      <div class="col"><div class="controls">${U.seg('cn-seg', CN_EV.map(x => x.n), 0)}</div>
+        <div class="fig grow"><div class="fig-title"><span>手冊小節 ⇄ 簡報頁序</span><span>ADR-0006 取代 ADR-0002</span></div>
           <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1.3fr;gap:16px">
-            <div class="rcol"><h4>手冊的小節（正本）</h4><div class="ritems" id="cn-secs"></div></div>
-            <div class="rcol"><h4>簡報頁序 deck/order.md</h4><div class="ritems" id="cn-pages"></div></div>
+            <div class="rcol"><h4>手冊的小節（選配）</h4><div class="ritems" id="cn-secs"></div></div>
+            <div class="rcol"><h4>簡報頁序 deck/order.md（必備）</h4><div class="ritems" id="cn-pages"></div></div>
           </div>
           <div class="card" id="cn-res" style="font-size:18px"></div></div></div>
       ${U.side({
-        points: ['說法不一致時，<b>聽手冊的</b>', '一頁可以對應好幾個小節，一個小節也能出現在好幾頁', '指紋對不上就<b>不能開變更提案</b>，人不用記'],
-        fact: { v: '指紋', d: '小節文字的短雜湊值，記在頁序裡' },
-        analogy: { icon: 'pen', t: '比喻', p: '原文和譯本：原文改了一段，翻譯就得回頭對照譯本的那幾頁。指紋就是幫你標出「哪幾頁要對照」的書籤。' }
+        points: ['<b>簡報必備、手冊選配</b>：新人主要看簡報', '每個小節都要有簡報頁講到；簡報頁可以沒有小節', '指紋是<b>雙向</b>的：哪一邊改了，另一邊就要重看', '說法不同：查找時<b>兩種都列</b>，問要不要記勘誤'],
+        fact: { v: '22 / 90 頁', d: '半導體有對應小節的簡報頁；其他 68 頁只有簡報，照樣算數' },
+        analogy: { icon: 'pen', t: '比喻', p: '像中英對照的合約：兩份一樣有效，改了一份，另一份一定要跟著對一次。' }
       })}</div>`,
     init(el) {
-      U.onSeg(el, 'cn-seg', st => {
-        const fpNow = s => st >= 1 && s.fp2 ? s.fp2 : s.fp;
-        U.$(el, '#cn-secs').innerHTML = CN_SECS.map(s => `<div class="ritem ${st === 1 && s.fp2 ? 'hit' : ''}">${s.t}<span class="ids">${s.id} · 指紋 ${fpNow(s)}${st >= 1 && s.fp2 ? '（內容改了）' : ''}</span></div>`).join('');
-        let bad = [];
-        U.$(el, '#cn-pages').innerHTML = CN_PAGES.map(p => {
-          const parts = p.s.map(id => { const s = CN_SECS.find(x => x.id === id); const rec = st === 2 || !s.fp2 ? fpNow(s) : s.fp; return { id, rec, ok: rec === fpNow(s) }; });
-          const off = parts.some(x => !x.ok); if (off) bad.push(p.id);
-          const cls = off ? 'hit del' : st === 2 && p.s.includes('ocd') ? 'ok' : '';
-          return `<div class="ritem ${cls}">${p.id}<span class="ids">${parts.length ? '→ ' + parts.map(x => `${x.id}@${x.rec}`).join(', ') : '（不對應小節）'}${off ? '　≠ 現在的指紋，要重看' : st === 2 && p.s.includes('ocd') ? '　已更新' : ''}</span></div>`;
-        }).join('');
-        U.$(el, '#cn-res').innerHTML = st === 0 ? '<b style="color:var(--good)">✓ 全部對得上</b>：手冊和簡報說的是同一件事。'
-          : st === 1 ? `<b style="color:var(--bad)">✗ ${bad.length} 頁簡報要重看：${bad.join('、')}</b>。檢查沒過，還不能開變更提案。`
-          : '<b style="color:var(--good)">✓ 對得上了</b>：Agent 改好或確認過這 3 頁，再更新指紋，可以開變更提案。';
+      U.onSeg(el, 'cn-seg', k => {
+        const e = CN_EV[k];
+        U.$(el, '#cn-secs').innerHTML = CN_SECS.map(s => `<div class="ritem ${e.s[s.id] || ''}">${s.t}<span class="ids">${s.id}</span></div>`).join('')
+          + (e.s.hk5 ? `<div class="ritem ${e.s.hk5}">新的小節<span class="ids">hk5 · 沒有簡報頁講到</span></div>` : '');
+        U.$(el, '#cn-pages').innerHTML = CN_PAGES.map(p => `<div class="ritem ${e.p[p.id] || ''}">${p.id}<span class="ids">${p.s.length ? `${p.id}@頁指紋 → ` + p.s.map(x => x + '@指紋').join(', ') : '（不對應小節，照樣算數）'}</span></div>`).join('');
+        U.$(el, '#cn-res').innerHTML = e.m;
       });
     },
-    notes: `簡報可以有自己的文字，因為上台要配合互動元件重新編排，講法也和閱讀時不同。說法不一致時，一律以手冊為準。
+    notes: `新人主要看簡報，所以簡報必備、手冊選配，兩邊一樣重要。這是 10-25 定的，寫在 ADR-0006，取代原本「手冊是正本」的 ADR-0002。
 
-改了手冊，誰記得改簡報？這件事交給檢查程式：頁序裡每一頁都記下對應小節的指紋。切到「改了小節 ocd」：指紋變了，記著舊指紋的三頁被點名，檢查不過。切到「Agent 跟上了」：Agent 改好或確認過這三頁，更新指紋，就能開變更提案。`
+點上面幾件事看看。改了簡報頁 ocdb：檢查程式點名它對應的小節 ocd、tem 要重看；改了小節 ocd：點名對應的三頁簡報。頁序裡每一頁都記下兩邊的指紋，Agent 對照好之後跑 check.py --fp 更新，才能開提案。兩邊說法不一樣時，Agent 兩種都列，再問要不要記勘誤。新增小節卻沒做簡報頁，會被擋下；反過來，簡報頁可以沒有小節。
+
+半導體 90 頁簡報裡，22 頁有對應小節，其他 68 頁只有簡報，照樣算數。`
   }, C1));
 
   /* ② 三種新增方式：對話逐句出現 */
   const MODES = [
-    { n: '研究', me: '傳承者', chat: [['me', '幫我研究 High-NA EUV，放進微影那章。'], ['ai', '好。我會用自己的知識和找到的資料，整理它和現在的 EUV 差在哪、為什麼要做、代價是什麼。數字一定附出處，找不到出處的就不寫。'], ['ai', '草稿好了，放在「微影」那章的最後，小節 id 我建議用 litho9。你看看哪裡要改？']] },
-    { n: '整理', me: '傳承者', chat: [['me', '參考這份《黃光區新人 SOP》第 3–8 頁，整理進微影那章。'], ['ai', '這幾頁有 5 個步驟和 2 個常見錯誤。我會改寫成白話、補一個比喻。原檔不放進知識庫，出處寫「黃光區新人 SOP，第 3–8 頁」加上它的存放位置。'], ['ai', '草稿好了。第 6 頁有一個數字我看不懂單位，請你確認一下。']] },
-    { n: '訪談', me: '老王（傳承者）', chat: [['me', '我想講一下光罩為什麼怕汙染。'], ['ai', '先問三題：一、汙染通常是什麼東西？二、出事時產線最先看到什麼？三、新人最常誤會哪一點？沒空當面講，我也可以先把問題寫下來，你有空再回。'], ['me', '最怕的是微粒，一顆很小的粒子就可能讓整批重做……'], ['ai', '了解。這段的出處會寫成「老王（製程整合）口述，2026-10」。草稿好了，你看看有沒有說錯？']] }
+    { n: '研究', me: '傳承者', chat: [['me', '幫我研究 High-NA EUV，放進微影那章。'], ['ai', '好。我會用自己的知識和找到的資料，整理它和現在的 EUV 差在哪、為什麼要做、代價是什麼。數字一定附出處，找不到出處的就不寫。'], ['ai', '簡報頁草稿好了，放在微影那章的最後，頁 id 我建議用 litho9；一頁放得下，不另外寫手冊。你看看哪裡要改？']] },
+    { n: '整理', me: '傳承者', chat: [['me', '參考這份《黃光區新人 SOP》第 3–8 頁，整理進微影那章。'], ['ai', '這幾頁有 5 個步驟和 2 個常見錯誤。我會做成兩頁簡報：步驟用一步步播放的樣板，常見錯誤放重點，再補一個比喻。原檔不放進知識庫，出處寫「黃光區新人 SOP，第 3–8 頁」加上它的存放位置。'], ['ai', '草稿好了。第 6 頁有一個數字我看不懂單位，請你確認一下。']] },
+    { n: '訪談', me: '老王（傳承者）', chat: [['me', '我想講一下光罩為什麼怕汙染。'], ['ai', '先問三題：一、汙染通常是什麼東西？二、出事時產線最先看到什麼？三、新人最常誤會哪一點？沒空當面講，我也可以先把問題寫下來，你有空再回。'], ['me', '最怕的是微粒，一顆很小的粒子就可能讓整批重做……'], ['ai', '了解。這段的出處會寫成「老王（製程整合）口述，2026-10」。簡報頁草稿好了，也加了一題自我檢查，你看看有沒有說錯？']] }
   ];
   A(Object.assign({
     id: 'modes', part: 2, minutes: 2, short: '三種新增方式',
@@ -1669,19 +1748,19 @@ flowchart LR
 
   /* ② 一筆知識的旅程：逐步播放 */
   const ST = [
-    { n: '寫草稿', who: 'Agent', col: '#1f4fb5', d: '依新增方式寫成小節，建議比喻和圖解；術語第一次出現附英文。' },
+    { n: '寫草稿', who: 'Agent', col: '#1f4fb5', d: '先做簡報頁：結論、重點、互動圖（先套樣板）、旁白，數字附出處；一頁放不下才寫手冊小節。' },
     { n: '傳承者確認', who: '人', col: '#1f7a4d', d: '看草稿、改到滿意，確認之前不會往下走。' },
     { n: '自動檢查', who: '程式', col: '#b3541e', d: '每改一次就自動跑，沒過就擋；開變更提案後 CI 再跑一次。' },
-    { n: '讀者測試', who: 'Agent', col: '#1f4fb5', d: '沒有背景知識的 Agent 只讀這一章，答不出來就回去改寫。' },
+    { n: '讀者測試', who: 'Agent', col: '#1f4fb5', d: '沒有背景知識的 Agent 只讀這一章（簡報是每一頁的文字和旁白），答不出來就回去改寫。' },
     { n: '變更提案', who: 'Agent', col: '#1f4fb5', d: '開變更提案，連到要回答的 issue，寫一行來歷：研究、整理或訪談。' },
-    { n: '維護者審核', who: '人＋Agent', col: '#1f7a4d', d: 'Agent 用白話整理改了什麼，維護者核准或留意見。' },
-    { n: '正式內容', who: '手冊', col: '#17202b', d: '併進手冊，新人看得到了；CI 重新建置手冊網站和簡報。' }
+    { n: '維護者審核', who: '人＋Agent', col: '#1f7a4d', d: 'Agent 用白話整理改了什麼，打開改過的簡報頁；維護者核准或留意見。' },
+    { n: '正式內容', who: '簡報＋手冊', col: '#17202b', d: '併進正式內容；CI 重新建置入口網站，新人看得到了。' }
   ];
   function doc(c, x, y, i, p) {
     const bw = 250, bh = 128;
     c.save(); c.fillStyle = '#fff'; c.strokeStyle = '#9aa8b8'; c.lineWidth = 1.5;
     c.shadowColor = 'rgba(20,30,45,.12)'; c.shadowBlur = 12; U.rrect(c, x - bw / 2, y - bh / 2, bw, bh, 6); c.fill(); c.shadowBlur = 0; c.stroke(); c.restore();
-    U.txt(c, '小節 litho9：High-NA EUV', x - bw / 2 + 14, y - bh / 2 + 24, { size: 15, w: 700, color: '#17202b' });
+    U.txt(c, '簡報頁 litho9：High-NA EUV', x - bw / 2 + 14, y - bh / 2 + 24, { size: 15, w: 700, color: '#17202b' });
     const lines = i === 0 ? Math.round(p * 4) : 4;
     for (let k = 0; k < lines; k++) { c.fillStyle = '#d3dbe4'; c.fillRect(x - bw / 2 + 14, y - bh / 2 + 40 + k * 14, [200, 170, 190, 120][k], 6); }
     const note = (s, col) => U.txt(c, s, x - bw / 2 + 14, y + bh / 2 - 14, { size: 14, w: 600, color: col });
@@ -1710,7 +1789,7 @@ flowchart LR
     });
     if (i === 6) {
       c.fillStyle = '#e3ebfa'; c.strokeStyle = '#1f4fb5'; c.lineWidth = 2; U.rrect(c, w * .66, h * .55, w * .3, h * .4, 8); c.fill(); c.stroke();
-      U.txt(c, '手冊（正式內容）', w * .81, h * .55 + 26, { align: 'center', size: 16, w: 700, color: '#1f4fb5' });
+      U.txt(c, '簡報＋手冊（正式內容）', w * .81, h * .55 + 26, { align: 'center', size: 16, w: 700, color: '#1f4fb5' });
       U.txt(c, '新人看得到了', w * .81, h * .95 - 14, { align: 'center', size: 14, color: '#3e4b5b' });
     }
     const target = i === 6 ? [w * .81, h * .76] : [U.clamp(xs[i], 140, w - 140), h * .7];
@@ -1725,7 +1804,7 @@ flowchart LR
     render: () => `<div class="s-body w66">
       <div class="col">${U.figHTML('pp-cv', '研究 High-NA EUV 的一筆知識', '')}${U.stepperHTML('pp-st')}</div>
       ${U.side({
-        points: ['<b>藍色</b>是 Agent、<b>綠色</b>是人、<b>橘色</b>是程式', '檢查沒過，錯誤直接交給 Agent 修', '來歷是「研究」的提案，維護者要特別仔細看'],
+        points: ['<b>藍色</b>是 Agent、<b>綠色</b>是人、<b>橘色</b>是程式', '檢查沒過，錯誤直接交給 Agent 修', '來歷是「研究」的提案，維護者要特別仔細看', '第一站<b>先做簡報頁</b>，一頁放不下才寫手冊'],
         fact: { v: '7 站', d: '從草稿到正式內容，每站都有人或程式把關' },
         analogy: { icon: 'stairs', t: '比喻', p: '像出版一本書：寫稿、自己校對、排版檢查、找人試讀，再送編輯審，通過才印。' }
       })}</div>`,
@@ -1736,7 +1815,9 @@ flowchart LR
 
 Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞名被擋下，Agent 換一個 id 就過了。讀者測試答得出來，才開變更提案，寫一行來歷；這筆是研究，提醒維護者仔細審。
 
-維護者核准後，它就是手冊裡的正式內容。誰能合併、怎麼合併，第三部分再講。`
+維護者核准後，它就是正式內容，CI 重新建置入口網站。誰能合併、怎麼合併，第三部分再講。
+
+第一站是先做簡報頁：結論、重點、互動圖、旁白，一頁放不下才建議寫手冊小節。讀者測試也測簡報：只給那一章每一頁的文字和旁白。`
   }, C2));
 })();
 </script>
@@ -1765,7 +1846,7 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
           </div>
           <div class="card" id="rf-res" style="font-size:18px"></div></div></div>
       ${U.side({
-        points: ['<b>修改</b>：對應的簡報頁和常見問題一起確認', '<b>刪除、合併</b>：所有引用在同一個提案裡改掉', '刪掉的內容，Git 歷史找得回來'],
+        points: ['<b>修改</b>：另一邊（簡報頁或小節）、常見問題、自我檢查一起確認', '<b>刪除、合併</b>：所有引用在同一個提案裡改掉', '刪掉的內容，Git 歷史找得回來'],
         fact: { v: '0 個舊 id', d: '全部在同一個 repo，引用都看得到，直接改掉' },
         analogy: { icon: 'gate', t: '比喻', p: '像搬家改地址：把所有會寄信給你的人都通知一遍，舊地址就不用留了。' }
       })}</div>`,
@@ -1787,7 +1868,7 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
     },
     notes: `第三章，修改和刪除。先選動作，再點左邊一個小節。修改 ocd 時，對應的三頁簡報要重看，指向它的常見問題也要確認。
 
-切到「刪除」：Agent 先列出所有引用，包括簡報頁、常見問題和別的知識庫，在同一個提案裡改指向、一起刪或合併。因為全在同一個 repo，引用都看得到，所以不留舊 id。刪掉的內容，Git 歷史隨時找得回來。`
+切到「刪除」：Agent 先列出所有引用，包括簡報頁、常見問題、自我檢查、頁碼引用和別的知識庫，在同一個提案裡改指向、一起刪或合併。簡報頁也一樣：頁 id 建立後不改名，刪掉時所有指向它的地方一起改。因為全在同一個 repo，引用都看得到，所以不留舊 id。刪掉的內容，Git 歷史隨時找得回來。`
   }, C3));
 
   /* ④ 誰把關：丟一個問題進篩子，看它在哪一層被抓到 */
@@ -1795,10 +1876,13 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
   const PB = [
     { n: 'id 重複', stop: 0, msg: '<b>程式擋下</b>：小節 id 不能重複。Agent 換一個 id 再跑一次檢查。' },
     { n: '引用找不到', stop: 0, msg: '<b>程式擋下</b>：常見問題指向的小節不存在。Agent 修正引用。' },
-    { n: '簡報頁沒跟上', stop: 0, msg: '<b>程式擋下</b>：頁序裡的指紋對不上，點名要重看的簡報頁。' },
-    { n: '數字沒附出處', stop: 3, flag: true, msg: '<b>程式提醒、不擋</b>：這個數字看起來沒有出處。到了<b>維護者審核</b>，決定補出處還是拿掉。' },
+    { n: '一邊改了沒跟上', stop: 0, msg: '<b>程式擋下</b>：頁序裡的指紋對不上。簡報頁改了點名小節，小節改了點名簡報頁，對照好再更新指紋。' },
+    { n: '新頁的數字沒出處', stop: 0, msg: '<b>程式擋下</b>：這次新增或改過的簡報頁，數字一定要附出處；補出處，或改成不帶數字的說法。' },
+    { n: '舊頁的數字沒出處', stop: 3, flag: true, msg: '<b>程式提醒、不擋</b>：搬進來的舊頁和手冊裡沒附出處的數字只提醒；舊頁用 index.py --todo 列出來（半導體現在 22 頁），傳承者慢慢補。到了<b>維護者審核</b>，決定補出處還是拿掉。' },
     { n: '寫得太難懂', stop: 2, msg: '<b>讀者測試抓到</b>：沒有背景的 Agent 答不出這章的常見問題，回去改寫。' },
-    { n: '內容說錯了', stop: 3, msg: '<b>維護者審核抓到</b>：內容對不對，最後由人判斷。退回並附上意見。' }
+    { n: '內容說錯了', stop: 3, msg: '<b>維護者審核抓到</b>：內容對不對，最後由人判斷。退回並附上意見。' },
+    { n: '小節沒有簡報頁', stop: 0, msg: '<b>程式擋下</b>：每個小節都要有簡報頁講到。在講它的那一頁後面加上對應，沒有的話做一頁。' },
+    { n: '頁沒有圖', stop: 0, msg: '<b>程式擋下</b>：每一頁都要寫「圖：」，放互動圖、圖片或影片；互動圖名稱找不到也會擋。' }
   ];
   A(Object.assign({
     id: 'gates', part: 2, minutes: 2, short: '誰把關什麼',
@@ -1855,9 +1939,11 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
 
 研究時查到：寫在規則檔裡的指示，Agent 不保證每次都遵守。所以一定要成立的規則，交給程式來擋。
 
-點下面一個問題，看它掉到哪一層。id 重複、引用找不到、簡報頁沒跟上，第一層就擋下。數字沒附出處只提醒，由維護者決定；寫得太難懂由讀者測試抓到；內容說錯了，只有人看得出來。
+點下面一個問題，看它掉到哪一層。id 重複、引用找不到、一邊改了沒跟上，第一層就擋下。舊頁的數字沒附出處只提醒，由維護者決定；寫得太難懂由讀者測試抓到；內容說錯了，只有人看得出來。
 
-右邊的元規則：先實際看到某個錯誤，才新增對應的規則。`
+右邊的元規則：先實際看到某個錯誤，才新增對應的規則。
+
+新人以簡報為主之後，程式多擋三件事：小節沒有簡報頁、頁沒有圖、這次新增或改過的簡報頁數字沒附出處。搬進來的舊頁沒附出處只提醒，用 index.py --todo 列出來慢慢補。`
   }, C4));
 
   /* ④ 讀者測試：改寫前後的對比 */
@@ -1876,7 +1962,7 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
           <div class="lbl4" style="margin-top:6px">沒有背景的 Agent 只讀上面這些，回答常見問題：</div>
           <div class="ritems" id="rt-qa"></div></div></div>
       ${U.side({
-        points: ['只能根據這一章回答，<b>不能用自己的知識</b>', '答不出來 → 回去改寫，再測一次', 'ELI5 是方向：先白話、再術語、能比喻就比喻'],
+        points: ['只能根據這一章回答，<b>不能用自己的知識</b>', '答不出來 → 回去改寫，再測一次', 'ELI5 是方向：先白話、再術語、能比喻就比喻', '<b>簡報也測</b>：只給那一章每一頁的文字和旁白'],
         fact: { v: '1 個測試', d: '取代一長串寫作原則清單' },
         analogy: { icon: 'eye', t: '比喻', p: '請一位完全外行的朋友讀一遍：他問「這是什麼意思？」的地方，就是你要改的地方。' }
       })}</div>`,
@@ -1890,30 +1976,33 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
     },
     notes: `以前想列一長串寫作原則，現在改成一個測試：讓沒有背景知識的 Agent 只讀改過的那一章，回答這章的常見問題。
 
-看「改寫前」：EOT、Vt、WFM 三個縮寫都沒解釋，三題都答不出來。切到「改寫後」：先講白話，再解釋等效厚度，三題都答得出來。這個 Agent 只能根據這一章回答，和查找是同一條規則。`
+看「改寫前」：EOT、Vt、WFM 三個縮寫都沒解釋，三題都答不出來。切到「改寫後」：先講白話，再解釋等效厚度，三題都答得出來。這個 Agent 只能根據這一章回答，和查找是同一條規則。
+
+簡報也一樣測：沒有背景的 Agent 只讀那一章每一頁的文字和旁白，回答自我檢查的題目，改過的頁沒有題目就臨時補一題。互動圖它看不到，所以要讓新人讀的文字都寫在 Markdown。`
   }, C4));
 
-  /* ⑤ 新人看到的樣子：手冊網站、簡報的一頁、簡報的整份結構 */
+  /* ⑤ 新人看到的樣子：入口網站、簡報的一頁、簡報的整份結構、手冊網站 */
   const DECK_RULE = {
     head: ['標題列', '眉標寫部分和章；右上角是章節列，點了可以跳章；標題下面一句話講結論。'],
-    widget: ['互動元件（建議）', '建議放可以操作的模擬，不強制。新的互動元件一開始就寫成共用元件，手冊網站也能用。'],
+    widget: ['主圖', '每頁都要有圖，沒有會擋。會動、會變、有因果的概念做成可以操作的互動圖，先套樣板（Fig.canvas、Fig.steps、Fig.parts）；其他可以用圖片、圖表、影片。'],
     points: ['重點', '三到四點短句，每點一個重點。'],
-    fact: ['數字卡', '一句話數字，出自對應的小節；沒有好數字時，同一個位置改放一句話重點。'],
-    analogy: ['比喻卡', '用生活經驗解釋這頁的概念。'],
-    notes: ['講稿', '每頁給講者看的講法（按 N），只存在簡報，不進手冊。整份另附講者須知，例如被追問數字時怎麼回答。']
+    fact: ['數字卡', '一句話數字；新增或改過的頁，數字沒附出處會擋。點數字後面的小標號看出處。'],
+    analogy: ['比喻卡', '用生活經驗解釋這頁的概念；卡片標題可以自己寫。'],
+    learn: ['給新人的按鈕', '<b>旁白</b>：講稿去掉給講者的段落，預設收起；<b>看詳細和出處</b>：打開手冊網站對應的小節（有對應才出現）；<b>問 Agent</b>：複製「哪個知識庫、哪一頁（頁 id）」，貼到 Claude Code 接著問。'],
+    notes: ['講稿', '上台講解時按 N 或「講稿」，比旁白多了給講者的【可略】【提示】段落和計時。']
   };
-  const DECK_FLOW = [['封面', ''], ['議程', ''], ['章節頁', '每個部分開頭，大數字'], ['內容頁 × N', '每頁一個概念'], ['參考資料頁', '由出處和圖片清單產生'], ['常見問題附錄', '最後一頁，由各章常見問題產生，可跳回相關頁']];
+  const DECK_FLOW = [['封面', ''], ['議程', ''], ['內容頁 × N', '每頁一個概念'], ['章末自我檢查', '自動產生：章檔的題目＋手冊的常見問題'], ['出處頁', '自動整理每頁的註腳'], ['常見問題附錄', '建置時由各章題目產生']];
   A(Object.assign({
     id: 'learn', part: 2, minutes: 2.5, short: '新人看到的樣子',
-    title: '新人看到的樣子：手冊網站和簡報', en: 'Learn',
-    thesis: '新人主要看<b>簡報</b>，沒有簡報就看<b>手冊網站</b>；兩個都是離線能開的單一 HTML 檔。',
+    title: '新人看到的樣子：入口網站、簡報、手冊網站', en: 'Learn',
+    thesis: '新人從<b>入口網站</b>開始，主要看<b>簡報</b>；細節在手冊網站，小節旁可以跳回簡報頁。',
     render: () => `<div class="s-body">
-      <div class="col"><div class="controls">${U.seg('ln-seg', ['手冊網站', '簡報：一頁', '簡報：整份'], 0)}</div>
+      <div class="col"><div class="controls">${U.seg('ln-seg', ['入口網站', '簡報：一頁', '簡報：整份', '手冊網站'], 0)}</div>
         <div class="mock" id="ln-mock"></div></div>
       ${U.side({
-        points: ['先看<b>全景圖</b>和<b>速覽</b>，再進細節（建議有，不強制）', '常見問題的<b>答案先收起來</b>，自己想過再打開', '簡報是選配，有做就照<b>半導體範例</b>的樣子', '主線一更新，CI 就重新建置；也可以請 Agent 現場建置'],
-        fact: { v: '單一 HTML', d: '離線就能打開，看的人不用裝任何東西' },
-        analogy: { icon: 'onion', t: '比喻', p: '像剝洋蔥：先看最外層的全貌，再一層一層往裡看細節，不會一開始就迷路。' }
+        points: ['從<b>入口網站</b>開始：卡片、學習路徑、角色路徑、看到哪裡、搜尋', '簡報下面有<b>旁白、看詳細和出處、問 Agent</b>', '每章最後有<b>自我檢查</b>，先想再展開答案', '<b>簡報必備、手冊選配</b>'],
+        fact: { v: '1 個壓縮檔', d: 'portal.zip：入口網站、所有簡報和手冊網站，解開就能離線看' },
+        analogy: { icon: 'road', t: '比喻', p: '像逛博物館：入口拿一張導覽圖（入口網站），每個展間有說明牌（簡報），想聽解說再戴耳機（旁白）。' }
       })}</div>`,
     init(el) {
       const mock = U.$(el, '#ln-mock');
@@ -1923,44 +2012,60 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
           <div class="chips"><span>演進與現況</span><span class="ar">→</span><span>製造：從電晶體到量產</span><span class="ar">→</span><span>突破摩爾定律</span></div>
           <div style="font-size:24px;font-weight:700;margin-top:4px">閘極</div>
           <div class="ov-box"><b>速覽</b>　閘極隔著一道很薄的絕緣牆，用電場開關電晶體。這章講牆為什麼不能再薄，換成 High-k 之後怎麼兩全。</div>
-          <div style="font-size:19px;font-weight:700">閘極絕緣層 <span class="tag">hk1</span></div>
-          <p style="margin:0;font-size:17px">牆要薄，電場才夠強；太薄，電子會直接穿過去（量子穿隧，Quantum Tunneling）。<span class="tag a">互動元件：拖動厚度看漏電</span></p>
+          <div style="font-size:19px;font-weight:700">閘極絕緣層 <span class="tag">hk1</span> <span class="tag a">▶ 看簡報</span></div>
+          <p style="margin:0;font-size:17px">牆要薄，電場才夠強；太薄，電子會直接穿過去（量子穿隧，Quantum Tunneling）。</p>
           <div class="lbl4" style="margin:4px 0 0">常見問題（點開看答案）</div>
           <details class="faqi"><summary>電晶體會壞嗎？可以用多久？</summary><p>正常使用可以用十年以上。長期高溫、高電壓會讓絕緣層慢慢劣化。</p><div class="rel">相關：hk1、wat</div></details>
-          <details class="faqi"><summary>【深入】介面層為什麼還要留著？</summary><p>給有業界經驗的人的題目，放在常見問題的最後。</p><div class="rel">相關：hk1</div></details>
+        </div>`;
+      const portal = `<div class="mbar"><i></i><i></i><i></i><span>入口網站 · 解開壓縮檔，打開 index.html（示意）</span></div>
+        <div class="pg">
+          <div style="font-size:24px;font-weight:700">知識傳承入口</div>
+          <div style="border:1.5px solid var(--line-strong);border-radius:6px;padding:6px 12px;color:var(--ink-3);font-size:16px;background:#fff">搜尋：所有知識庫的簡報頁、手冊小節、術語</div>
+          <div class="cards">
+            <div class="card" style="background:#fff;border-color:var(--accent)"><h4>半導體製程</h4><p>90 頁 · 約 4 小時 12 分 · 看過 18 / 90 頁</p><div class="sbar" style="height:8px"><i style="width:20%;background:var(--good)"></i></div></div>
+            <div class="card" style="background:#fff"><h4>電腦視覺</h4><p>簡報還沒做 · 手冊只有骨架</p></div>
+          </div>
+          <div class="lbl4" style="margin:0">學習路徑：照簡報的章排，時間用每頁的建議分鐘數加起來（另外有角色路徑、搜尋）</div>
+          <div class="ritems">${[['開場', '3 頁 · 6 分', 'ok'], ['第一部分 · 演進與現況', '12 頁 · 26 分', 'ok'], ['① 微影', '8 頁 · 19 分', 'sel'], ['② 蝕刻', '3 頁 · 8 分', '']].map(([t, m, c]) => `<div class="ritem ${c}" style="display:flex;justify-content:space-between;padding:4px 10px"><span>${c === 'ok' ? '✓ ' : c === 'sel' ? '◐ ' : '○ '}${t}</span><span class="ids" style="display:inline">${m}</span></div>`).join('')}</div>
         </div>`;
       const b = (k, style, inner) => `<button type="button" class="ritem click" data-k="${k}" style="${style}">${inner}</button>`;
       const one = `${b('head', 'padding:10px 14px', '<span class="ids">03 第二部分 · ⑤ 閘極　　［① ② ③ ④ ⑤ 章節列］</span><b style="font-size:20px">絕緣牆的兩難：電場要過得去，電子不要過去</b><span class="ids">一句話講結論……</span>')}
         <div style="flex:1;min-height:0;display:grid;grid-template-columns:58fr 42fr;gap:10px">
-          ${b('widget', 'display:grid;place-items:center;font-size:20px;font-weight:700', '左：互動元件<br><span class="ids">拖動厚度，看漏電怎麼變</span>')}
+          ${b('widget', 'display:grid;place-items:center;font-size:20px;font-weight:700', '左：主圖<br><span class="ids">拖動厚度，看漏電怎麼變</span>')}
           <div style="display:flex;flex-direction:column;gap:8px">${b('points', 'flex:1', '<b>重點</b><span class="ids">• 牆越薄，控制力越強<br>• 太薄，電子穿過去</span>')}${b('fact', '', '<b>數字卡</b><span class="ids">約 1.2 nm：只剩約 5 層原子</span>')}${b('analogy', '', '<b>比喻卡</b><span class="ids">隔著牆用磁鐵吸鐵片</span>')}</div>
-        </div>${b('notes', 'padding:6px 14px', '<span class="ids">講稿（按 N 打開）</span>')}`;
+        </div><div style="display:flex;gap:8px">${b('learn', 'flex:1;padding:6px 14px;text-align:center', '<span class="ids" style="display:inline">［旁白］［看詳細和出處］［問 Agent］</span>')}${b('notes', 'padding:6px 14px', '<span class="ids" style="display:inline">講稿（按 N）</span>')}</div>`;
       const whole = `<div class="flowrow" style="margin-top:6px">${DECK_FLOW.map(([t, d]) => `<div class="st core" style="font-size:16px">${t}${d ? `<br><span class="gloss" style="font-size:13px;font-weight:400">${d}</span>` : ''}</div>`).join('<span class="ar">→</span>')}</div>`;
       const frame = (bar, inner) => `<div class="mbar"><i></i><i></i><i></i><span>${bar}</span></div>
         <div class="pg" style="flex:1;min-height:0"><div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:10px">${inner}</div><div class="card key" id="ln-rule" style="font-size:18px"></div></div>`;
       const pick = k => { U.$$(mock, '[data-k]').forEach(x => x.classList.toggle('sel', x.dataset.k === k)); U.$(mock, '#ln-rule').innerHTML = `<b>${DECK_RULE[k][0]}</b>：${DECK_RULE[k][1]}`; };
       U.onSeg(el, 'ln-seg', i => {
-        if (i === 0) { mock.innerHTML = site; return; }
+        if (i === 0) { mock.innerHTML = portal; return; }
+        if (i === 3) { mock.innerHTML = site; return; }
         mock.innerHTML = frame(i === 1 ? 'kb/semiconductor · 簡報的一頁（點一個區塊看規則）' : 'kb/semiconductor · 簡報的整份結構', i === 1 ? one : whole);
-        if (i === 1) { U.$$(mock, '[data-k]').forEach(x => x.onclick = () => pick(x.dataset.k)); pick('widget'); }
-        else U.$(mock, '#ln-rule').innerHTML = '<b>部分和章</b>預設照手冊；上台需要重新編排時，才在頁序裡自己定，也可以分成好幾個場次。<b>常見問題附錄</b>和<b>參考資料頁</b>由程式產生，不用手寫。';
+        if (i === 1) { U.$$(mock, '[data-k]').forEach(x => x.onclick = () => pick(x.dataset.k)); pick('learn'); }
+        else U.$(mock, '#ln-rule').innerHTML = '<b>章末自我檢查</b>和<b>出處頁</b>由程式自動產生：題目寫在簡報章檔的「## 自我檢查」，加上手冊同一章的常見問題；半導體每一章都有。<b>常見問題附錄</b>在建置時由各章題目照主題整理，不用手寫。';
       });
     },
-    notes: `第五章，新人怎麼學。新人主要看簡報，沒有簡報就看手冊網站。手冊網站最上面是全景圖，每章開頭有速覽，最後是常見問題，答案先收起來，讓新人自己先想。
+    notes: `第五章，新人怎麼學。新人以看簡報為主，從入口網站開始。
 
-切到「簡報：一頁」，點各個區塊看規則：右邊固定是重點、數字卡、比喻卡，左邊建議放互動元件。簡報是選配，有做就照半導體範例的樣子，這份簡報的每一頁也是這樣做的。「簡報：整份」看整份的結構，常見問題附錄和參考資料頁由程式產生。`
+先看「入口網站」：CI 把入口頁、所有簡報和手冊網站打包成 portal.zip，新人解開就能離線看。入口頁有知識庫卡片、學習路徑、角色路徑、記住看到哪裡，和跨知識庫搜尋。
+
+切到「簡報：一頁」，點各個區塊看規則。下面那一排是給新人的按鈕：旁白、看詳細和出處、問 Agent。「簡報：整份」可以看到每章最後自動多一頁自我檢查，最後還有自動整理的出處頁和常見問題附錄。
+
+「手冊網站」放細節：全景圖、速覽、小節和常見問題，每個小節標題旁有「看簡報」連回簡報頁。`
   }, C5));
 
   /* ⑤ 查找與帶讀 */
   const LOOK = [
     { q: 'OPC 是什麼？跟光罩有什麼關係？', a: 'OPC（光學鄰近校正，Optical Proximity Correction）是先把光罩上的圖形「故意改形狀」，抵消曝光時光造成的變形，讓印在晶圓上的線條接近設計。所以 OPC 改的就是光罩本身。', cite: '出處：半導體製程 › 微影 › litho6' },
-    { q: '機台保養（PM）多久做一次？', a: '手冊裡沒有寫到這件事，我不自己編答案。要記成「待回答」嗎？', gap: true }
+    { q: '機台保養（PM）多久做一次？', a: '簡報和手冊都沒有寫到這件事，我不自己編答案。要記成「待回答」嗎？', gap: true },
+    { q: '乾式蝕刻為什麼挖得比較直？', a: '手冊沒有蝕刻這一章，但簡報有：乾式用電漿，離子從正上方打下來，只往下挖，所以牆很直；濕式泡藥水，會四面八方一起溶。', cite: '出處：半導體製程 › 簡報 › 蝕刻 › 〈蝕刻：把不要的地方挖掉，關鍵是「只往下挖」〉（etch1）' }
   ];
   const QZ = [['牆可以做厚一點，電場照樣過得去', 1], ['牆可以做薄一點，電子更容易通過', 0], ['牆變成導體，閘極直接接上通道', 0]];
   A(Object.assign({
     id: 'ask', part: 2, minutes: 2, short: '查找與帶讀',
     title: '查找與帶讀：不懂就問 Agent', en: 'Lookup & Guided Reading',
-    thesis: '<b>查找</b>只根據手冊回答，沒寫就直說；<b>帶讀</b>用白話解釋、出小題目確認懂了。',
+    thesis: '<b>查找</b>根據簡報和手冊回答、附出處，沒寫就直說；<b>帶讀</b>用白話解釋、出小題目確認懂了。',
     render: () => `<div class="s-body">
       <div class="col">
         <div class="fig grow"><div class="fig-title"><span>查找：點一題</span><span></span></div>
@@ -1972,8 +2077,8 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
           <div class="fb" id="ak-fb"></div></div>
       </div>
       ${U.side({
-        points: ['<b>查找</b>：只根據手冊回答，附上出處小節', '沒寫到的問題，可以記成<b>待回答</b>', '<b>帶讀</b>：用 ELI5 解釋、反問、出小題目，最後指回小節'],
-        fact: { v: '只看手冊', d: '手冊沒寫就說沒寫，不自己編答案' },
+        points: ['<b>查找</b>：簡報頁和小節都算，附上出處', '兩邊說法不同，<b>兩種都列</b>，問要不要記勘誤', '都沒寫的問題，可以記成<b>待回答</b>', '<b>帶讀</b>：用 ELI5 解釋、反問、出小題目，最後指回那一頁或那一節'],
+        fact: { v: '不自己編', d: '沒寫就說沒寫，問要不要記成待回答' },
         analogy: { icon: 'stack', t: '比喻', p: '好的圖書館員：只拿館藏回答你，找不到就老實說，再登記成要採購的書。' }
       })}</div>`,
     init(el) {
@@ -2001,7 +2106,7 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
           : '再想想：牆太薄，電子會直接穿過去。換材料是想要「厚」還是「薄」？<span class="cite">回到小節：閘極 › hk1</span>';
       });
     },
-    notes: `看不懂時，新人可以請 Agent 查找或帶讀。點第一題：Agent 只根據手冊回答，最後附上出處小節。點第二題：手冊沒寫，Agent 就直說，不自己編，再問要不要記成待回答；待回答怎麼處理，第三部分再講。
+    notes: `看不懂時，新人可以請 Agent 查找或帶讀。點第一題：手冊有寫，出處是小節。點第三題：手冊沒寫、但簡報有，Agent 就用那一頁回答，出處寫那一頁；兩邊說法不同時，兩種都列。點第二題：兩邊都沒寫，Agent 就直說，不自己編，再問要不要記成待回答；待回答怎麼處理，第三部分再講。新人在簡報上按「問 Agent」貼過來的，Agent 先讀那一頁和它對應的小節。
 
 左下是帶讀：Agent 陪新人讀，反問、出小題目。三個選項長度差不多，不會從格式猜到答案；答完一樣指回小節。`
   }, C5));
@@ -2018,7 +2123,7 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
     ['待回答', 'issue（標籤：待回答）', 'issue（標籤：待回答）', '寫進常見問題，標成【待回答】'],
     ['勘誤', 'issue（標籤：勘誤）', 'issue（標籤：勘誤）', '直接開變更提案'],
     ['檢查', '本機 hook＋GitHub Actions', '本機 hook＋GitLab CI', '只有本機 hook'],
-    ['手冊網站、簡報', 'CI 建置，放在 Release 下載', 'CI 建置，放在 Release 下載', '請 Agent 現場建置'],
+    ['入口網站、簡報、手冊網站', 'CI 建置，入口網站打包成 portal.zip，放在 Release 下載', 'CI 建置，放在 Release 下載（下載指令還沒實測）', '請 Agent 現場建置'],
     ['標籤', '種類、kb:知識庫、來歷', '種類、kb:知識庫、來歷', '（不用）'],
     ['Agent 用的指令', 'gh', 'glab', 'git']
   ];
@@ -2089,12 +2194,12 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
   const IS = {
     q: ['機台保養（PM）多久做一次？', '「hk1 說牆每薄 0.2 nm 漏電多 10 倍，可是我看到另一份資料寫 5 倍？」'],
     lab: ['待回答', '勘誤'],
-    body: ['章：從設計到量產（新人猜的，傳承者可以改）', '小節：閘極 › hk1；哪一句：「牆每薄 0.2 nm…」；理由：另一份資料寫 5 倍'],
-    done: ['常見問題多了一題，附上答案和相關小節', '小節 hk1 修正了，出處一起補上'],
+    body: ['章：從設計到量產（新人猜的，傳承者可以改）', '簡報頁和小節：閘極 › hk1；哪一句：「牆每薄 0.2 nm…」；理由：另一份資料寫 5 倍'],
+    done: ['簡報多了一頁和一題自我檢查，附上答案和出處', '簡報頁 hk1 和對應的小節一起修正，出處一起補上'],
     mode: ['訪談', '研究']
   };
   const ISTEPS = [
-    { t: '新人跟 Agent 說', d: '查找時手冊沒寫，或覺得哪裡寫錯了。' },
+    { t: '新人跟 Agent 說', d: '查找時簡報和手冊都沒寫，或覺得哪裡寫錯了。' },
     { t: '先查重複', d: '有一樣的 issue，就在那題留言「我也想知道」。' },
     { t: '開 issue', d: 'Agent 問一句「要記下來嗎？」，新人說好就開，不用審核。' },
     { t: '傳承者認領', d: '開工時 Agent 列出他關心的知識庫的 issue（第一次問過就記在本機）；老王說「我來回答 #12」。' },
@@ -2112,7 +2217,7 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
         ${U.stepperHTML('is-st')}</div>
       ${U.side({
         points: ['Agent 先查重複，再問一句就開，<b>不用審核</b>', '傳承者開工時看到，說「我來回答」就<b>認領</b>', '<b>勘誤</b>附上哪一節、哪一句、為什麼不對', '手冊不放沒有答案的題目，手動模式例外'],
-        fact: { v: '自動關閉', d: '答案併入主線，issue 就關閉，題目變成常見問題' },
+        fact: { v: '自動關閉', d: '答案併入主線，issue 就關閉，題目變成自我檢查或常見問題' },
         analogy: { icon: 'target', t: '比喻', p: '像醫院掛號：病人掛號、醫師叫號看診、看完歸檔，沒有人會在走廊上等著沒人理。' }
       })}</div>`,
     init(el, ctx) {
@@ -2131,9 +2236,9 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
       U.onSeg(el, 'is-k', j => { k = j; draw(); });
       U.stepper(el, 'is-st', ISTEPS, j => { i = j; draw(); }, ctx, { interval: 2200 });
     },
-    notes: `這頁看一個 issue 的一生，選「待回答」，再按「下一步」。新人問了手冊沒寫的問題，Agent 先查有沒有一樣的 issue，沒有就問一句要不要記下來，新人說好就開，不用審核。
+    notes: `這頁看一個 issue 的一生，選「待回答」，再按「下一步」。新人問了簡報和手冊都沒寫的問題，Agent 先查有沒有一樣的 issue，沒有就問一句要不要記下來，新人說好就開，不用審核。
 
-老王開工時看到這題，說「我來回答 #12」就認領。寫好後開變更提案，說明裡寫 Closes #12，合併後 issue 自動關閉，常見問題多了一題。切到「勘誤」：流程一樣，issue 裡附上哪一節、哪一句、為什麼覺得不對。`
+老王開工時看到這題，說「我來回答 #12」就認領。寫好後開變更提案，說明裡寫 Closes #12，合併後 issue 自動關閉，簡報多了一頁和一題自我檢查。切到「勘誤」：流程一樣，issue 裡附上哪一節、哪一句、為什麼覺得不對。`
   });
 })();
 </script>
@@ -2159,7 +2264,7 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
           <tbody>${ROWS.map((r, i) => `<tr class="clickable" data-i="${i}"><td><b>${r.n}</b></td>${r.v.map(([k, t]) => `<td class="${k}">${t}</td>`).join('')}</tr>`).join('')}</tbody></table>
         <div class="card key" id="tl-d" style="font-size:18px;margin-top:auto"></div></div></div>
       ${U.side({
-        points: ['全景圖用 <b>Mermaid</b>：Git 主機的網頁也畫得出來', '查找用 <b>grep＋程式產生的索引</b>，不需要向量檢索', 'Agent 流程放在 repo 的 <b>.claude/skills/</b>，拿到就能用'],
+        points: ['全景圖用 <b>Mermaid</b>：Git 主機的網頁也畫得出來', '查找用 <b>grep＋程式產生的索引</b>，不需要向量檢索', 'Agent 流程放在 repo 的 <b>.claude/skills/</b>，拿到就能用', '入口網站也一樣：一個資料夾，離線打開'],
         fact: { v: '只要 Python', d: '建置只用 Python 標準函式庫，不用裝套件' },
         analogy: { icon: 'chip', t: '比喻', p: '像寄一份 PDF：對方點開就能看，不用先裝軟體，也不用連網路。' }
       })}</div>`,
@@ -2176,28 +2281,28 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
 
   /* 搬半導體：逐步看檔案搬到哪裡 */
   const LEFT = [['gen-qa.py、build-artifact.py', 1], ['js/engine.js、widgets/', 2], ['css/deck.css', 2], ['js/slides/*.js（89 頁）', 3], ['index.html 的 Deck.move', 3], ['assets/img/、js/credits.js', 3], ['docs/qa-by-topic.md（197 題）', 4]];
-  const RIGHT = [['AGENTS.md、CLAUDE.md、README.md', 1], ['framework/tools/check.py、build.py', 1], ['CI 設定（主線只強制檢查）', 1], ['framework/engine/', 2], ['kb/semiconductor/deck/slides/', 3], ['kb/semiconductor/deck/order.md', 3], ['kb/semiconductor/assets/＋SOURCES.md', 3], ['handbook/ 各章（每章一個提案）', 4], ['各章常見問題、深入題', 4], ['deck/presenter-guide.md', 4], ['.claude/skills/kb-add … kb-new', 5], ['widgets/（一個一個抽）', 6]];
+  const RIGHT = [['AGENTS.md、CLAUDE.md、README.md', 1], ['framework/tools/check.py、build.py', 1], ['CI 設定（主線只強制檢查）', 1], ['framework/engine/', 2], ['kb/semiconductor/deck/slides/（90 頁，原樣）', 3], ['kb/semiconductor/deck/order.md', 3], ['kb/semiconductor/assets/＋SOURCES.md', 3], ['handbook/：微影、閘極、檢測量測', 4], ['各章常見問題、深入題', 4], ['.claude/skills/kb-add … kb-new', 5], ['deck/<部分>/<章>.md（15 個章檔）', 6], ['deck/figures/（互動圖）＋ 樣板', 6], ['各章的「## 自我檢查」（197 題）', 6]];
   const STEPS = [
-    { t: '建框架骨架', d: '寫 AGENTS.md 和 README（第一天指南），放上 GitHub 或 GitLab，設定 CI，主線只強制檢查要過；產生問題清單和打包的腳本，換成框架的檢查、建置程式。' },
-    { t: '抽出共用引擎', d: '把簡報引擎、互動元件工具和樣式搬進 framework/engine/，所有知識庫共用；材料配色、畫電子這類半導體專用的工具，留在 kb/semiconductor/widgets/。' },
-    { t: '搬簡報，照舊能播', d: '第一個變更提案：89 頁搬進 kb/semiconductor/deck/；Deck.move 改成頁序檔；credits.js 改成圖片清單。' },
-    { t: '每章一個提案，抽出手冊', d: '從簡報抽出手冊，一次一章給維護者審；197 題拆進各章的常見問題，給有經驗的人的題目變成深入題，上台的提醒放進講者須知。' },
-    { t: '補上五個流程', d: '寫 kb-add、kb-change、kb-learn、kb-review、kb-new 五個 skill。' },
-    { t: '之後：互動元件一個一個抽', d: '哪個元件值得在手冊網站裡操作，再用變更提案一個一個抽出來。' }
+    { t: '建框架骨架', d: '寫 AGENTS.md 和 README（第一天指南），放上 GitHub，設定 CI，主線只強制檢查要過；換成框架的檢查、建置程式。' },
+    { t: '抽出共用引擎', d: '簡報引擎、互動元件工具和樣式搬進 framework/engine/；半導體專用的工具留在 kb/semiconductor/widgets/。' },
+    { t: '搬簡報，照舊能播', d: '90 頁原樣搬進 kb/semiconductor/deck/；Deck.move 改成頁序檔；credits.js 改成圖片清單。' },
+    { t: '每章一個提案，抽出手冊', d: '抽出 3 章：閘極（#1）、微影（#2）、檢測量測（#3）。手冊是選配，其他章只有簡報頁。' },
+    { t: '補上五個流程', d: 'kb-add、kb-change、kb-learn、kb-review、kb-new；後來把重複的工作做成工具，寫清楚做到哪裡算完成。' },
+    { t: '簡報頁的文字搬到 Markdown', d: '90 頁的文字搬到 15 個簡報章檔，互動圖改成 Fig.add 放在 deck/figures/；197 題照主題搬進各章的「## 自我檢查」；整理出三種互動圖樣板。' }
   ];
   A({
     id: 'plan', part: 4, minutes: 2, short: '把半導體搬進來',
-    title: '第一步：把半導體搬成第一個知識庫', en: 'Migration',
-    thesis: '骨架和搬遷一起做，用半導體試過每一條規則，<b>每章一個變更提案</b>。',
+    title: '把半導體搬進來：全部搬完了', en: 'Migration',
+    thesis: '先讓 90 頁簡報<b>照舊能播</b>，再抽出 3 章手冊，最後把每一頁的文字搬進<b>簡報章檔</b>。',
     render: () => `<div class="s-body w66">
       <div class="col"><div class="fileflow">
-          <div class="fbox"><h4>Semi_Conductor_Manufactor/（現在）</h4>${LEFT.map(([t, s]) => `<div class="fchip" data-s="${s}">${t}</div>`).join('')}</div>
+          <div class="fbox"><h4>Semi_Conductor_Manufactor/（搬之前）</h4>${LEFT.map(([t, s]) => `<div class="fchip" data-s="${s}">${t}</div>`).join('')}</div>
           <div class="farrow">→</div>
           <div class="fbox"><h4>Knowledge_Inheritance_Framework/（搬完）</h4>${RIGHT.map(([t, s]) => `<div class="fchip" data-r="${s}">${t}</div>`).join('')}</div>
         </div>${U.stepperHTML('pl-st')}</div>
       ${U.side({
-        points: ['先讓簡報<b>照舊能播</b>，再慢慢抽出手冊', '互動元件先不抽，之後一個一個來', 'GitHub 上的公開版維持現狀，不再同步', '不保留舊的 git 歷史；舊資料夾確認後才刪'],
-        fact: { v: '89 頁、197 題', d: '半導體的簡報和問題全部搬進來' },
+        points: ['先讓簡報<b>照舊能播</b>，再抽出手冊', '手冊抽出 3 章、28 個小節', '每一頁的文字搬進 <b>15 個簡報章檔</b>，互動圖只畫圖', '197 題照主題搬進各章的<b>自我檢查</b>'],
+        fact: { v: '90 頁、197 題', d: '簡報全部寫成 Markdown；題目分到各章的自我檢查' },
         analogy: { icon: 'shovel', t: '比喻', p: '像搬家：先把家具原樣搬過去，確定能住，再一間一間整理收納。' }
       })}</div>`,
     init(el, ctx) {
@@ -2207,37 +2312,37 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
         U.$$(el, '[data-r]').forEach(c => { const k = +c.dataset.r; c.className = 'fchip' + (k === s ? ' now' : k < s ? ' new' : ' wait'); });
       }, ctx, { interval: 2400 });
     },
-    notes: `第一步：把半導體搬成第一個知識庫。按「下一步」看檔案搬到哪裡，橘框是這一步正在動的檔案。
+    notes: `把半導體搬成第一個知識庫，已經全部做完。按「下一步」看檔案搬到哪裡，橘框是這一步正在動的檔案。
 
-先建框架骨架、抽出共用引擎，再把 89 頁簡報原樣搬進去，搬完要照舊能播。接著每章一個變更提案抽出手冊，一次只審一章，197 題拆進各章的常見問題。最後補上五個流程的 skill，互動元件之後再一個一個抽。
+框架骨架、共用引擎先做好，再把 90 頁簡報原樣搬進去，照舊能播。手冊用每章一個變更提案抽出了閘極、微影、檢測量測三章；手冊是選配，其他章只有簡報頁。五個流程的 skill 也寫好了。
 
-GitHub 上的公開版維持現狀，不再同步；舊資料夾等搬遷確認沒問題才刪。`
+最後一步是新人以簡報為主之後加的：每一頁的文字搬進 15 個簡報章檔，互動圖改成 Fig.add 放在 deck/figures/，197 題照主題搬進各章的自我檢查，也整理出三種互動圖樣板。原本打算把互動元件一個一個抽出來，改成新頁先套樣板。`
   });
   /* 新增一個知識庫：以 CV 為例 */
-  const NK_FILES = [['kb/cv/README.md', '介紹、維護者、全景圖草稿', 2], ['kb/cv/terms.md', '術語表：CNN、mAP、IoU……', 2], ['handbook/1-basics/', '部分：影像基礎（只有章名）', 2], ['handbook/2-models/', '部分：模型（只有章名）', 2], ['01-image.md、02-conv.md……', '一章一個變更提案補內容', 4], ['deck/', '選配：要上課再做，照簡報的規範', 6]];
+  const NK_FILES = [['kb/cv/README.md', '介紹、維護者、全景圖草稿', 2], ['kb/cv/terms.md', '術語表：CNN、mAP、IoU……', 2], ['handbook/1-basics/', '部分：影像基礎（只有章名）', 2], ['handbook/2-models/', '部分：模型（只有章名）', 2], ['01-image.md、02-conv.md……', '一章一個變更提案補內容', 4], ['deck/order.md、deck/<部分>/<章>.md', '簡報的頁序和每一章的章檔（new_kb.py 一起建）', 2]];
   const NK_STEPS = [
     { t: '發起人開口', d: '「我想開一個電腦視覺的知識庫。」用 /kb-new，或直接這樣說。' },
-    { t: 'Agent 訪談、建骨架', d: 'Agent 問：領域是什麼、讀者是誰、大概分哪幾個部分和章、誰當維護者、手上有沒有現成資料；問完建好骨架。' },
+    { t: 'Agent 訪談、建骨架', d: 'Agent 問：領域是什麼、讀者是誰、大概分哪幾個部分和章、誰當維護者、手上有沒有現成資料；問完用 new_kb.py 一次建好骨架。' },
     { t: '框架維護者核准', d: '骨架是一個變更提案。核准後知識庫就成立，發起人是第一位維護者，首頁的知識庫清單自動多一列。' },
     { t: '一章一章補內容', d: '用研究、整理、訪談補上各章；有舊簡報和文件就整批整理，但還是一章一個提案。術語表跟著長。' },
     { t: '新人開始用', d: '新人從知識庫清單挑 CV 來讀、來問；待回答和勘誤標上 kb:cv。' },
-    { t: '之後：要上課再做簡報', d: '簡報是選配；要做就照半導體範例的樣子，互動元件一開始就寫成共用元件。' }
+    { t: '簡報必備', d: '新增知識時 Agent 先做簡報頁，先套互動圖樣板；一頁放不下的細節才寫手冊小節。' }
   ];
   A({
     id: 'newkb', part: 4, minutes: 2, short: '新增一個知識庫',
     title: '新增一個知識庫：以 CV 為例，先建骨架再補內容', en: 'New Knowledge Base',
-    thesis: '「大主題」就是一個知識庫，和半導體並列；<b>/kb-new</b> 訪談、建骨架，框架維護者核准就成立。',
+    thesis: '「大主題」就是一個知識庫，和半導體並列；<b>/kb-new</b> 訪談、用 new_kb.py 建骨架（簡報和手冊），框架維護者核准就成立。',
     render: () => `<div class="s-body w66">
       <div class="col"><div class="fig grow"><div class="fig-title"><span>按「下一步」看 CV 知識庫怎麼長出來</span><span>kb:cv</span></div>
         <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:14px">
           <div class="fbox"><h4>kb/cv/</h4>${NK_FILES.map(([f, n, s]) => `<div class="fchip" data-s="${s}"><b>${f}</b><br><span style="font-size:13px">${n}</span></div>`).join('')}</div>
           <div class="fbox"><h4>首頁的知識庫清單（程式自動產生）</h4>
             <table class="t" style="font-size:15px"><thead><tr><th>知識庫</th><th>維護者</th><th>簡報</th></tr></thead>
-            <tbody><tr><td>半導體製程</td><td>（維護者）</td><td class="y">有</td></tr><tr id="nk-row"><td><b>電腦視覺</b></td><td>（發起人）</td><td class="m">還沒有</td></tr></tbody></table></div>
+            <tbody><tr><td>半導體製程</td><td>（維護者）</td><td class="y">有</td></tr><tr id="nk-row"><td><b>電腦視覺</b></td><td>（發起人）</td><td class="m">骨架</td></tr></tbody></table></div>
         </div></div>${U.stepperHTML('nk-st')}</div>
       ${U.side({
         points: ['和半導體<b>並列</b>，有自己的維護者和手冊', '先建<b>骨架</b>，框架維護者核准才成立', '內容一章一個提案；有現成資料就整批整理', '每個知識庫有自己的<b>術語表</b>'],
-        fact: { v: '1 個指令', d: '/kb-new：訪談、建骨架、開變更提案' },
+        fact: { v: '1 個指令', d: '/kb-new：訪談、用 new_kb.py 建骨架、開變更提案' },
         analogy: { icon: 'seed', t: '比喻', p: '像開一家分店：先談好地點和店長、掛上招牌，總部核准開幕，菜單再一道一道上。' }
       })}</div>`,
     init(el, ctx) {
@@ -2253,7 +2358,9 @@ GitHub 上的公開版維持現狀，不再同步；舊資料夾等搬遷確認�
 
 按「下一步」看它怎麼長出來。發起人說「我想開一個電腦視覺的知識庫」，Agent 先訪談：領域、讀者、大概分哪幾個部分和章、誰當維護者、有沒有現成資料。問完建好骨架，交給框架維護者核准；核准後知識庫就成立，首頁的知識庫清單自動多一列。
 
-內容之後一章一章補。CV 團隊手上的舊簡報和文件可以整批整理，但還是一章一個提案，維護者一次審一章。簡報是選配，要上課再做，照半導體範例的樣子。`
+內容之後一章一章補。CV 團隊手上的舊簡報和文件可以整批整理，但還是一章一個提案，維護者一次審一章。
+
+新人以簡報為主之後，骨架一開始就有簡報：new_kb.py 會一起建簡報的頁序和每一章的章檔，新增知識時 Agent 先做簡報頁。真的電腦視覺骨架是在這之前（#9）建的，所以目前只有手冊骨架、還沒有簡報。`
   });
 })();
 </script>
@@ -2264,24 +2371,24 @@ GitHub 上的公開版維持現狀，不再同步；舊資料夾等搬遷確認�
   /* 五個 skill：點一列看功能和參考 */
   const SK = [
     { id: 'kb-add', n: '新增：研究、整理、訪談', who: '傳承者', inv: '自動判斷',
-      f: ['開工時列出待回答、勘誤 issue，說「我來回答 #12」就認領', '判斷用研究、整理還是訪談，各走自己的前半段', '寫草稿：照寫作原則，順便更新術語表', '傳承者確認 → 自動檢查 → 讀者測試', '開變更提案：連到 issue、貼來歷標籤；沒有主機時走手動模式'],
+      f: ['開工時列出待回答、勘誤 issue 和可以補出處的簡報頁，說「我來回答 #12」就認領', '判斷用研究、整理還是訪談，各走自己的前半段', '先做簡報頁草稿：套互動圖樣板、數字附出處；一頁放不下才寫手冊小節', '傳承者確認（本機預覽改過的頁）→ 自動檢查 → 讀者測試', '開變更提案：連到 issue、貼來歷標籤；沒有主機時走手動模式'],
       ref: [['grilling', 'mattpocock', '訪談：一輪問完，每題附建議答案'], ['to-questionnaire', 'mattpocock', '老手沒空當面講時，先把問題寫下來給他'], ['research', 'mattpocock', '研究：只查第一手來源，每個說法附出處'], ['doc-coauthoring', 'Anthropic', '讀者測試的做法'], ['pr', 'mattpocock', '變更提案說明的寫法']] },
-    { id: 'kb-change', n: '修改、刪除、合併', who: '傳承者', inv: '自動判斷',
-      f: ['找出小節的所有引用：常見問題、頁序、其他小節、其他知識庫', '在同一個變更提案裡改掉所有引用，不留舊 id', '指紋點名要重看的簡報頁；改好或確認後更新指紋', '修正勘誤時，提案連到那個 issue', '自動檢查 → 讀者測試 → 開變更提案'],
+    { id: 'kb-change', n: '修改、刪除、合併、補出處', who: '傳承者', inv: '自動判斷',
+      f: ['找出簡報頁或小節的所有引用：頁序、常見問題、自我檢查、頁碼引用、其他知識庫', '在同一個變更提案裡改掉所有引用，不留舊 id', '一邊改了，指紋點名另一邊；對照好再更新指紋', '補出處、修正勘誤時，提案連到那個 issue', '自動檢查 → 讀者測試 → 開變更提案'],
       ref: [['pr', 'mattpocock', '變更提案說明的寫法'], ['gen-qa.py', '半導體範例', '引用檢查、禁止寫死頁碼的做法'], ['doc-coauthoring', 'Anthropic', '讀者測試的做法']] },
     { id: 'kb-learn', n: '查找、帶讀、打開', who: '新人（所有人）', inv: '自動判斷',
-      f: ['第一次用：問你關心哪些知識庫，記在本機', '查找：先看索引和術語表，再找手冊；只根據手冊回答並附出處', '手冊沒寫或覺得寫錯：問一句、查重複，開待回答或勘誤 issue', '帶讀：白話解釋、反問、出小題目', '打開手冊網站或簡報：下載 Release，或現場建置'],
+      f: ['第一次用：問你關心哪些知識庫，記在本機', '查找：先看索引和術語表，再讀簡報頁和小節；附出處，說法不同兩種都列', '從簡報貼來「我在看……這一頁」：先讀那一頁和對應的小節', '沒寫或寫錯：問一句、查重複，開待回答或勘誤 issue；帶讀：白話解釋、出小題目', '打開入口網站、簡報或手冊網站：下載 Release，或現場建置'],
       ref: [['teach', 'mattpocock', '出題：選項等長、答案位置輪換、先想再看'], ['triage', 'mattpocock', 'issue 的標籤用語和分類'], ['Explore 子 agent', 'Claude Code 內建', '要掃很多章時，交給唯讀的子 agent 找']] },
     { id: 'kb-review', n: '檢查、審核', who: '維護者、框架維護者', inv: '只能手動叫',
-      f: ['跑檢查程式，用白話解釋錯誤', '整理提案：改了什麼、來歷、影響哪些簡報頁和常見問題', '研究來的段落逐段列出，標出沒有出處的數字', '核准就合併（自己的提案自己合併）；要修改就留意見', 'Agent 留的意見開頭標明「由 Agent 產生」'],
+      f: ['跑檢查程式，用白話解釋錯誤', '整理提案：改了什麼、來歷、影響範圍；打開改過的簡報頁看圖、互動和出處', '研究來的段落逐段列出，標出沒有出處的數字', '核准就合併（自己的提案自己合併）；要修改就留意見', 'Agent 留的意見開頭標明「由 Agent 產生」'],
       ref: [['code-review', 'mattpocock', '分兩個角度審：照不照規範、有沒有做到要求'], ['triage', 'mattpocock', 'Agent 在 issue、PR 上的留言要標明是 AI 產生']] },
     { id: 'kb-new', n: '建立新知識庫', who: '發起人；框架維護者核准', inv: '只能手動叫',
-      f: ['訪談發起人：領域、讀者、部分和章、維護者、現有資料', '建骨架：README、術語表、部分和章的目錄、全景圖草稿', '開變更提案給框架維護者', '核准後，首頁的知識庫清單自動多一列'],
+      f: ['訪談發起人：領域、讀者、部分和章、維護者、現有資料', '用 new_kb.py 建骨架：README、術語表、簡報的頁序和章檔、手冊的部分和章、全景圖草稿', '開變更提案給框架維護者', '核准後，首頁的知識庫清單自動多一列'],
       ref: [['grilling', 'mattpocock', '訪談發起人'], ['setup-matt-pocock-skills', 'mattpocock', '一次性設定：先看現況、提出建議，確認後才寫'], ['domain-modeling', 'mattpocock', '術語表的格式：詞、定義、避用詞']] }
   ];
   A({
     id: 'skills', part: 4, minutes: 2.5, short: '要設計的 skill',
-    title: '要設計的 skill：五個流程，各有參考', en: 'Skills',
+    title: '五個 skill：新增、修改、學習、審核、建立知識庫', en: 'Skills',
     thesis: '五個 skill 放在 repo 的 <b>.claude/skills/</b>，拿到 repo 就能用；平常直接講中文，Agent 自己挑。',
     render: () => `<div class="s-body w66">
       <div class="col"><div class="fig grow"><div class="fig-title"><span>點一列看功能和參考</span><span>自動判斷＝直接講中文就會用到</span></div>
@@ -2292,7 +2399,7 @@ GitHub 上的公開版維持現狀，不再同步；舊資料夾等搬遷確認�
           <div class="card" style="background:#fff"><h4>參考的 skill</h4><div class="ritems" id="sk-r" style="gap:6px"></div></div>
         </div></div></div>
       ${U.side({
-        points: ['寫 skill 時照 <b>writing-for-agents</b> 的原則', '寫好之後用 <b>skill-creator</b> 測觸發率和效果', '自動檢查交給 <b>hook 和 CI</b>，不寫成 skill', '外部 skill 只借做法，不要求大家另外安裝'],
+        points: ['寫 skill 時照 <b>writing-for-agents</b> 的原則', '改了之後跑<b>情境測試</b>，跟改之前的版本比', '重複的工作做成<b>工具</b>，skill 寫清楚做到哪裡算完成', '外部 skill 只借做法，不要求大家另外安裝'],
         fact: { v: '5 個 skill', d: '新增、修改、學習、審核、建立知識庫' },
         analogy: { icon: 'chip', t: '比喻', p: '像一套刀具：五把刀各有用途，切什麼拿哪一把，不用每次重新發明。' }
       })}</div>`,
@@ -2311,7 +2418,7 @@ GitHub 上的公開版維持現狀，不再同步；舊資料夾等搬遷確認�
 
 點表格的每一列看功能和參考。新增是最大的一個：開工認領 issue，用研究、整理或訪談寫草稿，確認、檢查、讀者測試，最後開變更提案。修改負責把所有引用一起改掉。學習給新人用：查找、帶讀、開 issue、打開簡報。審核給維護者用，Agent 的留言會標明是 Agent 產生的。建立知識庫負責訪談發起人、建骨架。
 
-右邊是寫 skill 本身的方法：照 writing-for-agents 的原則寫，寫好用 skill-creator 測試。自動檢查交給 hook 和 CI，不寫成 skill。外部 skill 只借做法，寫進我們自己的 skill 裡，不要求大家另外安裝。`
+右邊是寫 skill 本身的方法：照 writing-for-agents 的原則寫；改了之後跑情境測試，跟改之前的版本比。重複的工作做成工具，skill 裡寫清楚什麼時候用、做到哪裡算完成。自動檢查交給 hook 和 CI，不寫成 skill。外部 skill 只借做法，不要求大家另外安裝。`
   });
 
   /* 外部 skill：mattpocock 系列、Anthropic 官方、其他 */
@@ -2377,15 +2484,228 @@ GitHub 上的公開版維持現狀，不再同步；舊資料夾等搬遷確認�
   Deck.move('skills', 'tools'); Deck.move('extskills', 'skills');
 })();
 </script>
+<script>/* 第五部分：現況（10-26 更新）：已合併的變更提案、情境測試和工具、「新人以簡報為主」做成什麼樣、之後還可以做的事 */
+(function () {
+  const A = Deck.add.bind(Deck);
+
+  /* ---------- 已經做完的：主線上的每一個變更提案 ---------- */
+  const LOG = [
+    ['f2b388a', '10-24', '框架', '建立知識傳承框架，並把半導體簡報搬成第一個知識庫'],
+    ['#1', '10-25', '半導體', '抽出「閘極」一章（hk1–hk4）'],
+    ['#2', '10-25', '半導體', '抽出「微影」一章（litho1–cmask、field、reso、mpat）'],
+    ['#3', '10-25', '半導體', '抽出「檢測量測」一章（eyes–wat4）'],
+    ['#7', '10-25', '半導體', '補強微影「High-NA EUV」小節（litho5）'],
+    ['#6', '10-25', '半導體', '檢測量測新增「機台保養 PM」（回答待回答 #4）'],
+    ['#8', '10-25', '半導體', 'hk2 漏電倍數補出處與前提（修正勘誤 #5）'],
+    ['#9', '10-25', '電腦視覺', '新增知識庫：電腦視覺（cv）骨架'],
+    ['#10', '10-25', '框架', '簡報頁可以放影片（內嵌進單一 HTML，離線能播）'],
+    ['#11', '10-25', '框架', 'check.py 數字提醒補上 V、顆、點、吋與中文數字，常見問題也檢查'],
+    ['#12', '10-25', '框架', '修情境測試發現的小問題'],
+    ['#13', '10-25', '半導體', '刪除檢測量測的「機台保養 PM」小節'],
+    ['#14', '10-25', '框架', '加上情境測試'],
+    ['#15', '10-25', '框架', '重複的工作做成工具，skill 寫清楚什麼時候用、做到哪裡算完成'],
+    ['#16', '10-25', '框架', '首頁註明 Sonnet 和 Opus 都測過'],
+    ['#17', '10-26', '框架', '入口網站、簡報下面的旁白／看詳細和出處／問 Agent、章末自我檢查、出處頁'],
+    ['#18', '10-26', '半導體', '90 頁的文字搬到 15 個簡報章檔，互動圖改成 Fig.add；197 題搬進各章的自我檢查'],
+    ['#19', '10-26', '框架', '規則和五個 skill 改成新人以簡報為主；ADR-0006 取代 ADR-0002；check.py 新規則、雙向指紋']
+  ];
+  const KIND = ['全部', '框架', '半導體', '電腦視覺'];
+  A({
+    id: 'status', part: 5, minutes: 2.5, short: '已經做完的',
+    title: '已經做完的：17 個變更提案都走過完整流程', en: 'Done',
+    thesis: '入口網站、半導體 90 頁簡報（Markdown）和 3 章手冊、電腦視覺骨架、情境測試，都<b>在正式內容上</b>。',
+    render: () => `<div class="s-body">
+      <div class="col"><div class="controls">${U.seg('stt-k', KIND, 0)}<span class="caption" id="stt-n"></span></div>
+        <div class="fig grow"><div class="fig-title"><span>主線上的歷史（git log）</span><span></span></div>
+          <div class="tl" id="stt-l">${LOG.map(([no, d, k, t]) => `<div class="ev" data-k="${k}"><span class="no">${no}</span><span>${t}</span><span class="tag ${k === '框架' ? 'a' : k === '半導體' ? 'g' : 'w'}">${k}${d ? ' · ' + d : ''}</span></div>`).join('')}</div></div></div>
+      ${U.side({
+        points: ['<b>半導體</b>：90 頁簡報寫在 15 個章檔；手冊 3 章、28 個小節', '<b>流程都走過</b>：待回答（#4 → #6）、勘誤（#5 → #8）、刪除小節（#13）', '<b>電腦視覺</b>：手冊骨架，4 個部分、15 章；內容和簡報還沒做', '<b>框架</b>：入口網站、五個流程、九個工具、情境測試'],
+        fact: { v: '17 個提案', d: '每一個都有檢查和核准紀錄' },
+        analogy: { icon: 'stairs', t: '比喻', p: '像新店試營運：每道菜（流程）都真的端給客人吃過一次，哪裡卡住就當場改。' }
+      })}</div>`,
+    init(el) {
+      U.onSeg(el, 'stt-k', i => {
+        let n = 0;
+        U.$$(el, '#stt-l .ev').forEach(r => { const on = i === 0 || r.dataset.k === KIND[i]; r.classList.toggle('hide', !on); n += on; });
+        U.$(el, '#stt-n').textContent = `${n} 筆`;
+      });
+    },
+    notes: `第五部分講現況。先看已經做完的：主線上的每一筆都是一個走完檢查和核准的變更提案，上面可以篩框架、半導體、電腦視覺。
+
+半導體的 90 頁簡報都寫成 Markdown，放在 15 個簡報章檔；手冊有微影、閘極、檢測量測三章，共 28 個小節。每一種流程都真的走過一次：新人問倒手冊開待回答 #4，傳承者回答成 #6；勘誤 #5 修正成 #8；也試過刪除一個小節（#13）。電腦視覺只有手冊骨架，內容和簡報還沒做。
+
+最後三筆是新人以簡報為主的三個提案：#17 做入口網站和給新人的按鈕，#18 把簡報搬成 Markdown，#19 改規則和流程。`
+  });
+
+  /* ---------- 情境測試和工具（#14、#15、#16） ---------- */
+  const RES = [
+    { n: '舊版', pass: 88, cost: 18.39, allow: 174, col: '#9aa8b8' },
+    { n: '新版 · Opus', pass: 93, cost: 16.08, allow: 43, col: '#1f4fb5' },
+    { n: '新版 · Sonnet', pass: 93, cost: 5.55, allow: 44, col: '#1f7a4d' }
+  ];
+  const MET = [['pass', '通過的檢查項（共 94）', v => `${v} / 94`, 94], ['cost', '15 個情境的花費（美元）', v => `$${v.toFixed(2)}`, 20], ['allow', '估計同仁要按「允許」幾次', v => `${v} 次`, 180]];
+  const TOOLS = [['read.py', '讀正式內容：小節、整章、常見問題，或找某些字寫在哪'], ['index.py', '索引：小節、常見問題、術語在哪裡'], ['who.py', '使用者是誰、維護哪些知識庫'], ['check.py', '檢查；開變更提案之前一定要過'], ['reader_test.py', '讀者測試的題目卷和答案卷'], ['proposal.py', '變更提案的說明草稿、標題、標籤'], ['get.py', '下載或建置手冊網站、簡報'], ['new_kb.py', '建立新知識庫的骨架'], ['build.py', '建置手冊網站和簡報']];
+  A({
+    id: 'tests', part: 5, minutes: 2.5, short: '情境測試和工具',
+    title: '情境測試：改了規則，跑一次就知道有沒有變好', en: 'Scenario Tests',
+    thesis: '全新的 Claude Code 跑一組情境（現在 17 個），另一個模型<b>扮演使用者</b>，程式和評分模型打分；改之前、改之後各跑一次比較。',
+    render: () => `<div class="s-body">
+      <div class="col"><div class="controls">${U.seg('ts-v', ['怎麼測', '比較結果', '工具', '模型'], 1)}</div>
+        <div class="fig grow"><div class="fig-title"><span id="ts-h"></span><span></span></div><div id="ts-b" style="flex:1;min-height:0;display:flex;flex-direction:column;gap:10px"></div></div></div>
+      ${U.side({
+        points: ['改了 skill、AGENTS.md、寫作指引之後跑一次，<b>跟改之前比</b>', '只在測試 repo <b>lufor129/kif-test</b> 跑，不碰正式 repo', '重複的工作做成<b>工具</b>，skill 寫清楚做到哪裡算完成', '日常用 <b>Sonnet</b> 就夠：結果差不多，花費約三分之一'],
+        fact: { v: '174 → 43', d: '同樣 15 個情境，同仁要按「允許」的次數' },
+        analogy: { icon: 'road', t: '比喻', p: '像新車改裝前後各跑同一條測試路線：油耗、故障次數一比就知道改得好不好。' }
+      })}</div>`,
+    init(el) {
+      const box = U.$(el, '#ts-b'), h = U.$(el, '#ts-h');
+      let met = 0;
+      const bars = () => {
+        const [k, lab, fmt, max] = MET[met];
+        U.$(el, '#ts-bars').innerHTML = RES.map(r => `<div style="display:grid;grid-template-columns:130px 1fr 90px;gap:10px;align-items:center;font-size:17px">
+          <b>${r.n}</b><div class="sbar"><i style="width:${(r[k] / max * 100).toFixed(1)}%;background:${r.col}"></i></div><span class="mono" style="font-family:var(--font-mono)">${fmt(r[k])}</span></div>`).join('');
+        U.$(el, '#ts-cap').textContent = lab;
+      };
+      U.onSeg(el, 'ts-v', i => {
+        h.textContent = ['一個情境怎麼跑', '舊版 vs 新版（15 個情境）', 'framework/tools/ 的九個工具', '用哪個模型'][i];
+        if (i === 0) box.innerHTML = `<div class="flowrow" style="row-gap:12px">${[['重置測試 repo', 'prog'], ['建立前置狀態', 'prog'], ['全新的 Claude Code', 'ag'], ['另一個模型扮演使用者', 'ag'], ['程式檢查＋評分模型', 'prog'], ['報告', 'core']].map(([t, c]) => `<span class="st ${c}">${t}</span>`).join('<span class="ar">→</span>')}</div>
+          <ul class="points tight"><li>情境照 docs/design.md：新人第一天、看不懂、手冊沒寫、覺得寫錯、傳承者開工、研究、訪談、審核、刪除小節……</li><li>給 Agent 的複本只拉這次重置之後的歷史，看不到別的情境留下的東西</li><li>程式檢查結果（issue、提案、留言），評分模型看對話判斷做得對不對</li><li>結果的格式和 skill-creator 一樣，可以用它的檢視頁面看</li></ul>`;
+        if (i === 1) { box.innerHTML = `<div class="controls">${U.seg('ts-m', ['通過', '花費', '要按「允許」'], met)}</div><div class="caption" id="ts-cap"></div><div id="ts-bars" style="display:flex;flex-direction:column;gap:14px"></div>
+          <p class="caption" style="margin-top:auto">10-25 改進 skill 時的結果（新人以簡報為主之前）。舊版是改進之前；新版是改進後、修完測試找到的問題再跑的結果，94 個檢查項裡各剩 1 項沒過。新人以簡報為主之後情境加到 17 個、109 個檢查項：規則改之前的版本過 90 項，#19 全部通過。</p>`; U.onSeg(el, 'ts-m', j => { met = j; bars(); }); }
+        if (i === 2) box.innerHTML = `<table class="t" style="font-size:16.5px"><tbody>${TOOLS.map(([n, d]) => `<tr><td style="width:28%;font-family:var(--font-mono)"><b>${n}</b></td><td>${d}</td></tr>`).join('')}</tbody></table>
+          <p class="caption" style="margin:0">Agent 每次都要做的事寫成工具，結果一樣、不用每次重寫；skill 裡寫清楚什麼時候用、做到哪裡算完成。</p>`;
+        if (i === 3) box.innerHTML = `<div class="cards"><div class="card key"><h4>Sonnet</h4><div class="big" style="font-size:30px">93 / 94</div><p>15 個情境約 $5.55</p></div><div class="card"><h4>Opus</h4><div class="big" style="font-size:30px">93 / 94</div><p>15 個情境約 $16.08</p></div></div>
+          <p style="margin:0;font-size:18px">兩個都用情境測試測過，結果差不多；Sonnet 的花費大約是 Opus 的三分之一。skill 不指定模型，首頁寫明「日常用 Sonnet 就夠」。</p>`;
+      });
+    },
+    notes: `框架的規則和 skill 會一直改，改了怎麼知道有沒有變好？10-25 加上了情境測試。全新的 Claude Code 跑 15 個情境，另一個模型扮演使用者回話，最後由程式和評分模型打分。只在另一個測試 repo 跑，不碰正式的。
+
+切到「比較結果」：同樣 15 個情境、94 個檢查項，舊版過 88 項；改進後的新版，Opus 和 Sonnet 都過 93 項。花費也降了，最明顯的是同仁要按「允許」的次數，從 174 次降到 43 次，因為重複的工作做成了工具，事先放進允許清單。
+
+「工具」是那九個工具；「模型」是結論：兩個模型結果差不多，Sonnet 的花費大約三分之一，所以首頁寫明日常用 Sonnet 就夠。之後改規則，都先跑一次跟改之前比。
+
+新人以簡報為主之後，情境加到 17 個，多了「從簡報問 Agent」和「簡報和手冊說法不同」。改規則的 #19 全部通過；第一次跑時還抓到一個問題：一頁只要改過就要求整頁數字附出處，Agent 為了過檢查刪了舊說法，所以改成只管這次改到的句子。`
+  });
+
+  /* ---------- 新人以簡報為主：23 件事做成什麼樣，和多做的 ---------- */
+  const DEC = [
+    ['新人怎麼看', '自學為主，有時有人帶', '自學的人看「旁白」；講者照舊用 N、講者視窗'],
+    ['新人怎麼看', '旁白預設收起，想看才打開', '每頁下面的「旁白」按鈕，去掉【可略】【提示】段落'],
+    ['新人怎麼看', '以 Chrome、Edge 為準', 'Chrome 實測過進度和連結；Edge 還沒實測'],
+    ['入口網站', '做成一個資料夾，下載就能看', 'CI 打包 portal.zip 放在 Release；get.py portal 下載或在本機建置'],
+    ['入口網站', '卡片、學習路徑、記住看到哪裡、搜尋', '四樣都有；搜尋一次找所有知識庫的簡報頁、小節、術語'],
+    ['入口網站', '學習路徑照章節；角色路徑先做機制', '時間用每頁的建議分鐘數算；角色路徑寫在 framework/paths.md，目前還沒有角色'],
+    ['入口網站', '一章每頁都翻過就算看完', '進度存在新人自己的瀏覽器（kif.<知識庫>.seen），入口網站讀同一份'],
+    ['簡報裡的配套', '看詳細和出處、章末自我檢查、問 Agent', '三個按鈕；章末自我檢查和出處頁自動產生'],
+    ['簡報裡的配套', '沒有手冊題目的章用附錄題目', '<b>做法不同</b>：197 題直接搬進各章的「## 自我檢查」，照主題分組，所以每章都有'],
+    ['簡報裡的配套', '題目不強制', '沒有題目的章就沒有自我檢查頁'],
+    ['簡報和手冊', '簡報必備；每個小節都要有簡報頁', 'check.py 擋：小節沒有簡報頁講到'],
+    ['簡報和手冊', '簡報頁可以沒有小節，不另外標示', '68 頁沒有對應小節，照樣算數'],
+    ['簡報和手冊', '簡報也算出處；說法不同兩種都列', 'AGENTS.md、kb-learn；read.py --page、--find 讀簡報頁；ADR-0006 取代 ADR-0002'],
+    ['簡報和手冊', '雙向點名', '頁序寫成「頁id@頁指紋 → 小節@指紋」，哪一邊改了都點名另一邊'],
+    ['簡報和手冊', '新寫和改到的說法要附出處，原本就有的豁免', '這次新寫或改到的句子沒出處會擋；原本就有的只提醒，index.py --todo 列出 22 頁'],
+    ['簡報和手冊', '讀者測試也測簡報', 'reader_test.py 也出簡報章的題目卷：只給每一頁的文字和旁白'],
+    ['簡報和手冊', '部分和章由簡報決定', '手冊用同樣的編號；章節列沒寫的話照章檔自動產生'],
+    ['新增知識', '可以只做簡報頁，手冊選配', 'kb-add 先做簡報頁，一頁放不下才建議寫手冊小節'],
+    ['新增知識', '同一個提案裡一起做簡報頁', 'kb-add、kb-change；get.py --here --page 在本機預覽改過的頁'],
+    ['新增知識', '每頁都要有圖，機制類要能操作', 'check.py 擋沒有圖的頁；能不能操作由維護者審核時看'],
+    ['新增知識', '先整理互動圖樣板', 'Fig.canvas、Fig.steps、Fig.parts；說明文字寫在章檔的「圖說：」'],
+    ['工程', '簡報頁文字搬到 Markdown', '90 頁搬到 15 個章檔；互動圖改成 Fig.add，放在 deck/figures/'],
+    ['工程', '分三個提案', '#17 引擎和入口網站、#18 搬移、#19 規則和流程，都合併了']
+  ];
+  const EXTRA = [
+    ['網址記頁 id', '簡報網址寫 deck.html#hk1，頁序調整了連結也不會跳錯；舊的頁碼網址（#36）照樣能開。'],
+    ['頁碼引用', '文字裡寫 [[頁:頁id]]，顯示時換成「第 N 頁」；插入自動產生的頁也不會指錯。'],
+    ['手冊連回簡報', '手冊網站每個小節標題旁有「看簡報」，打開講到它的那一頁。'],
+    ['出處頁', '每一頁的註腳在簡報最後自動整理成一頁；頁面上點數字後面的小標號也看得到。'],
+    ['常見問題附錄', '不再手寫：建置時由各章的自我檢查題目照主題整理。'],
+    ['頁面欄位', 'Markdown 頁多了「標籤」（標題旁的橘色標籤）、「資料」（頁尾來源）、比喻卡可以自訂標題、「圖說：」給樣板用。'],
+    ['預覽改過的頁', 'get.py --here --page <頁id>：用這個分支在本機建置，直接打開那一頁，傳承者確認、維護者審核都用。'],
+    ['章節列', '頁序沒寫章節列時，照簡報章檔的「# 章名」自動產生，分部分顯示。'],
+    ['可以補出處的頁', 'index.py --todo 列出還有數字沒附出處的頁；傳承者開工時也會看到。']
+  ];
+  const GROUPS = ['全部', ...new Set(DEC.map(d => d[0]))];
+  A({
+    id: 'deckfirst', part: 5, minutes: 3, short: '新人以簡報為主：做成什麼樣', badge: '10-25 定案',
+    title: '新人以簡報為主：23 件事做成什麼樣', en: 'Deck First',
+    thesis: '簡報必備、手冊選配、簡報也算出處（<b>ADR-0006 取代 ADR-0002</b>）；新人從<b>入口網站</b>開始。三個提案都合併了。',
+    render: () => `<div class="s-body w66">
+      <div class="col"><div class="controls">${U.seg('df-v', ['23 件事', '多做的'], 0)}<span id="df-gbox"></span></div>
+        <div style="flex:1;min-height:0;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:4px" id="df-box"></div></div>
+      ${U.side({
+        points: ['新人主要看<b>簡報</b>：簡報必備、手冊選配', '簡報的說法也算出處；兩邊說法不同<b>兩種都列</b>', '<b>入口網站</b>：portal.zip，解開就能離線看', '和原本計畫不一樣的：自我檢查題目直接搬進各章的章檔'],
+        fact: { v: '23 件事', d: '七輪問答定下來，分三個提案做完' },
+        analogy: { icon: 'onion', t: '比喻', p: '像把教材從「課本為主、投影片輔助」改成「投影片為主、課本放細節」：兩份都留著，但新人先拿到的是投影片。' }
+      })}</div>`,
+    init(el) {
+      const box = U.$(el, '#df-box');
+      const table = g => `<table class="t" style="font-size:15px"><thead><tr><th style="width:14%">分類</th><th style="width:33%">決定</th><th>做成什麼樣</th></tr></thead><tbody>${DEC.filter(d => g === 0 || d[0] === GROUPS[g]).map(([k, y, how]) =>
+        `<tr><td style="font-family:var(--font-mono);font-size:13px;color:var(--accent)">${k}</td><td>${y}</td><td>${how}</td></tr>`).join('')}</tbody></table>`;
+      U.onSeg(el, 'df-v', v => {
+        if (v === 1) {
+          U.$(el, '#df-gbox').innerHTML = '';
+          box.innerHTML = `<table class="t" style="font-size:16px"><thead><tr><th style="width:20%">多做的</th><th>是什麼</th></tr></thead><tbody>${EXTRA.map(([n, d]) => `<tr><td><b>${n}</b></td><td>${d}</td></tr>`).join('')}</tbody></table>`;
+          return;
+        }
+        U.$(el, '#df-gbox').innerHTML = U.seg('df-g', GROUPS, 0);
+        U.onSeg(el, 'df-g', g => { box.innerHTML = table(g); });
+      });
+    },
+    notes: `10-25 用七輪問答定下來一個大改變：新人以看簡報為主，因為互動和圖像比較好吸收。這一頁列出那 23 件事，和實際做成什麼樣子。
+
+最重要的三件：簡報必備、手冊選配；簡報的說法也算出處，兩邊說法不同時兩種都列，寫在 ADR-0006，取代原本「以手冊為準」的 ADR-0002；簡報頁的文字寫在 Markdown，互動圖只畫圖。
+
+和原本計畫不一樣的地方：自我檢查的題目原本打算從附錄分過去，實際是把 197 題直接搬進各章的章檔，所以每一章都有自我檢查。切到「多做的」，看當初沒講、但做的時候順手補上的東西，例如網址記頁 id、頁碼引用、在本機預覽改過的頁。`
+  });
+
+  /* ---------- 之後還可以做的事（都是已經知道、還沒做的，不另外編新計畫） ---------- */
+  const LATER = [
+    { n: '舊頁補出處', who: '傳承者', why: '搬進來的舊頁有 22 頁的數字還沒有出處，檢查程式只提醒、不擋。', how: '跟 Agent 說「有什麼我可以做的？」，或 <code>python3 framework/tools/index.py semiconductor --todo</code>；一次補一頁或一章，照一般的變更提案。' },
+    { n: '角色路徑', who: '框架維護者', why: '入口網站的角色路徑已經做好，但還沒有真的角色，所以先不編。', how: '有真的角色時，跟 Agent 說「加一個新進製程工程師的路徑」，寫進 <code>framework/paths.md</code>；頁 id 寫錯檢查程式會擋。' },
+    { n: 'Edge 實測', who: '框架維護者', why: '入口網站的進度和連結只在 Chrome 實測過；Edge 用同一套核心，應該一樣，但還沒實際打開。', how: '用 Edge 打開解開的 portal.zip：看過的頁有沒有打勾、簡報和手冊網站互相連不連得過去。' },
+    { n: '電腦視覺的內容', who: '傳承者', why: '電腦視覺只有手冊骨架（4 個部分、15 章），內容和簡報都還沒有。', how: '補內容時照現在的做法：先做簡報頁，一頁放不下才寫手冊小節。' },
+    { n: 'GitLab', who: '框架維護者', why: '入口網站的下載用 glab 的寫法還沒實測過；公司確定用 GitLab 時才需要。', how: '在 GitLab 上跑一次 CI 發布，再用 get.py portal 下載看看。' }
+  ];
+  A({
+    id: 'next', part: 5, minutes: 2, short: '之後還可以做的事',
+    title: '之後還可以做的事：慢慢補，和等真的需要', en: 'Later',
+    thesis: '三個提案都做完了；剩下的是<b>慢慢補</b>的工作，和<b>等真的需要</b>才做的事。',
+    render: () => `<div class="s-body">
+      <div class="col"><div class="controls">${U.seg('nx-s', LATER.map(x => x.n), 0)}</div>
+        <div class="fig grow"><div class="fig-title"><span id="nx-h"></span><span id="nx-w"></span></div>
+          <div class="card" style="background:#fff"><h4>為什麼還沒做</h4><p id="nx-a" style="font-size:18px;color:var(--ink)"></p></div>
+          <div class="card key"><h4>怎麼開始</h4><p id="nx-c" style="font-size:18px;color:var(--ink)"></p></div></div></div>
+      ${U.side({
+        points: ['舊頁補出處：傳承者開工時就會看到', '角色路徑：有真的角色再寫，不先編', '需要的支持：確定 Git 主機和帳號、指定各知識庫的維護者'],
+        fact: { v: '22 頁', d: '數字還沒有出處的舊頁（index.py --todo）' },
+        analogy: { icon: 'seed', t: '比喻', p: '像搬完家：大件都就位了，剩下的是慢慢整理抽屜，和等有客人來再添椅子。' }
+      })}</div>`,
+    init(el) {
+      U.onSeg(el, 'nx-s', i => {
+        const x = LATER[i];
+        U.$(el, '#nx-h').textContent = x.n;
+        U.$(el, '#nx-w').textContent = '誰做：' + x.who;
+        U.$(el, '#nx-a').innerHTML = x.why;
+        U.$(el, '#nx-c').innerHTML = x.how;
+      });
+    },
+    notes: `最後是之後還可以做的事。這些都是已經知道、還沒做的，不是新的計畫。
+
+最常碰到的是舊頁補出處：搬進來的舊頁有 22 頁的數字還沒有出處，檢查程式只提醒，傳承者開工時問「有什麼我可以做的」就會看到。角色路徑的機制做好了，但還沒有真的角色，有了再寫。入口網站只在 Chrome 實測過，Edge 還沒實際打開。電腦視覺只有手冊骨架，補內容時照現在的做法先做簡報頁。GitLab 的下載寫法也還沒實測，公司確定用 GitLab 時再做。
+
+需要的支持還是一樣：確定 Git 主機和帳號，以及指定各知識庫的維護者。`
+  });
+})();
+</script>
 <script>/* 結尾：自我檢查、帶走三句話 */
 (function () {
   const A = Deck.add.bind(Deck);
 
   const QS = [
-    { q: '簡報和手冊的說法不一樣時，聽誰的？', o: [['聽手冊的，因為手冊是正本', 1], ['聽簡報的，因為簡報比較新', 0], ['看誰最後修改，就聽誰的', 0]], why: '手冊是正本（ADR-0002）。小節一改，檢查程式就會點名要重看的簡報頁。' },
+    { q: '簡報和手冊的說法不一樣時，Agent 怎麼做？', o: [['兩種說法都列出來，問要不要記勘誤', 1], ['一律聽手冊的，把簡報照手冊改掉', 0], ['看哪一邊比較新，就只講哪一邊', 0]], why: '簡報和手冊一樣重要（ADR-0006，取代原本「以手冊為準」的 ADR-0002）：兩種都列、各附出處，再問要不要記成勘誤。' },
     { q: '研究來的內容，維護者審核時要怎麼做？', o: [['直接核准，Agent 已經查過了', 0], ['特別仔細看，Agent 可能說錯', 1], ['一律退回，請傳承者重寫', 0]], why: '研究可以用 Agent 自己的知識，而 Agent 說錯時語氣一樣肯定。所以變更提案會寫一行來歷，提醒維護者仔細看。' },
     { q: '合併兩個小節之後，舊的 id 怎麼辦？', o: [['舊 id 留著，自動轉到新的 id', 0], ['保留舊小節，標成已過時', 0], ['引用全部一起改掉，不留舊 id', 1]], why: '所有東西都在同一個 repo，引用全部看得到，Agent 在同一個變更提案裡一次改掉。' },
-    { q: '新人問了一題手冊沒寫的問題，會變成什麼？', o: [['Agent 自己編一個答案給他', 0], ['開成 issue，等傳承者認領回答', 1], ['直接寫進手冊的常見問題', 0]], why: '查找只根據手冊回答。手冊沒寫，Agent 問一句就開成 issue；答案併入後 issue 關閉，題目才變成常見問題。' }
+    { q: '新人問了一題簡報和手冊都沒寫的問題，會變成什麼？', o: [['Agent 自己編一個答案給他', 0], ['開成 issue，等傳承者認領回答', 1], ['直接寫進那一章的自我檢查', 0]], why: '查找只根據正式內容回答。兩邊都沒寫，Agent 問一句就開成 issue；答案併入後 issue 關閉，題目才變成自我檢查或常見問題。' }
   ];
   A({
     id: 'check', part: 9, minutes: 1.5, short: '自我檢查',
@@ -2399,7 +2719,7 @@ GitHub 上的公開版維持現狀，不再同步；舊資料夾等搬遷確認�
           <div class="fb" id="ck-fb"></div></div></div>
       ${U.side({
         points: ['答案先收起來，讓人先自己想', '答完一定說<b>為什麼</b>，再指回出處', '答不出來的題目，也可以記成待回答'],
-        fact: { v: '4 題', d: '正本、來歷、舊 id、待回答，各一題' },
+        fact: { v: '4 題', d: '兩邊說法、來歷、舊 id、待回答，各一題' },
         analogy: { icon: 'ruler', t: '比喻', p: '像考前自己出題考自己：比再讀一遍課本，更容易發現哪裡還不懂。' }
       })}</div>`,
     init(el) {
@@ -2419,7 +2739,7 @@ GitHub 上的公開版維持現狀，不再同步；舊資料夾等搬遷確認�
     },
     notes: `最後來個自我檢查，共四題。這就是常見問題和帶讀的做法：答案先收起來，先想再打開，可以請台下先想再選。
 
-第一題，說法不一樣時聽手冊的，它是正本。第二題，研究來的內容要仔細審，Agent 說錯時語氣一樣肯定。第三題，引用全部一起改掉，不留舊 id。第四題，手冊沒寫的問題會開成 issue，等傳承者回答。`
+第一題，簡報和手冊一樣重要，說法不一樣時兩種都列，再問要不要記勘誤。第二題，研究來的內容要仔細審，Agent 說錯時語氣一樣肯定。第三題，引用全部一起改掉，不留舊 id。第四題，兩邊都沒寫的問題會開成 issue，等傳承者回答。`
   });
 
   /* 總結：給主管的一頁說明。左邊是整個框架的運作圖，右邊分頁說明 */
@@ -2427,22 +2747,22 @@ GitHub 上的公開版維持現狀，不再同步；舊資料夾等搬遷確認�
     cont: [90, 110, '傳承者', '老手的經驗', '#b3541e', 130], learn: [90, 350, '新人', '看、問', '#1f4fb5', 130],
     agent: [300, 230, 'Agent', '寫、查、開 issue', '#1f4fb5', 160],
     issue: [580, 80, 'issue', '待回答、勘誤', '#a8660a', 150], pr: [580, 170, '變更提案', 'PR／MR', '#1f4fb5', 150],
-    hb: [580, 260, '手冊', '正本', '#17202b', 150], ci: [580, 370, 'CI', '檢查、建置', '#b3541e', 150],
+    hb: [580, 260, '簡報＋手冊', '正式內容', '#17202b', 150], ci: [580, 370, 'CI', '檢查、建置', '#b3541e', 150],
     maint: [765, 170, '維護者', '核准', '#1f7a4d', 120], fm: [765, 265, '框架維護者', '規則、引擎', '#1f7a4d', 120],
-    out: [765, 370, '手冊網站、簡報', '單一 HTML', '#1f7a4d', 130]
+    out: [765, 370, '入口網站', 'portal.zip', '#1f7a4d', 130]
   };
   const FLOWS = [
     { t: '寫進去', col: '#b3541e', nodes: ['cont', 'agent', 'pr', 'hb', 'maint'], path: [['cont', 'agent'], ['agent', 'pr'], ['pr', 'hb']], side: [['maint', 'pr']], labels: [['cont', 'agent', '研究、整理、訪談'], ['agent', 'pr', '開變更提案'], ['maint', 'pr', '核准']], d: '老手用說的，Agent 寫成草稿、開變更提案；檢查通過、維護者核准後，併進手冊。' },
-    { t: '發出去', col: '#1f7a4d', nodes: ['hb', 'ci', 'out', 'learn'], path: [['hb', 'ci'], ['ci', 'out'], ['out', [765, 440]], [[765, 440], [90, 440]], [[90, 440], 'learn']], labels: [['hb', 'ci', 'CI 建置'], [[765, 440], [90, 440], '新人下載，離線就能看']], d: '主線一更新，CI 就重新建置手冊網站和簡報，新人下載單一 HTML 就能看。' },
-    { t: '學出來', col: '#1f4fb5', nodes: ['learn', 'agent', 'hb'], path: [['learn', 'agent'], ['agent', 'hb']], labels: [['learn', 'agent', '查找、帶讀'], ['agent', 'hb', '只根據手冊回答']], d: '新人看不懂就問 Agent；Agent 只根據手冊回答，一定附上出處。' },
+    { t: '發出去', col: '#1f7a4d', nodes: ['hb', 'ci', 'out', 'learn'], path: [['hb', 'ci'], ['ci', 'out'], ['out', [765, 440]], [[765, 440], [90, 440]], [[90, 440], 'learn']], labels: [['hb', 'ci', 'CI 建置'], [[765, 440], [90, 440], '新人下載，離線就能看']], d: '主線一更新，CI 就重新建置簡報和手冊網站，打包成入口網站 portal.zip；新人下載解開就能看。' },
+    { t: '學出來', col: '#1f4fb5', nodes: ['learn', 'agent', 'hb'], path: [['learn', 'agent'], ['agent', 'hb']], labels: [['learn', 'agent', '查找、帶讀'], ['agent', 'hb', '附出處回答']], d: '新人看不懂就問 Agent；答案根據簡報和手冊，一定附出處，說法不同兩種都列。' },
     { t: '問回來', col: '#a8660a', nodes: ['agent', 'issue', 'cont'], path: [['agent', 'issue'], ['issue', 'cont']], labels: [['agent', 'issue', '手冊沒寫、覺得寫錯'], ['issue', 'cont', '認領回答']], d: '問倒手冊的問題自動變成 issue，回到老手手上；答完併入，issue 自動關閉。' }
   ];
   const TABS = [
-    ['問題與做法', ['<b>問題</b>：經驗只在老手腦袋、個人筆記和舊簡報裡，人一調走就沒了；新人不知道從哪看起、該問誰', '<b>做法</b>：Agent 把經驗寫成手冊（正本）和互動簡報；每次修改都經過檢查和維護者審核', '新人看簡報或手冊網站，看不懂就問 Agent，答案一定附出處', '問倒手冊的問題自動變成 issue，回到老手手上']],
+    ['問題與做法', ['<b>問題</b>：經驗只在老手腦袋、個人筆記和舊簡報裡，人一調走就沒了；新人不知道從哪看起、該問誰', '<b>做法</b>：Agent 把經驗寫成互動簡報和手冊：<b>簡報必備、手冊選配</b>；每次修改都經過檢查和維護者審核', '新人從入口網站看簡報，看不懂就問 Agent，答案一定附出處', '問倒簡報和手冊的問題自動變成 issue，回到老手手上']],
     ['好處', ['老手<b>用說的</b>就能留下經驗：研究、整理、訪談三種方式', '新人自己查、自己學，不用一直打斷老手', '知識缺口變成<b>看得見的待辦清單</b>（issue）', '每次修改都有紀錄：誰改了什麼、為什麼改，都查得到', '同一套框架，半導體之後，CV 等新領域照同樣方式加進來']],
-    ['需要什麼', ['一個 Git repo，GitHub 或 GitLab 都可以，全公司可看', '會用 Claude Code 的同仁；新人只要會跟 Agent 說話', '每個知識庫至少一位<b>維護者</b>，負責審核內容', '不用架伺服器：建置只要 Python；手冊網站和簡報是單一 HTML，離線就能開']],
-    ['風險與對策', ['<b>Agent 可能說錯</b> → 研究來的內容標來歷，經過讀者測試和維護者審核', '<b>規則太多沒人遵守</b> → 判斷得準的交給程式擋；先看到錯誤才加規則', '<b>維護者忙，提案會等</b> → 目前不特別處理，看實際情況再調整', '<b>公司 Git 方案未定</b> → GitHub、GitLab 都支援；沒有主機時退回手動模式']],
-    ['下一步', ['① 建框架骨架：AGENTS.md、檢查和建置程式、CI', '② 把半導體搬成第一個知識庫：89 頁簡報、197 題，一章一個變更提案', '③ 寫五個流程：kb-add、kb-change、kb-learn、kb-review、kb-new', '④ 開放新的知識庫，例如 CV', '需要的支持：確定 Git 主機和帳號、指定各知識庫的維護者']]
+    ['需要什麼', ['一個 Git repo，GitHub 或 GitLab 都可以，全公司可看', '會用 Claude Code 的同仁；新人只要會跟 Agent 說話', '每個知識庫至少一位<b>維護者</b>，負責審核內容', '不用架伺服器：建置只要 Python；入口網站是一個壓縮檔，簡報和手冊網站是單一 HTML，離線就能開']],
+    ['風險與對策', ['<b>Agent 可能說錯</b> → 研究來的內容標來歷，經過讀者測試和維護者審核', '<b>規則太多沒人遵守</b> → 判斷得準的交給程式擋；先看到錯誤才加規則', '<b>改了規則反而變差</b> → 情境測試：改之前、改之後各跑一次比較', '<b>維護者忙，提案會等</b> → 目前不特別處理，看實際情況再調整', '<b>公司 Git 方案未定</b> → GitHub、GitLab 都支援；沒有主機時退回手動模式']],
+    ['現況', ['<b>已完成</b>：入口網站、半導體 90 頁簡報（Markdown）和 3 章手冊、五個流程、電腦視覺骨架、情境測試（17 個變更提案）', '<b>新人以簡報為主</b>：簡報必備、手冊選配、簡報也算出處（ADR-0006）', '<b>之後</b>：舊的 22 頁補出處、有真的角色再寫角色路徑、Edge 實測、電腦視覺補內容', '需要的支持：確定 Git 主機和帳號、指定各知識庫的維護者']]
   ];
   A({
     id: 'summary', part: 1, minutes: 3, short: '總覽：給主管的一頁說明',
@@ -2454,7 +2774,7 @@ GitHub 上的公開版維持現狀，不再同步；舊資料夾等搬遷確認�
       <div class="col">
         <div class="controls">${U.seg('sm-tab', TABS.map(t => t[0]), 0)}</div>
         <div class="card" style="background:#fff;flex:1;min-height:0;padding:14px 18px"><ul class="points" id="sm-body" style="gap:12px"></ul></div>
-        <div class="fact"><div class="v">89 頁、197 題</div><div class="d">第一階段：半導體的簡報和問題全部搬進來，用它驗證每一條規則</div></div>
+        <div class="fact"><div class="v">17 個提案</div><div class="d">已合併：入口網站、半導體簡報和手冊、電腦視覺骨架、情境測試</div></div>
         <div class="analogy"><div class="ic">${U.icon('stack')}</div><div><h4>比喻</h4><p>像一座會自己長大的圖書館：老手捐書、館員審書、新人借書，借不到的書自動登記採購。</p></div></div>
       </div></div>`,
     init(el, ctx) {
@@ -2505,11 +2825,13 @@ GitHub 上的公開版維持現狀，不再同步；舊資料夾等搬遷確認�
         if (!cur) U.txt(c, '框架維護者管規則、引擎和新知識庫；維護者管各知識庫的內容', w / 2, h - 6, { align: 'center', size: 13, color: '#6a7888' });
       });
     },
-    notes: `這一頁是給主管的總覽，先把整件事一次講完，後面各頁再展開細節。我們要解決的問題是：經驗只在老手的腦袋、個人筆記和舊簡報裡，人一調走就沒了，新人也不知道從哪裡看起、該問誰。做法是讓 Agent 把經驗寫成手冊和互動簡報，手冊是正本，每一次修改都經過檢查和維護者審核，全部記在一個 Git repo 裡。
+    notes: `這一頁是給主管的總覽，先把整件事一次講完，後面各頁再展開細節。我們要解決的問題是：經驗只在老手的腦袋、個人筆記和舊簡報裡，人一調走就沒了，新人也不知道從哪裡看起、該問誰。做法是讓 Agent 把經驗寫成互動簡報和手冊，每一次修改都經過檢查和維護者審核，全部記在一個 Git repo 裡。新人以簡報為主：簡報必備、手冊選配，從入口網站開始。
 
-左邊的圖有四條流程，按「下一步」逐一看。寫進去：老手用說的，Agent 寫成草稿、開變更提案，維護者核准後併入手冊。發出去：CI 自動建置手冊網站和簡報，新人下載單一 HTML 就能看。學出來：新人看不懂就問 Agent，答案只根據手冊、一定附出處。問回來：問倒手冊的問題自動變成 issue，回到老手手上，答完自動關閉。
+左邊的圖有四條流程，按「下一步」逐一看。寫進去：老手用說的，Agent 寫成草稿、開變更提案，維護者核准後併入手冊。發出去：CI 自動建置簡報和手冊網站、打包成入口網站，新人下載解開就能看。學出來：新人看不懂就問 Agent，答案根據簡報和手冊、一定附出處。問回來：問倒手冊的問題自動變成 issue，回到老手手上，答完自動關閉。
 
-右邊分頁說明好處、需要什麼、風險和下一步。需要的資源很少：一個 Git repo、會用 Claude Code 的同仁、每個知識庫一位維護者，不用架伺服器。第一階段把半導體 89 頁簡報和 197 題搬進來，用它驗證每一條規則，之後再開放 CV 等新的知識庫。需要的支持是確定 Git 主機和帳號，以及指定各知識庫的維護者。`
+右邊分頁說明好處、需要什麼、風險和現況。需要的資源很少：一個 Git repo、會用 Claude Code 的同仁、每個知識庫一位維護者，不用架伺服器。
+
+現況：17 個變更提案已經合併，入口網站、半導體 90 頁簡報和 3 章手冊、電腦視覺的骨架、情境測試都在正式內容上。之後是慢慢補的工作，例如舊頁補出處。需要的支持是確定 Git 主機和帳號，以及指定各知識庫的維護者。`
   });
   /* 放到第 4 頁：「知識只在人腦袋裡」之後 */
   Deck.move('summary', 'why');

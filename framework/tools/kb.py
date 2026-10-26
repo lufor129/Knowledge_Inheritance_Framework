@@ -5,6 +5,7 @@ framework/tools/ 的工具都用這裡的函式讀檔案。只用 Python 標準�
 import hashlib
 import io
 import json
+import os
 import pathlib
 import re
 import shutil
@@ -155,7 +156,7 @@ def save_local(data):
 
 # ---------- 正式內容和分支的起點 ----------
 
-SNAP_FILES = re.compile(r'^kb/[^/]+/(?:README\.md|terms\.md|handbook/.+|deck/order\.md)$')
+SNAP_FILES = re.compile(r'^kb/[^/]+/(?:README\.md|terms\.md|handbook/.+|deck/order\.md|deck/\d+-[^/]+/[^/]+\.md)$')
 
 
 def git(*args, check=True):
@@ -176,9 +177,11 @@ def main_ref(fetch=True):
     return main
 
 
-def base_ref():
-    """這個分支是從正式內容的哪一版開出來的（比較「這次改了什麼」用）。"""
-    return git('merge-base', main_ref(), 'HEAD')
+def base_ref(fetch=True):
+    """這個分支是從正式內容的哪一版開出來的（比較「這次改了什麼」用）。fetch=False 不先抓遠端（檢查程式每次改都跑，要快）。"""
+    if os.environ.get('KIF_BASE'):  # 提案疊在另一個還沒合併的提案上，或測試時，指定比較的起點
+        return git('rev-parse', os.environ['KIF_BASE'])
+    return git('merge-base', main_ref(fetch), 'HEAD')
 
 
 def snapshot(ref, name):
@@ -370,6 +373,10 @@ class Changes:
     faq_deleted: list
     terms_added: list    # terms.md 新增的列
     pages: list          # 頁序裡對應或指紋改過的簡報頁 id
+    deck_added: list = field(default_factory=list)      # [DeckPage]：Markdown 簡報頁
+    deck_modified: list = field(default_factory=list)
+    deck_deleted: list = field(default_factory=list)    # [DeckPage]（舊的那一版）
+    deck_chapters: list = field(default_factory=list)   # 簡報頁或自我檢查有變的章檔（新的這一版的路徑）
 
 
 def changes(old, new):
@@ -401,12 +408,20 @@ def changes(old, new):
         return {p.id: p.maps for p in load_order(kb).pages} if kb and kb.has_deck else {}
     op, np_ = page_maps(old), page_maps(new)
     pages = [i for i, m in np_.items() if op.get(i) != m]
-    return Changes(chapters, added, modified, deleted, faq_added, faq_changed, faq_deleted, terms_added, pages)
+    od = load_deck(old).md_pages if old and old.has_deck else {}
+    nd = load_deck(new).md_pages if new.has_deck else {}
+    d_added = [p for i, p in nd.items() if i not in od]
+    d_mod = [p for i, p in nd.items() if i in od and od[i].fp != p.fp]
+    d_del = [p for i, p in od.items() if i not in nd]
+    o_files = {rel(f): f.read_text(encoding='utf-8') for f in deck_files(old)} if old and old.has_deck else {}
+    d_chaps = [f for f in deck_files(new) if o_files.get(rel(f)) != f.read_text(encoding='utf-8')] if new.has_deck else []
+    return Changes(chapters, added, modified, deleted, faq_added, faq_changed, faq_deleted, terms_added, pages,
+                   d_added, d_mod, d_del, d_chaps)
 
 
-def base_kb(name):
+def base_kb(name, fetch=True):
     """這個分支起點那一版的知識庫；起點還沒有這個知識庫時是 None。"""
-    base = snapshot(base_ref(), 'base')
+    base = snapshot(base_ref(fetch), 'base')
     return load_kb(base / name) if (base / name / 'README.md').exists() else None
 
 
@@ -417,6 +432,7 @@ class Page:
     id: str
     maps: list           # [(知識庫名稱或 None, 小節 id, 指紋或 None)]
     line: int
+    fp: str = None       # 簡報頁自己的指紋（有對應小節的頁才記）：頁改了，就要回頭看對應的小節
 
 
 @dataclass
@@ -434,7 +450,7 @@ class Order:
 
 
 ORDER_FIXED = ('設定', '部分', '章節列')
-PAGE_LINE = re.compile(r'^- ([A-Za-z0-9_-]+)(?:\s*→\s*(.+?))?\s*$')
+PAGE_LINE = re.compile(r'^- ([A-Za-z0-9_-]+)(?:@([0-9a-f]+))?(?:\s*→\s*(.+?))?\s*$')
 
 
 def load_order(kb):
@@ -471,7 +487,7 @@ def load_order(kb):
                 problems.append((f, i, f'看不懂這一行，簡報頁要寫成「- 頁 id」或「- 頁 id → 小節@指紋, 小節@指紋」：{l}'))
                 continue
             maps = []
-            for tok in re.split(r'\s*[,，、]\s*', m.group(2) or ''):
+            for tok in re.split(r'\s*[,，、]\s*', m.group(3) or ''):
                 if not tok:
                     continue
                 r = REF.match(tok.strip())
@@ -479,20 +495,21 @@ def load_order(kb):
                     maps.append((r.group(1), r.group(2), r.group(3)))
                 else:
                     problems.append((f, i, f'「{tok}」要寫成「小節 id@指紋」'))
-            groups[-1][1].append(Page(m.group(1), maps, i))
+            groups[-1][1].append(Page(m.group(1), maps, i, m.group(2)))
     return Order(f, settings, parts, chaps, groups, problems)
 
 
 def update_fingerprints(kb, page_ids):
-    """把頁序裡這些簡報頁的對應指紋，更新成小節現在的指紋。回傳更新了哪些。"""
+    """把頁序裡這些簡報頁的指紋更新成現在的：頁自己的指紋，和對應小節的指紋。回傳更新了哪些。"""
     secs = section_index()
+    pages = load_deck(kb).md_pages
     f = kb.dir / 'deck/order.md'
     out, done = [], []
     for l in f.read_text(encoding='utf-8').splitlines():
         m = PAGE_LINE.match(l)
-        if m and m.group(2) and m.group(1) in page_ids:
+        if m and m.group(3) and m.group(1) in page_ids:
             toks = []
-            for tok in re.split(r'\s*[,，、]\s*', m.group(2)):
+            for tok in re.split(r'\s*[,，、]\s*', m.group(3)):
                 r = REF.match(tok.strip())
                 if not r:
                     toks.append(tok)
@@ -501,7 +518,8 @@ def update_fingerprints(kb, page_ids):
                 s = secs.get((kname, sid))
                 prefix = f'{r.group(1)}/' if r.group(1) else ''
                 toks.append(f'{prefix}{sid}@{s.fp}' if s else tok)
-            l = f'- {m.group(1)} → ' + ', '.join(toks)
+            pid = m.group(1) + (f'@{pages[m.group(1)].fp}' if m.group(1) in pages else '')
+            l = f'- {pid} → ' + ', '.join(toks)
             done.append(m.group(1))
         out.append(l)
     f.write_text('\n'.join(out) + '\n', encoding='utf-8')
@@ -549,7 +567,12 @@ class DeckPage:
     analogy: tuple = None    # (圖示名稱, 文字, 卡片標題)
     notes: str = ''
     footnotes: dict = field(default_factory=dict)  # 註腳名稱 → 出處
+    lines: list = field(default_factory=list)      # 原文：從錨點到下一頁之前
     md: bool = True          # False：舊的程式頁
+
+    @property
+    def fp(self):
+        return fingerprint('\n'.join(self.lines))
 
     @property
     def text(self):
@@ -564,10 +587,26 @@ class DeckPage:
 
 
 def plain(text):
-    """去掉 HTML 標籤、Markdown 粗體和註腳標號。"""
+    """去掉 HTML 標籤、Markdown 粗體、註腳標號和頁碼引用。"""
     text = re.sub(r'<[^>]+>', '', text)
     text = FOOTREF.sub('', text)
+    text = re.sub(r'\[\[頁:[^\]]+\]\]', '另一頁', text)
     return re.sub(r'\*\*(.+?)\*\*', r'\1', text).strip()
+
+
+def deck_page_text(p):
+    """簡報頁給讀者看的文字：標題、結論、重點、圖說、數字卡、比喻、旁白（讀者測試的題目卷用）。"""
+    out = [f'## {plain(p.title)}']
+    if p.thesis:
+        out.append(plain(p.thesis))
+    out += [f'- {plain(x)}' for x in p.points] + [f'- {plain(t)}：{plain(d)}' for t, d in p.captions]
+    if p.fact:
+        out.append(f'{plain(p.fact[0])}：{plain(p.fact[1])}')
+    if p.analogy:
+        out.append(f'比喻：{plain(p.analogy[1])}')
+    if p.notes:
+        out += ['', '講解：', plain(p.notes)]
+    return '\n'.join(out)
 
 
 @dataclass
@@ -615,7 +654,7 @@ def load_deck(kb):
 
 
 def _deck_page(s, key, problems):
-    p = DeckPage(s.id, s.title, s.file, s.line, key[0], key[1])
+    p = DeckPage(s.id, s.title, s.file, s.line, key[0], key[1], lines=s.lines)
     mode, meta = None, True
     notes = []
     for k, l in enumerate(s.lines[2:], s.line + 2):

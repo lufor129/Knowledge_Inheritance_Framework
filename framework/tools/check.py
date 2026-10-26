@@ -183,6 +183,7 @@ def check_deck(kb, secs, r):
     for f, line, msg in order.problems:
         r.err(f, line, msg)
     ids = K.slide_ids(kb)
+    md = K.load_deck(kb).md_pages
     seen = set()
     stale = []
     for p in order.pages:
@@ -201,9 +202,23 @@ def check_deck(kb, secs, r):
             elif fp != s.fp:
                 r.err(of, p.line, f'簡報頁「{p.id}」對應的小節「{sid}」改過了（記錄的指紋 {fp}，現在是 {s.fp}），要重看這一頁')
                 stale.append(p.id)
+        # 反過來：簡報頁改了，對應的小節也要重看（兩邊一樣重要）
+        if p.maps and p.id in md:
+            secs_of = '、'.join(sid for _, sid, _ in p.maps)
+            if p.fp is None:
+                r.err(of, p.line, f'簡報頁「{p.id}」還沒有頁的指紋；和對應的小節 {secs_of} 對照過之後更新指紋')
+                stale.append(p.id)
+            elif p.fp != md[p.id].fp:
+                r.err(of, p.line, f'簡報頁「{p.id}」改過了（記錄的指紋 {p.fp}，現在是 {md[p.id].fp}），對應的小節 {secs_of} 要重看，說法要一致')
+                stale.append(p.id)
     for n, name, first in order.chaps:
         if first not in seen:
             r.err(of, 0, f'章節列第 {n} 章「{name}」的第一頁「{first}」不在頁序裡')
+    # 每個小節都要有簡報頁講到：新人主要看簡報
+    covered = {sid for p in order.pages for kname, sid, _ in p.maps if (kname or kb.name) == kb.name}
+    for s in kb.sections:
+        if s.id not in covered:
+            r.err(s.file, s.line, f'小節「{s.id}」沒有簡報頁講到：在講它的簡報頁後面加上「→ {s.id}」（deck/order.md），沒有的話做一頁（framework/guide/deck.md）')
     check_deck_md(kb, seen, r)
     if stale:
         pages = ' '.join(dict.fromkeys(stale))
@@ -222,12 +237,26 @@ def check_deck_md(kb, in_order, r):
     figs = set()
     for f in sorted((K.ROOT / 'framework/engine/figures').glob('*.js')) + sorted((kb.dir / 'deck/figures').glob('*.js')):
         figs.update(FIG_ADD.findall(f.read_text(encoding='utf-8')))
+    changed = changed_pages(kb)
+    todo = []
     for p in deck.md_pages.values():
         if p.id not in in_order:
             r.warn(p.file, p.line, f'簡報頁「{p.id}」不在頁序 deck/order.md 裡，不會播放')
         name = p.fig.partition('｜')[0].strip()
-        if name and not name.startswith('assets/') and name not in figs:
+        if not name:
+            r.err(p.file, p.line, f'簡報頁「{p.id}」沒有圖：寫「- 圖：」，放互動圖、圖片或影片')
+        elif not name.startswith('assets/') and name not in figs:
             r.err(p.file, p.line, f'簡報頁「{p.id}」的「圖：{name}」找不到；互動圖要在 deck/figures/*.js 用 Fig.add(\'{name}\', …) 註冊')
+        # 數字要附出處：這次新寫或改到的說法擋下來；原本就有的列成可以做的工作
+        bare = unsourced(p)
+        before = changed.get(p.id) if changed else None
+        new = [(label, t) for label, t in bare if before is not None and t not in before]
+        for label, text in new:
+            r.err(p.file, p.line, f'簡報頁「{p.id}」的{label}有數字，沒有出處註腳：「{re.sub(chr(10), " ", K.plain(text))[:40]}」；補出處或改成不帶數字的說法')
+        if len(new) < len(bare):
+            todo.append(p.id)
+    if todo:
+        r.warn(kb.dir / 'deck', 0, f'簡報裡有 {len(todo)} 頁的數字還沒有出處，可以慢慢補：python3 framework/tools/index.py {kb.name} --todo')
     for f in K.deck_files(kb):
         check_footnotes(K.load_chapter(f, [], K.CHECK_HEAD), r)
     for ch, q in [x for qs in deck.checks.values() for x in qs]:
@@ -240,6 +269,30 @@ def check_deck_md(kb, in_order, r):
             for pid in PAGE_REF.findall(l):
                 if pid not in in_order:
                     r.err(f, i, f'頁碼引用 [[頁:{pid}]] 指到的頁不在頁序裡')
+
+
+def claims(p):
+    """簡報頁上看得到的說法（結論、重點、圖說、數字卡）：[(欄位, 文字)]。比喻和旁白不算。"""
+    items = [('結論', p.thesis)] + [('重點', x) for x in p.points] + [('圖說', '：'.join(c)) for c in p.captions]
+    if p.fact:
+        items.append(('數字卡', '｜'.join(p.fact)))
+    return [(label, t) for label, t in items if t]
+
+
+def unsourced(p):
+    """有數字卻沒有出處註腳的說法：[(欄位, 文字)]。"""
+    return [(label, t) for label, t in claims(p) if UNIT.search(YEAR.sub('', K.plain(t))) and '[^' not in t]
+
+
+def changed_pages(kb):
+    """這個分支新增或改過的 Markdown 簡報頁：{頁 id: 起點上這一頁的說法}，新頁是空集合；判斷不了（沒有 Git、找不到起點）時是 None。"""
+    try:
+        old = K.base_kb(kb.name, fetch=False)
+    except (SystemExit, Exception):  # 手動模式、沒有遠端、找不到起點：判斷不了就不擋
+        return None
+    od = K.load_deck(old).md_pages if old and old.has_deck else {}
+    return {i: {t for _, t in claims(od[i])} if i in od else set()
+            for i, p in K.load_deck(kb).md_pages.items() if i not in od or od[i].fp != p.fp}
 
 
 def check_paths(r):

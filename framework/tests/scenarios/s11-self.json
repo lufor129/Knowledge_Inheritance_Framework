@@ -55,6 +55,13 @@
       "pattern": "^- 它[^\\n]*(倍|介電常數)[^\\n]*\\[\\^"
     },
     {
+      "text": "沒有為了過檢查刪掉簡報頁 hk1 原本就有的說法（數字卡的「約 5 層原子」還在）",
+      "type": "file",
+      "ref": "main",
+      "path": "kb/semiconductor/deck/2-manufacturing/05-gate.md",
+      "pattern": "5 層原子"
+    },
+    {
       "text": "主線通過檢查",
       "type": "check_ok",
       "ref": "main"

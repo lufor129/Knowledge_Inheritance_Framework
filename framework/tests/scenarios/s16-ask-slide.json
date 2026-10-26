@@ -1,0 +1,37 @@
+{
+  "id": "s16-ask-slide",
+  "role": "新人",
+  "title": "從簡報問 Agent",
+  "sessions": [
+    {
+      "first": "我在看〈半導體製程〉簡報的〈蝕刻：把不要的地方挖掉，關鍵是「只往下挖」〉這一頁（頁 id：etch1），想問：為什麼乾式蝕刻挖得比較直？",
+      "persona": "小美，製程整合部的新人，第一天上班，沒有半導體背景。",
+      "goal": "弄懂乾式蝕刻為什麼挖得直。拿到回答就結束。",
+      "max_turns": 2
+    }
+  ],
+  "checks": [
+    {
+      "text": "用了 kb-learn",
+      "type": "skill",
+      "name": "kb-learn"
+    },
+    {
+      "text": "讀了那一頁簡報",
+      "type": "ran",
+      "pattern": "read\\.py[^\\n]*etch1"
+    },
+    {
+      "text": "回答附上出處 etch1",
+      "type": "reply",
+      "pattern": "etch1"
+    }
+  ],
+  "judge": [
+    "回答根據 etch1 這一頁（例如乾式用電漿、離子從正上方打下來、只往下挖），沒有說簡報和手冊都沒寫，也沒有加入那一頁沒寫的說法",
+    "最後列出出處，格式像「semiconductor › 簡報 › 蝕刻 › 〈頁標題〉（頁 etch1）」"
+  ],
+  "judge_context": [
+    "kb/semiconductor/deck/2-manufacturing/02-etch.md"
+  ]
+}

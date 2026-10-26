@@ -6,7 +6,7 @@
   const CHAPS = [
     [1, '知識怎麼存', 'struct'], [2, '新增', 'modes'], [3, '修改與刪除', 'refs'], [4, '檢查與審核', 'gates'], [5, '新人怎麼學', 'learn']
   ];
-  const PARTS = { 0: '開場', 1: '第一部分 · 為什麼、給誰', 2: '第二部分 · 怎麼運作', 3: '第三部分 · 跟 Git 主機結合', 4: '第四部分 · 怎麼開始', 9: '結尾' };
+  const PARTS = { 0: '開場', 1: '第一部分 · 為什麼、給誰', 2: '第二部分 · 怎麼運作', 3: '第三部分 · 跟 Git 主機結合', 4: '第四部分 · 怎麼開始', 5: '第五部分 · 現況', 9: '結尾' };
 
   const Deck = {
     slides: [],
@@ -87,7 +87,7 @@
     try {
       el.innerHTML = s.raw ? s.render(i) : Deck.head(s, i) + s.render(i) + Deck.foot(s);
     } catch (e) { el.innerHTML = `<pre>${e.stack}</pre>`; console.error(e); }
-    el.insertAdjacentHTML('beforeend', '<div class="wm">知識傳承框架 · 設計說明（2026-10-24 討論結果）· 對話、數字與情境皆為示意</div>'); // 每頁上方的浮水印
+    el.insertAdjacentHTML('beforeend', '<div class="wm">知識傳承框架 · 設計說明（10-24 定案，10-26 更新）· 對話與情境為示意</div>'); // 每頁上方的浮水印
     stage.innerHTML = '';
     stage.appendChild(el);
     backButton(el, s, opts);

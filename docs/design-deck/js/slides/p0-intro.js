@@ -1,6 +1,7 @@
 /* 開場：封面、議程 */
 (function () {
   const A = Deck.add.bind(Deck);
+  const total = () => `${Deck.slides.length} 頁，約 ${Math.round(Deck.slides.reduce((a, x) => a + (x.minutes || 0), 0))} 分鐘`;
 
   /* 1. 封面：右側是一筆知識從傳承者流到新人、再從新人的問題流回來的示意圖 */
   A({
@@ -12,21 +13,22 @@
           <div>
             <div class="s-eyebrow">KNOWLEDGE INHERITANCE FRAMEWORK · 2026</div>
             <h1>知識傳承框架</h1>
-            <div class="sub">老手的經驗，變成新人看得懂的手冊和簡報；<br>增刪修改，跟 Agent 說就好</div>
+            <div class="sub">老手的經驗，變成新人看得懂的簡報和手冊；<br>增刪修改，跟 Agent 說就好</div>
           </div>
           <div class="cards" style="margin-top:28px;grid-template-columns:repeat(2,1fr)">
             <div class="card"><h4>第一部分</h4><p><b>為什麼、給誰</b><br>知識只在人腦袋裡、給主管的總覽、四種角色與使用情境、全景圖</p></div>
             <div class="card"><h4>第二部分</h4><p><b>怎麼運作</b><br>五章：知識怎麼存、新增、修改與刪除、檢查與審核、新人怎麼學</p></div>
             <div class="card"><h4>第三部分</h4><p><b>跟 Git 主機結合</b><br>對到 Git 上、誰能合併、待回答與勘誤</p></div>
             <div class="card"><h4>第四部分</h4><p><b>怎麼開始</b><br>技術選擇、skill 設計、搬半導體、新增知識庫</p></div>
+            <div class="card" style="grid-column:1/-1;background:var(--accent-2-soft);border-color:#eccab4"><h4>第五部分</h4><p><b>現況</b><br>已合併的 17 個變更提案、情境測試、新人以簡報為主（ADR-0006）實際做成的樣子，和之後還可以做的事</p></div>
           </div>
-          <div class="meta">設計說明 · 2026-10-24 討論結果 · 25 頁，約 51 分鐘<br>每頁左邊的互動元件都可以操作；對話、數字與情境皆為示意</div>
+          <div class="meta">設計說明 · 10-24 定案，10-26 更新 · ${total()}<br>每頁左邊的互動元件都可以操作；對話與情境為示意</div>
         </div>
         <div class="cover-right">
           <div style="position:absolute;left:50px;right:50px;top:50px;bottom:200px"><canvas id="cv-cover" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas></div>
           <div style="position:absolute;left:50px;right:50px;bottom:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-            <div class="card key"><h4>放在哪</h4><div class="big" style="font-size:28px">1 個 repo</div><p style="margin:0;font-size:14px">全公司都能看</p></div>
-            <div class="card key"><h4>標準答案</h4><div class="big" style="font-size:28px">手冊</div><p style="margin:0;font-size:14px">是正本，簡報以它為準</p></div>
+            <div class="card key"><h4>從哪開始</h4><div class="big" style="font-size:28px">入口網站</div><p style="margin:0;font-size:14px">一個壓縮檔，離線能看</p></div>
+            <div class="card key"><h4>新人主要看</h4><div class="big" style="font-size:28px">簡報</div><p style="margin:0;font-size:14px">簡報必備、手冊選配</p></div>
             <div class="card key"><h4>怎麼改</h4><div class="big" style="font-size:28px">跟 Agent 說</div><p style="margin:0;font-size:14px">維護者核准才算數</p></div>
           </div>
         </div>
@@ -67,33 +69,36 @@
         U.txt(c, '待回答：新人問倒了手冊，就變成下一筆要補的知識', w * .52, h * .9, { align: 'center', size: 15, w: 600, color: '#b3541e', bg: 'rgba(242,245,248,.94)' });
         node(A0, '傳承者', '老手的經驗', 140, '#b3541e');
         node(B0, 'Agent', '研究・整理・訪談', 160, '#1f4fb5');
-        node(C0, '手冊', '正本', 120, '#17202b');
+        node(C0, '簡報＋手冊', '新人看這裡', 150, '#17202b');
         L.forEach(p => node(p, '新人', '', 96, '#1f4fb5'));
       });
     },
-    notes: `大家好，今天介紹「知識傳承框架」：讓 Agent 幫忙，把各領域老手的經驗整理成新人看得懂的手冊和簡報。
+    notes: `大家好，今天介紹「知識傳承框架」：讓 Agent 幫忙，把各領域老手的經驗整理成新人看得懂的簡報和手冊。
 
-右邊這張圖就是整件事。藍點是知識，從傳承者出發，經過 Agent 整理、維護者核准，進到手冊，再流到新人身上。橘點反過來走：新人問倒了手冊，問題回到傳承者手上，變成下一筆要補的知識。
+右邊這張圖就是整件事。藍點是知識，從傳承者出發，經過 Agent 整理、維護者核准，進到簡報和手冊，再流到新人身上。橘點反過來走：新人問倒了簡報和手冊，問題回到傳承者手上，變成下一筆要補的知識。
 
-今天分四部分：為什麼、怎麼運作、怎麼跟 Git 主機結合、怎麼開始。這份簡報用的是半導體範例的引擎，每頁左邊都可以動手操作。`
+這份是 10-24 定案的設計說明，10-26 更新成現在的樣子。最大的改變是 10-25 定案的「新人以簡報為主」（ADR-0006）：新人從入口網站開始看簡報，簡報必備、手冊選配，兩邊一樣重要。這件事分三個變更提案做完了。
+
+前四部分講設計，第五部分講已經做完的、實際做成什麼樣子，和之後還可以做的事。每頁左邊都可以動手操作。`
   });
 
   /* 2. 議程 */
   A({
     id: 'agenda', part: 0, minutes: 1, short: '議程',
     title: '今天的路線：從為什麼講到第一步',
-    thesis: '主角是<b>新人</b>；增刪修改知識，是讓新人一直學得到東西的手段。',
+    thesis: '主角是<b>新人</b>；增刪修改知識，是讓新人一直學得到東西的手段。第五部分是<b>現況</b>。',
     render: () => {
       const parts = [
         { n: '1', t: '為什麼、給誰', m: '約 12 分', to: 'why', items: ['知識只在人腦袋裡', '給主管的總覽', '四種角色與使用情境', '全景圖'] },
         { n: '2', t: '怎麼運作', m: '約 19 分', to: 'struct', items: ['① 知識怎麼存　② 新增', '③ 修改與刪除', '④ 檢查與審核', '⑤ 新人怎麼學'] },
         { n: '3', t: '跟 Git 主機結合', m: '約 6 分', to: 'gitmap', items: ['對到 Git 上', '誰能合併', '待回答與勘誤'] },
-        { n: '4', t: '怎麼開始', m: '約 11 分', to: 'tools', items: ['技術選擇', '要設計的 skill 與參考', '把半導體搬進來', '新增一個知識庫'] }
+        { n: '4', t: '怎麼開始', m: '約 11 分', to: 'tools', items: ['技術選擇', '要設計的 skill 與參考', '把半導體搬進來', '新增一個知識庫'] },
+        { n: '5', t: '現況', m: '約 10 分', to: 'status', items: ['已經做完的', '情境測試和工具', '新人以簡報為主：做成什麼樣', '之後還可以做的事'] }
       ];
-      return `<div class="s-body three" style="grid-template-columns:repeat(4,1fr)">${parts.map(p => `
+      return `<div class="s-body three" style="grid-template-columns:repeat(5,1fr)">${parts.map(p => `
         <div class="fig" style="cursor:pointer" data-go="${p.to}">
           <div class="fig-title"><span>PART ${p.n}</span><span>${p.m}</span></div>
-          <div style="font-size:28px;font-weight:700;line-height:1.3">${p.t}</div>
+          <div style="font-size:26px;font-weight:700;line-height:1.3">${p.t}</div>
           <ul class="points">${p.items.map(i => `<li>${i}</li>`).join('')}</ul>
           <div style="margin-top:auto" class="caption">點一下跳到這個部分 →</div>
         </div>`).join('')}</div>`;
@@ -101,6 +106,6 @@
     init(el) { U.$$(el, '[data-go]').forEach(c => c.onclick = () => Deck.goId(c.dataset.go)); },
     notes: `今天分四部分。第一部分講為什麼需要這套框架、誰會用它，最後用一張全景圖串起來。第二部分是重點，分五章講它怎麼運作。
 
-第三部分講怎麼跟 GitHub 或 GitLab 結合；第四部分講技術選擇、要設計的 skill，和第一步要做什麼。點任何一張卡片可以直接跳過去。`
+第三部分講怎麼跟 GitHub 或 GitLab 結合；第四部分講技術選擇、要設計的 skill，和第一步要做什麼。第五部分是現況：已經合併了哪些變更提案、情境測試的結果、「新人以簡報為主」實際做成什麼樣子，以及之後還可以做的事。點任何一張卡片可以直接跳過去。`
   });
 })();

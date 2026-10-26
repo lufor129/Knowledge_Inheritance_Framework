@@ -48,23 +48,26 @@ def in_spans(warn, spans):
 
 def kb_body(kb, ch, source, closes, reader, warns, files):
     out = ['🤖 由 Agent 產生', '', '## 改了什麼']
-    out += [f'- 新增 `{x.id}`「{x.title}」：（一句話說這一節講什麼）' for x in ch.added]
-    out += [f'- 修改 `{x.id}`「{x.title}」：（一句話說改了什麼、為什麼改）' for x in ch.modified]
-    out += [f'- 刪除 `{x.id}`「{x.title}」：（一句話說為什麼刪）' for x in ch.deleted]
+    out += [f'- 新增簡報頁 `{p.id}`「{K.plain(p.title)}」：（一句話說這一頁講什麼、用什麼圖）' for p in ch.deck_added]
+    out += [f'- 修改簡報頁 `{p.id}`「{K.plain(p.title)}」：（一句話說改了什麼、為什麼改）' for p in ch.deck_modified]
+    out += [f'- 刪除簡報頁 `{p.id}`「{K.plain(p.title)}」：（一句話說為什麼刪）' for p in ch.deck_deleted]
+    out += [f'- 新增小節 `{x.id}`「{x.title}」：（一句話說這一節講什麼）' for x in ch.added]
+    out += [f'- 修改小節 `{x.id}`「{x.title}」：（一句話說改了什麼、為什麼改）' for x in ch.modified]
+    out += [f'- 刪除小節 `{x.id}`「{x.title}」：（一句話說為什麼刪）' for x in ch.deleted]
     for label, items in (('新增', ch.faq_added), ('修改', ch.faq_changed), ('刪除', ch.faq_deleted)):
         if items:
             out.append(f'- 常見問題{label}：' + '、'.join(f'「{q.q}」（{c.title}）' for c, q in items))
     if ch.terms_added:
         out.append(f'- 術語表新增 {len(ch.terms_added)} 個：' + '、'.join(l.strip('|').split('|')[0].strip() for l in ch.terms_added))
     if len(out) == 3:
-        out.append('- （這個分支沒有改到小節、常見問題或術語；寫出改了什麼）')
+        out.append('- （這個分支沒有改到簡報頁、小節、常見問題或術語；寫出改了什麼）')
     if source == '研究':  # 研究來的說法沒有人親身確認過，維護者要知道哪些只是報導
         origin = ['研究：', '- 第一手：（原廠文件、論文、官方網頁，各支持哪些說法）',
                   '- 報導：（新聞、業界媒體，各支持哪些說法；沒有就寫「沒有」）']
     else:
         origin = [f'{source}：（內容從哪裡來：整理了哪份資料／誰口述的）']
     out += ['', '## 來歷', *origin, '', '## 影響']
-    out.append(f'- 簡報頁：{"、".join(ch.pages) + "（重看過，寫出哪些改了文字）" if ch.pages else "沒有對應的簡報頁要改"}')
+    out.append(f'- 頁和小節的對應：{"、".join(ch.pages) + "（兩邊對照過，寫出哪一邊改了什麼）" if ch.pages else "沒有變"}')
     chap_files = {K.rel(c.file) for c in kb.chapters}
     others = [f for f in files if f not in chap_files and not f.startswith(f'kb/{kb.name}/deck/')
               and f != f'kb/{kb.name}/terms.md']

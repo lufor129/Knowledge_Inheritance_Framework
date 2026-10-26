@@ -1,4 +1,4 @@
-"""建立新知識庫的骨架：README（介紹、維護者、全景圖草稿）、術語表、每個部分的 README、每一章只有標題的檔案、圖片清單，並更新首頁的知識庫清單。
+"""建立新知識庫的骨架：README（介紹、維護者、全景圖草稿）、術語表、簡報的頁序和每一章的章檔、手冊每個部分的 README 和每一章只有標題的檔案、圖片清單，並更新首頁的知識庫清單。
 
 用法：
   python3 framework/tools/new_kb.py .kif/tmp/new-kb.json
@@ -63,6 +63,17 @@ def readme(plan):
                       '（草稿）各部分、各章之間的關係。', ''])
 
 
+def order(plan):
+    """簡報的頁序：設定、部分；頁面等第一筆知識進來時再加。"""
+    head = (TEMPLATES / 'order.md').read_text(encoding='utf-8').split('## 設定')[0].rstrip('\n')
+    zh = '零一二三四五六七八九十'
+    parts = []
+    for p in plan['parts']:
+        n = int(K.PART_DIR.match(p['dir']).group(1))
+        parts.append(f'- {n}：第{zh[n] if n < len(zh) else n}部分 · {p["title"]}')
+    return '\n'.join([head, '', '## 設定', f'- 標題：{plan["title"]}', '- 浮水印：', '', '## 部分', *parts, '', '## 頁面', ''])
+
+
 def terms(plan):
     head = (TEMPLATES / 'terms.md').read_text(encoding='utf-8').rstrip('\n')
     rows = [f'| {t["zh"]} | {t.get("en", "")} | {t.get("desc", "")} | {t.get("first", "")} |'
@@ -85,9 +96,12 @@ def main(argv):
         return 1
     files = {d / 'README.md': readme(plan), d / 'terms.md': terms(plan),
              d / 'assets/SOURCES.md': (TEMPLATES / 'SOURCES.md').read_text(encoding='utf-8')}
+    files[d / 'deck/order.md'] = order(plan)
     for p in plan['parts']:
         files[d / 'handbook' / p['dir'] / 'README.md'] = f'# {p["title"]}\n\n{p.get("intro", "").strip()}\n'
         for c in p['chapters']:
+            # 部分和章由簡報決定，手冊用同樣的編號；新人主要看簡報，手冊放一頁放不下的細節
+            files[d / 'deck' / p['dir'] / f'{c["file"]}.md'] = f'# {c["title"]}\n'
             files[d / 'handbook' / p['dir'] / f'{c["file"]}.md'] = f'# {c["title"]}\n'
     for f, text in files.items():
         f.parent.mkdir(parents=True, exist_ok=True)
