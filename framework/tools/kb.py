@@ -913,13 +913,14 @@ def kb_list_block():
     rows = [head, '', '| 知識庫 | 介紹 | 維護者 | 簡報 | 單一檔案 |', '|---|---|---|---|---|']
     for k in all_kbs():
         who = '、'.join(n for n, _ in k.maintainers) or '（還沒有）'
-        links = []
+        links, pages = [], k.has_deck and bool(load_deck(k).pages)   # 剛建好骨架、還沒有頁的簡報不建置，也不列連結
         if download_url(k.name, 'handbook'):
-            links.append(f'[手冊網站]({download_url(k.name, "handbook")})')
-            if k.has_deck:
+            if k.sections:
+                links.append(f'[手冊網站]({download_url(k.name, "handbook")})')
+            if pages:
                 links.append(f'[簡報]({download_url(k.name, "deck")})')
-        dl = '・'.join(links) or '請 Agent 現場建置'
-        rows.append(f'| [{k.title}](kb/{k.name}/) | {k.intro} | {who} | {"有" if k.has_deck else "還沒有"} | {dl} |')
+        dl = '・'.join(links) or ('請 Agent 現場建置' if not download_url(k.name, 'handbook') else '還沒有')
+        rows.append(f'| [{k.title}](kb/{k.name}/) | {k.intro} | {who} | {"有" if pages else "還沒有"} | {dl} |')
     return '\n'.join([KB_LIST_START, *rows, KB_LIST_END])
 
 

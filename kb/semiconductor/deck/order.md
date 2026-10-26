@@ -46,14 +46,25 @@
 - p1sum
 - p2
 - loop
-- litho1@34f751 → litho1@570fa3, field@8fc9c4, reso@09ee2b
-- lithoL@349a6b → litho2@6b2f76
-- litho3@9e2a91 → litho3@f30d0e
-- litho3m@42065b → litho3m@cdaa31
-- litho4@f8fd2a → litho4@a6d85f
-- litho5@d92432 → reso@09ee2b, mpat@abebb2, litho5@373146
-- litho6@4e4073 → litho6@310844
-- cmask@c5975a → cmask@1690c6
+- litho1
+- litho1-d
+- field-d
+- reso-d
+- lithoL
+- litho2-d
+- litho3
+- litho3-d
+- litho3m
+- litho3m-d
+- litho4
+- litho4-d
+- litho5
+- mpat-d
+- litho5-d
+- litho6
+- litho6-d
+- cmask
+- cmask-d
 - etch1
 - etch3
 - etch4
@@ -64,7 +75,11 @@
 - dope1
 - depo3
 - dope3
-- hk1@f0cc3a → hk1@4c046b, hk2@b86b6a, hk3@e3a45c, hk4@9e6156
+- hk1
+- hk1-d
+- hk2-d
+- hk3-d
+- hk4-d
 - cmp1
 - cmp2
 - cmp3
@@ -75,19 +90,32 @@
 - beol2
 - tcad1
 - tcad2
-- eyes@fe5310 → eyes@c620d0
-- metro@3ac731 → metro@f1c701
-- tem@424560 → tem@87f1a2
-- sem@d499c2 → sem@c64f55
-- ocd@c8420c → ocd@7654cc
-- ocdf@5e0141 → ocdf@c5ecf0
-- ocdb@edcf35 → ocdb@efd008
-- insp@a6ca6b → insp@88dbf5
-- mloop@2b5e95 → mloop@31c782
-- apc@a8207b → apc@26198a
-- wat@d5c254 → wat@15f0a1
-- wat2@3495a7 → wat2@8751e6
-- wat4@afc5b9 → wat4@4f7223
+- eyes
+- eyes-d
+- metro
+- metro-d
+- tem
+- tem-d
+- sem
+- sem-d
+- ocd
+- ocd-d
+- ocdf
+- ocdf-d
+- ocdb
+- ocdb-d
+- insp
+- insp-d
+- mloop
+- mloop-d
+- apc
+- apc-d
+- wat
+- wat-d
+- wat2
+- wat2-d
+- wat4
+- wat4-d
 - d2m
 - pdk
 - npi
