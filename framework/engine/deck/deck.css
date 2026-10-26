@@ -291,7 +291,7 @@ svg .hot:hover { filter: brightness(.94); }
 /* 每頁上方的浮水印 */
 .slide .wm { position: absolute; top: 8px; left: 0; right: 0; text-align: center; font-size: 12px; color: var(--ink-3); opacity: .65; letter-spacing: .04em; pointer-events: none; z-index: 20; }
 
-/* ---------- 給新人的按鈕：旁白、看詳細和出處、問 Agent（learn.js） ---------- */
+/* ---------- 給新人的按鈕：旁白、看深入、問 Agent；深入頁上的說明、跳過深入、回主頁（learn.js） ---------- */
 #learn { position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 42; /* 蓋在旁白面板上面，才收得起來 */ display: flex; gap: 6px; }
 #learn button { font: 600 14px var(--font-cjk); border: 1px solid #b8c3cf; background: rgba(255,255,255,.92); color: #17202b; padding: 5px 14px; border-radius: 16px; cursor: pointer; box-shadow: 0 1px 4px rgba(20,30,45,.12); }
 #learn button:hover { border-color: var(--accent); color: var(--accent); }

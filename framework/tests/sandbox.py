@@ -156,7 +156,7 @@ def setup(steps, work, vars):
             sh(['git', 'switch', '--quiet', '-c', s['name']], cwd=fx)
             for e in s['edits']:
                 apply_edit(fx, e, vars)
-            for cmd in s.get('run', []):  # 例如更新簡報頁的指紋，讓前置提案本身通過檢查
+            for cmd in s.get('run', []):  # 例如前置提案要先跑的指令，讓它本身通過檢查
                 sh(shlex.split(cmd), cwd=fx)
             sh(['git', 'commit', '--quiet', '-am', fill(s['commit'], vars)], cwd=fx)
             sh(['git', 'push', '--quiet', '-u', 'origin', s['name']], cwd=fx)

@@ -1,4 +1,5 @@
 /* 給新人的按鈕和進度：旁白、看深入、問 Agent；深入頁上還有說明、跳過深入、回主頁。
+   深入頁平常翻頁不會經過，按「看深入」才進去（翻頁的規則在 engine.js 的 Deck.nextIndex）。
    記住看過哪些頁（入口網站讀同一份紀錄）；點註腳小標號看出處。
    進度存在瀏覽器的 localStorage：kif.<知識庫>.seen（看過的頁 id）、kif.<知識庫>.last（最後看的頁 id）。 */
 (function () {
@@ -59,9 +60,9 @@
     bar = document.createElement('div'); bar.id = 'learn';
     bar.innerHTML = `<button type="button" data-b="narr" title="打開或收起這一頁的解說">旁白</button>
       <button type="button" data-b="more" title="打開或收起這一頁的長說明">說明</button>
-      <button type="button" data-b="deep" title="這一頁後面有深入頁：比較長的說明和推導">看深入</button>
-      <button type="button" data-b="skip" title="跳過這幾頁深入頁，到下一個主頁">跳過深入</button>
-      <button type="button" data-b="main" title="回到這一頁接著的主頁">回主頁</button>
+      <button type="button" data-b="deep" title="這一頁有深入頁：比較長的說明和推導；平常翻頁不會經過，按這裡才進去">看深入</button>
+      <button type="button" data-b="skip" title="不看剩下的深入頁，直接到下一個主頁">跳過深入</button>
+      <button type="button" data-b="main" title="回到這幾頁深入頁的主頁">回主頁</button>
       <button type="button" data-b="ask" title="複製這一頁的位置，貼到 Claude Code 接著問">問 Agent</button>`;
     pop = document.createElement('div'); pop.id = 'learn-pop'; pop.hidden = true;
     document.body.append(bar, pop);

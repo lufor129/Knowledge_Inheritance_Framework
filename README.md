@@ -4,7 +4,7 @@
 
 ## 第一天
 
-1. **打開入口網站**：在下面「知識庫清單」下載 portal.zip，解開後用 Chrome 或 Edge 打開 index.html，離線也能看。挑一個知識庫，先看全景圖和每章的速覽，再照學習路徑看簡報；簡報下面有「旁白」「看深入」「問 Agent」，深入頁可以跳過，每章最後有自我檢查。看過哪些頁會記在你的瀏覽器裡。
+1. **打開入口網站**：在下面「知識庫清單」下載 portal.zip，解開後用 Chrome 或 Edge 打開 index.html，離線也能看。挑一個知識庫，先看全景圖和每章的速覽，再照學習路徑看簡報；簡報下面有「旁白」「看深入」「問 Agent」，比較長的說明在深入頁，按「看深入」才會進去，每章最後有自我檢查。看過哪些頁會記在你的瀏覽器裡。
 2. **想問問題、想補充知識**：
    1. 安裝 [Claude Code](https://claude.com/claude-code) 和 [GitHub CLI](https://cli.github.com/)，登入：`gh auth login`
       - 模型：Sonnet 和 Opus 都用情境測試（framework/tests/）測過，結果差不多；Sonnet 的花費大約是 Opus 的三分之一，日常用 Sonnet 就夠。

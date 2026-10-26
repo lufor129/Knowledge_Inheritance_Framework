@@ -3,7 +3,7 @@
    版面跟程式頁一樣：左邊是「圖：」指定的互動圖、圖片或影片；右邊依序是重點、數字卡、比喻卡。
    版面特別的頁，互動圖寫 body: true，render 回傳整個內容區，右欄用 U.pageSide({ top, meters, extra }) 放這一頁的文字；
    raw: true 連標題都自己畫。cls、eyebrow、back、hub、hubShort、footL 這些頁面設定也可以寫在互動圖裡。
-   深入頁（Markdown 寫了「深入：」）標題旁標「深入・可略過」，「說明：」的長文由 engine.js 放在畫面下方，預設展開。 */
+   深入頁（Markdown 寫了「深入：」）標題旁標「深入」，平常翻頁不會經過，主頁按「看深入」才進去；「說明：」的長文由 engine.js 放在畫面下方，預設展開。 */
 (function () {
   const CFG = window.DECK_CONFIG || {};
   const CIRC = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳';

@@ -167,14 +167,14 @@
     points: ['重點', '三到四點短句，每點一個重點。'],
     fact: ['數字卡', '一句話數字；這次新寫或改到的數字沒附出處會擋。點數字後面的小標號看出處。'],
     analogy: ['比喻卡', '用生活經驗解釋這頁的概念；卡片標題可以自己寫。'],
-    learn: ['給新人的按鈕', '<b>旁白</b>：講稿去掉給講者的段落，預設收起；<b>看深入</b>：後面有深入頁才出現，翻到第一頁深入頁；<b>問 Agent</b>：複製「哪個知識庫、哪一頁（頁 id）」，貼到 Claude Code 接著問。'],
+    learn: ['給新人的按鈕', '<b>旁白</b>：講稿去掉給講者的段落，預設收起；<b>看深入</b>：後面有深入頁才出現，翻到第一頁深入頁（平常翻頁不會經過）；<b>問 Agent</b>：複製「哪個知識庫、哪一頁（頁 id）」，貼到 Claude Code 接著問。'],
     notes: ['講稿', '上台講解時按 N 或「講稿」，比旁白多了給講者的【可略】【提示】段落和計時。'],
-    dhead: ['深入頁的標題', '標題旁標「深入・可略過」；照順序翻會經過，不想看就按「跳過深入」。學習路徑的時間和進度不算深入頁。'],
+    dhead: ['深入頁的標題', '標題旁標「深入」，頁碼顯示成「04 · 深入 3/4」。平常翻頁不會經過，在主頁按「看深入」才進去；看完最後一頁再翻，就到下一個主頁。'],
     dfig: ['深入頁的圖', '可以寫「同主頁」沿用主頁的互動圖，或「表格」把說明裡的第一個表格放在這裡。'],
     dpts: ['深入頁的重點', '三到五點，講這一頁的說明在講什麼；新寫的，帶數字就要附出處。'],
     dmore: ['說明', '長說明放在畫面下方，深入頁預設展開，簡報自動縮到上面；可以有多段、小標題、清單、表格、圖片和出處註腳。收起之後，接下來的深入頁也先收著。']
   };
-  const DECK_FLOW = [['封面', ''], ['議程', ''], ['主頁 × N', '每頁一個概念'], ['深入頁', '接在主頁後面，可以略過'], ['章末自我檢查', '自動產生：章檔的題目'], ['出處頁', '自動整理每頁的註腳'], ['問答附錄', '建置時由各章題目產生']];
+  const DECK_FLOW = [['封面', ''], ['議程', ''], ['主頁 × N', '每頁一個概念'], ['深入頁', '接在主頁後面，按「看深入」才進去'], ['章末自我檢查', '自動產生：章檔的題目'], ['出處頁', '自動整理每頁的註腳'], ['問答附錄', '建置時由各章題目產生']];
   A(Object.assign({
     id: 'learn', part: 2, minutes: 2.5, short: '新人看到的樣子',
     title: '新人看到的樣子：入口網站和簡報', en: 'Learn',
@@ -183,7 +183,7 @@
       <div class="col"><div class="controls">${U.seg('ln-seg', ['入口網站', '簡報：一頁', '簡報：深入頁', '簡報：整份'], 0)}</div>
         <div class="mock" id="ln-mock"></div></div>
       ${U.side({
-        points: ['從<b>入口網站</b>開始：全景圖、學習路徑、主題索引、看到哪裡、搜尋', '簡報下面有<b>旁白、看深入、問 Agent</b>', '深入頁標「深入・可略過」，說明在下方預設展開', '每章最後有<b>自我檢查</b>，先想再展開答案'],
+        points: ['從<b>入口網站</b>開始：全景圖、學習路徑、主題索引、看到哪裡、搜尋', '簡報下面有<b>旁白、看深入、問 Agent</b>', '深入頁按「看深入」才進去，說明在下方預設展開', '每章最後有<b>自我檢查</b>，先想再展開答案'],
         fact: { v: '1 個壓縮檔', d: 'portal.zip：入口網站和所有簡報，解開就能離線看' },
         analogy: { icon: 'road', t: '比喻', p: '像逛博物館：入口拿一張導覽圖（全景圖），每個展間有說明牌（簡報），想聽解說戴耳機（旁白），想看更多走進旁邊的小展間（深入頁）。' }
       })}</div>`,
@@ -208,7 +208,7 @@
           ${b('widget', 'display:grid;place-items:center;font-size:20px;font-weight:700', '左：主圖<br><span class="ids">拖動厚度，看漏電怎麼變</span>')}
           <div style="display:flex;flex-direction:column;gap:8px">${b('points', 'flex:1', '<b>重點</b><span class="ids">• 牆越薄，控制力越強<br>• 太薄，電子穿過去</span>')}${b('fact', '', '<b>數字卡</b><span class="ids">約 1.2 nm：只剩約 5 層原子</span>')}${b('analogy', '', '<b>比喻卡</b><span class="ids">隔著牆用磁鐵吸鐵片</span>')}</div>
         </div><div style="display:flex;gap:8px">${b('learn', 'flex:1;padding:6px 14px;text-align:center', '<span class="ids" style="display:inline">［旁白］［看深入（4 頁）］［問 Agent］</span>')}${b('notes', 'padding:6px 14px', '<span class="ids" style="display:inline">講稿（按 N）</span>')}</div>`;
-      const deep = `${b('dhead', 'padding:10px 14px', '<span class="ids">04 第二部分 · ⑤ 閘極</span><b style="font-size:20px">換成二氧化鉿：牆做厚，電場照樣過得去 <span style="font-size:13px;color:var(--accent-2);border:1.5px dashed var(--accent-2);border-radius:10px;padding:1px 8px">深入・可略過</span></b>')}
+      const deep = `${b('dhead', 'padding:10px 14px', '<span class="ids">04 · 深入 3/4　第二部分 · ⑤ 閘極</span><b style="font-size:20px">換成二氧化鉿：牆做厚，電場照樣過得去 <span style="font-size:13px;color:var(--accent-2);border:1.5px dashed var(--accent-2);border-radius:10px;padding:1px 8px">深入</span></b>')}
         <div style="display:grid;grid-template-columns:58fr 42fr;gap:10px;min-height:120px">
           ${b('dfig', 'display:grid;place-items:center;font-size:18px;font-weight:700', '圖：同主頁<br><span class="ids">沿用 hk1 的互動圖</span>')}
           ${b('dpts', '', '<b>重點</b><span class="ids">• 傳電場能力（k）高的牆可以做厚<br>• 怕高溫，要最後才鋪</span>')}
@@ -230,7 +230,7 @@
 
 先看「入口網站」：CI 把入口頁和所有簡報打包成 portal.zip，新人解開就能離線看。每個知識庫有一張自動排的全景圖，橘色箭頭是先修；點一章看它的速覽，先修還沒看完會提醒，但照樣能打開。下面還有學習路徑、主題索引和角色路徑。
 
-切到「簡報：一頁」，點各個區塊看規則。下面那一排是給新人的按鈕：旁白、看深入、問 Agent。切到「簡報：深入頁」：標題旁標「深入・可略過」，圖可以沿用主頁的，長說明放在下方、預設展開。「簡報：整份」可以看到每章最後自動多一頁自我檢查，最後還有出處頁和問答附錄。`
+切到「簡報：一頁」，點各個區塊看規則。下面那一排是給新人的按鈕：旁白、看深入、問 Agent。切到「簡報：深入頁」：平常翻頁不會經過，在主頁按「看深入」才進去；標題旁標「深入」，圖可以沿用主頁的，長說明放在下方、預設展開。「簡報：整份」可以看到每章最後自動多一頁自我檢查，最後還有出處頁和問答附錄。`
   }, C5));
 
   /* ⑤ 查找與帶讀 */

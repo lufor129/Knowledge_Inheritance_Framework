@@ -28,7 +28,7 @@
           <div style="position:absolute;left:50px;right:50px;top:50px;bottom:200px"><canvas id="cv-cover" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas></div>
           <div style="position:absolute;left:50px;right:50px;bottom:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
             <div class="card key"><h4>從哪開始</h4><div class="big" style="font-size:28px">入口網站</div><p style="margin:0;font-size:14px">一個壓縮檔，離線能看</p></div>
-            <div class="card key"><h4>新人主要看</h4><div class="big" style="font-size:28px">簡報</div><p style="margin:0;font-size:14px">主頁＋可略過的深入頁</p></div>
+            <div class="card key"><h4>新人主要看</h4><div class="big" style="font-size:28px">簡報</div><p style="margin:0;font-size:14px">主頁＋按了才看的深入頁</p></div>
             <div class="card key"><h4>怎麼改</h4><div class="big" style="font-size:28px">跟 Agent 說</div><p style="margin:0;font-size:14px">維護者核准才算數</p></div>
           </div>
         </div>
@@ -77,7 +77,7 @@
 
 右邊這張圖就是整件事。藍點是知識，從傳承者出發，經過 Agent 整理、維護者核准，進到簡報，再流到新人身上。橘點反過來走：簡報沒寫的問題，回到傳承者手上，變成下一筆要補的知識。
 
-這份是 10-24 定案的設計說明，10-26 更新成現在的樣子。中間有兩次大改變：10-25 定案「新人以簡報為主」（ADR-0006），新人從入口網站開始看簡報；10-26 再定案「只留簡報」（ADR-0007），拿掉手冊，一頁放不下的長說明做成接在主頁後面、可以略過的深入頁，入口網站多了全景圖、速覽、先修和主題索引。兩次都分三個變更提案做完了。
+這份是 10-24 定案的設計說明，10-26 更新成現在的樣子。中間有兩次大改變：10-25 定案「新人以簡報為主」（ADR-0006），新人從入口網站開始看簡報；10-26 再定案「只留簡報」（ADR-0007），拿掉手冊，一頁放不下的長說明做成接在主頁後面的深入頁（平常翻頁不經過，按「看深入」才進去），入口網站多了全景圖、速覽、先修和主題索引。兩次都分三個變更提案做完了。
 
 前四部分講設計，第五部分講已經做完的、實際做成什麼樣子，和之後還可以做的事。每頁左邊都可以動手操作。`
   });
@@ -106,6 +106,6 @@
     init(el) { U.$$(el, '[data-go]').forEach(c => c.onclick = () => Deck.goId(c.dataset.go)); },
     notes: `今天分四部分。第一部分講為什麼需要這套框架、誰會用它，最後用一張全景圖串起來。第二部分是重點，分五章講它怎麼運作。
 
-第三部分講怎麼跟 GitHub 或 GitLab 結合；第四部分講技術選擇、要設計的 skill，和第一步要做什麼。第五部分是現況：已經合併了哪些變更提案、情境測試的結果、「新人以簡報為主」實際做成什麼樣子，以及之後還可以做的事。點任何一張卡片可以直接跳過去。`
+第三部分講怎麼跟 GitHub 或 GitLab 結合；第四部分講技術選擇、要設計的 skill，和第一步要做什麼。第五部分是現況：已經合併了哪些變更提案、情境測試的結果、「只留簡報」實際做成什麼樣子，以及之後還可以做的事。點任何一張卡片可以直接跳過去。`
   });
 })();
