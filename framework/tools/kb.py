@@ -413,8 +413,12 @@ def changes(old, new):
     d_added = [p for i, p in nd.items() if i not in od]
     d_mod = [p for i, p in nd.items() if i in od and od[i].fp != p.fp]
     d_del = [p for i, p in od.items() if i not in nd]
-    o_files = {rel(f): f.read_text(encoding='utf-8') for f in deck_files(old)} if old and old.has_deck else {}
-    d_chaps = [f for f in deck_files(new) if o_files.get(rel(f)) != f.read_text(encoding='utf-8')] if new.has_deck else []
+    def pages_part(f):  # 只比第一頁之後：章檔開頭的速覽、先修改了，不算簡報頁或自我檢查有變
+        text = f.read_text(encoding='utf-8')
+        m = re.search(r'^<a name="', text, re.M)
+        return text[m.start():] if m else ''
+    o_files = {rel(f): pages_part(f) for f in deck_files(old)} if old and old.has_deck else {}
+    d_chaps = [f for f in deck_files(new) if o_files.get(rel(f)) != pages_part(f)] if new.has_deck else []
     return Changes(chapters, added, modified, deleted, faq_added, faq_changed, faq_deleted, terms_added, pages,
                    d_added, d_mod, d_del, d_chaps)
 
