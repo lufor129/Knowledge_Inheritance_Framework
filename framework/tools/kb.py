@@ -426,7 +426,7 @@ def slide_ids(kb):
 # ---------- 簡報頁 ----------
 # 新的簡報頁寫在 deck/<部分>/<章>.md：一頁一個「錨點＋## 標題」，底下是欄位；互動圖寫在 deck/figures/*.js。
 # 深入頁也是簡報頁：寫「- 深入：<主頁 id>」，接在主頁後面，長說明寫在「說明：」。
-# 章檔開頭（「# 章名」到第一頁之前）寫「- 速覽：」和「- 先修：」，入口網站的學習路徑和全景圖用。
+# 章檔開頭（「# 章名」到第一頁之前）寫「- 速覽：」「- 先修：」和「- 圖示：」，入口網站的學習路徑和全景圖用。
 # 舊的簡報頁寫在 deck/slides/*.js，文字和動畫混在一起；搬到 Markdown 之前，只抓得到標題、結論、講稿這些欄位。
 
 DECK_META = {'短標題': 'short', '英文': 'en', '建議': 'minutes', '圖': 'fig', '標籤': 'badge', '資料': 'src', '深入': 'deep'}
@@ -507,6 +507,8 @@ class DeckChapter:
     title: str           # 「# 章名」
     overview: str = ''   # 「- 速覽：」
     pre: list = field(default_factory=list)   # 「- 先修：」：[(知識庫名稱或 None, 章名, 行號)]
+    icon: str = ''       # 「- 圖示：」：入口網站的章卡片上畫的圖示（名稱在 framework/engine/portal/icons.js）
+    icon_line: int = 0
 
 
 @dataclass
@@ -592,16 +594,18 @@ PRE_REF = re.compile(r'^(?:([a-z0-9-]+)\s*›\s*)?(.+)$')
 
 
 def _deck_head(f, ch, problems):
-    """章檔開頭的「- 速覽：」（可以換行，下一行縮排兩格接著寫）和「- 先修：章名、章名」；別的知識庫的章寫成「cv › 影像分類」。"""
+    """章檔開頭的「- 速覽：」（可以換行，下一行縮排兩格接著寫）、「- 先修：章名、章名」（別的知識庫的章寫成「cv › 影像分類」）和「- 圖示：名稱」。"""
     out, cur = DeckChapter(f, ch.title), None
     ov = []
     for i, l in enumerate(ch.text.splitlines(), 1):
         if ANCHOR.match(l):
             break
-        m = re.match(r'^- (速覽|先修)[：:]\s*(.*?)\s*$', l)
+        m = re.match(r'^- (速覽|先修|圖示)[：:]\s*(.*?)\s*$', l)
         if m:
             cur = m.group(1)
-            if cur == '速覽':
+            if cur == '圖示':
+                out.icon, out.icon_line = m.group(2), i
+            elif cur == '速覽':
                 ov.append(m.group(2))
             else:
                 for tok in (t.strip() for t in re.split(r'[、,，]', m.group(2))):
@@ -615,6 +619,12 @@ def _deck_head(f, ch, problems):
         cur = None
     out.overview = ''.join(ov).strip()
     return out
+
+
+def icon_names():
+    """入口網站內建的圖示名稱（framework/engine/portal/icons.js 的每一行「名稱: '路徑'」）。"""
+    f = ROOT / 'framework/engine/portal/icons.js'
+    return set(re.findall(r'^\s+([a-z0-9-]+):\s*\'', f.read_text(encoding='utf-8'), re.M)) if f.exists() else set()
 
 
 def chapter_names(deck):

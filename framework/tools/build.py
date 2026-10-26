@@ -392,6 +392,8 @@ def portal_data():
         done = set()
         for g in gs:
             ch = deck.chapters.get((g['part'], g['chap']))
+            if ch:
+                g['icon'] = ch.icon   # 圖示每一段都畫（例如導讀和總整理是同一個章檔）
             if g['key'] in done or not ch:
                 continue
             done.add(g['key'])
@@ -415,7 +417,7 @@ def build_portal(dest):
         build(kb, dest / kb.name)
     head = '<style>' + read(ENGINE / 'portal/portal.css') + '</style>'
     body = ('<div id="app"></div>\n' + script('window.PORTAL = ' + json.dumps(portal_data(), ensure_ascii=False) + ';')
-            + script(read(ENGINE / 'portal/portal.js')))
+            + script(read(ENGINE / 'portal/icons.js')) + script(read(ENGINE / 'portal/portal.js')))
     (dest / 'index.html').write_text(page('知識傳承入口', head, body), encoding='utf-8')
     print(f'已建置 {display(dest / "index.html")}')
     return dest

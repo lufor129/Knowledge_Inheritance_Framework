@@ -20,7 +20,7 @@ allowed-tools: Bash(git push:*), Bash(gh label create:*), Bash(gh pr create:*), 
 
    有不清楚的就再問一輪，發起人全部確認了才往下走。骨架定了之後，部分和章的結構很難再大改。
 2. **開分支**：`git fetch origin && git switch -c kb/<短名>/skeleton origin/main`。
-3. **建骨架**：把訪談結果寫成 `.kif/tmp/new-kb.json`（格式寫在 framework/tools/new_kb.py 開頭：名稱、介紹、維護者、部分和章（含速覽、先修）、術語），再跑 `python3 framework/tools/new_kb.py .kif/tmp/new-kb.json`。它照 framework/templates/ 建好 README、術語表、簡報的頁序和每一章的章檔（章名、速覽、先修）、圖片清單，也更新首頁的知識庫清單；每次建出來的結構都一樣，檢查才過得了。全景圖不用畫：入口網站照部分和章自動排，先修畫成箭頭，還沒有頁的章用虛線框列出來。
+3. **建骨架**：把訪談結果寫成 `.kif/tmp/new-kb.json`（格式寫在 framework/tools/new_kb.py 開頭：名稱、介紹、維護者、部分和章（含速覽、先修、圖示：照章的內容從 framework/guide/deck.md 的圖示表挑一個）、術語），再跑 `python3 framework/tools/new_kb.py .kif/tmp/new-kb.json`。它照 framework/templates/ 建好 README、術語表、簡報的頁序和每一章的章檔（章名、速覽、先修）、圖片清單，也更新首頁的知識庫清單；每次建出來的結構都一樣，檢查才過得了。全景圖不用畫：入口網站照部分和章自動排，先修畫成箭頭，還沒有頁的章用虛線框列出來。
 4. **檢查**：`python3 framework/tools/check.py`，到沒有 ✗ 為止。
 5. **建標籤**：`gh label create "kb:<短名>" --color 1f4fb5 --description "<名稱>"`，issue 和提案才分得出是哪個知識庫的。
 6. **開變更提案**：commit、`git push -u origin kb/<短名>/skeleton`，再開提案：標題「新增知識庫：<名稱>」，只貼 `kb:<短名>` 標籤，說明寫進 `.kif/tmp/proposal.md`（第一行「🤖 由 Agent 產生」，接著是訪談結果的摘要），`gh pr create --base main --title "新增知識庫：<名稱>" --label "kb:<短名>" --body-file .kif/tmp/proposal.md`。發起人不是框架維護者時，`gh pr edit <N> --add-reviewer <框架維護者帳號>`。

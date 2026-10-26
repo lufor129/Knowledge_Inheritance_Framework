@@ -1,7 +1,9 @@
-/* 入口網站：新人的起點。上面是三個步驟和搜尋；下面依序是知識庫卡片、學習路徑（一條由上往下的路線，每章有速覽和先修）、
-   收起來的全景圖、主題索引、角色路徑（有才顯示）；建置日期、維護者放在頁尾。給開發者看的東西（修改紀錄、頁 id、檔案路徑）不放上來。
+/* 入口網站：新人的起點。上面是「怎麼學」五站時間軸（點一站看示意動畫）和搜尋；下面依序是知識庫卡片、
+   學習路徑（每章一張圖示卡片：速覽、看了多少、先修和深入；點了翻面看細節）、收起來的全景圖、主題索引、角色路徑（有才顯示）；
+   建置日期、維護者放在頁尾。給開發者看的東西（修改紀錄、頁 id、檔案路徑）不放上來。
+   章的圖示寫在章檔開頭的「- 圖示：」，圖示本身在 icons.js（window.KIF_ICONS）；沒寫就顯示章的編號。
    資料由 build.py 放在 window.PORTAL：{ built, commit, latest, kbs: [{name, title, intro, maintainers, deck, sections, pages, minutes, deep, parts,
-   path: [{key, part, chap, name, pages, minutes, deep, deepMinutes, last, overview, pre: [[知識庫, key, 章名]]}], topics: [{zh, en, desc, pages: [[頁 id, 標題, 是不是深入頁]]}],
+   path: [{key, part, chap, name, pages, minutes, deep, deepMinutes, last, overview, icon, pre: [[知識庫, key, 章名]]}], topics: [{zh, en, desc, pages: [[頁 id, 標題, 是不是深入頁]]}],
    updated}], roles: [{name, intro, steps: [[知識庫, 頁 id, 說明]]}], index: [[種類, 知識庫, id, 標題, 內文]] }
    全景圖照部分和章自動排，先修畫成箭頭；先修只提醒、不擋。學習路徑的時間和進度只算主頁，深入頁另外標「選看」。
    用詞照 GLOSSARY（先修、深入、主題索引），第一次出現的地方附一句白話解釋。
@@ -19,7 +21,11 @@
   const deckHref = (kb, id) => `${kb}/deck.html${id ? '#' + encodeURIComponent(id) : ''}`;
 
   let sel = (P.kbs.find(k => k.deck) || P.kbs[0] || {}).name;
-  let chapSel = null, topicSel = 0, allTopics = false;   // 學習路徑打開的章（第幾組）、主題索引選到的術語、術語全部列出來了沒
+  let chapSel = null, topicSel = 0, allTopics = false;   // 學習路徑翻面的章（第幾組）、主題索引選到的術語、術語全部列出來了沒
+  const ICONS = window.KIF_ICONS || {};
+  const icon = (n, size = 24) => `<svg class="ic" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><path d="${ICONS[n] || ''}"/></svg>`;
+  const COLORS = ['#1f4fb5', '#b3541e', '#1f7a4d', '#6a4bb5', '#0e7490', '#a8660a'];   // 每個部分一個顏色
+  const colorOf = (k, g) => COLORS[[...new Set(k.path.map(x => x.part))].indexOf(g.part) % COLORS.length];
   const TOPIC_FIRST = 16;   // 主題索引先列這麼多個詞，其他的按「還有 N 個詞」才出現
 
   /* 一章的狀態：每頁都看過＝看完；看過一部分＝看到一半，連結接著看第一個還沒看的頁 */
@@ -72,7 +78,7 @@
             <span class="nm">${esc(shortName(g.name))}${far ? ' <span class="far" title="先修有別的知識庫的章">↗</span>' : ''}</span>
             ${g.deep && g.deep.length ? `<span class="dp">另有 ${g.deep.length} 頁深入</span>` : ''}</button>`;
         }).join('')}</div></div>`).join('')}</div></div>
-      <p class="sub" style="margin-top:6px">綠色是看完的章，虛線是還沒有頁的章；<span class="lg-arrow">橘色箭頭</span>是先修：箭頭指向的章，建議先看完箭頭出發的那一章。點一章，打開學習路徑上的那一章。</p>`;
+      <p class="sub" style="margin-top:6px">綠色是看完的章，虛線是還沒有頁的章；<span class="lg-arrow">橘色箭頭</span>是先修：箭頭指向的章，建議先看完箭頭出發的那一章。點一章，翻開學習路徑上那一章的卡片。</p>`;
   }
   function drawArrows() {
     const box = $('#map-box'), k = byName[sel];
@@ -97,47 +103,100 @@
     }));
     svg.innerHTML = out;
   }
-  /* ---------- 學習路徑：一條由上往下的路線。照部分分段，每章一列：速覽、先修、頁數和時間、看完了沒；點一章打開 ---------- */
+  /* ---------- 學習路徑：每章一張圖示卡片，照順序由左到右、由上到下。點卡片翻面看細節 ---------- */
   function preOf(k, g) {
     return (g.pre || []).map(([kb, key, name]) => ({ kb, key, name, done: chapDone(kb, key), far: kb !== k.name, title: (byName[kb] || {}).title || kb }));
   }
-  function step(k, g, i, seen, label) {
-    const st = rowState(k, g, seen), open = i === chapSel, pre = preOf(k, g), miss = pre.filter(p => p.done === false);
-    const cls = !g.pages.length ? 'empty' : st.done ? 'done' : st.part ? 'half' : '';
-    const status = !g.pages.length ? '還沒有頁' : st.done ? '看完了' : st.part ? `看了 ${st.n} / ${g.pages.length} 頁` : '';
+  function label(k, g) {   // 卡片上的章名：部分只有一段時拿掉「第一部分 · 」；部分的開頭那一段叫「導讀」
+    if (g.chap) return g.name;
+    const same = k.path.filter(x => x.part === g.part);
+    if (same.length > 1) return same[0] === g ? '導讀' : g.name;
+    return shortName(g.name);
+  }
+  const partOf = (k, g) => String(k.parts[g.part] || '').split(' · ')[0];
+  const nextOf = (k, seen) => k.path.findIndex(g => g.pages.length && !rowState(k, g, seen).done);
+  function face(k, g) {   // 圖示；沒寫圖示就顯示章的編號（導讀、開場這類顯示第一個字）
+    return g.icon && ICONS[g.icon] ? icon(g.icon, 40) : `<span class="fb">${g.chap || esc(label(k, g).slice(0, 1))}</span>`;
+  }
+  function back(k, g, i) {
+    const st = rowState(k, g, seenOf(k.name)), pre = preOf(k, g), miss = pre.filter(p => p.done === false);
     const preLink = p => p.far
       ? `<a href="${deckHref(p.kb, (groupsOf(byName[p.kb], p.key)[0] || {}).pages?.[0] || '')}" target="_blank" rel="noopener">${esc(p.title)} › ${esc(p.name)}</a>`
       : `<button type="button" class="lk" data-go="${k.path.findIndex(x => x.key === p.key)}">${esc(p.name)}</button>`;
     const preMark = p => p.done ? ' <span class="ok">✓</span>' : p.done === null ? ' <span class="m">（還沒有頁）</span>' : '';
-    return `<div class="step ${cls}${open ? ' open' : ''}" data-i="${i}">
-      <button type="button" class="sh" data-i="${i}" aria-expanded="${open}">
-        <span class="ck" aria-hidden="true"></span><span class="nm">${label || esc(g.name)}</span>
-        <span class="m">${g.pages.length ? `${g.pages.length} 頁 · ${hm(g.minutes)}` : ''}${status ? `<em>${status}</em>` : ''}</span></button>
+    return `<div class="bk-h"><b>${esc(label(k, g))}</b><span class="m">${g.pages.length ? `${g.pages.length} 頁 · 約 ${hm(g.minutes)}` : '還沒有頁'}</span></div>
       ${g.overview ? `<p class="ov">${esc(g.overview)}</p>` : ''}
       ${pre.length ? `<p class="pre">先修：${pre.map(p => preLink(p) + preMark(p)).join('、')}</p>` : ''}
-      ${open ? `<div class="more">
-        ${miss.length ? `<p class="warn">建議先看完 ${miss.map(p => esc(p.name)).join('、')}；想先看這一章也可以直接打開。</p>` : ''}
-        ${g.deep && g.deep.length ? `<p class="dp">另有 ${g.deep.length} 頁深入（選看，約 ${hm(g.deepMinutes)}）：在簡報上按「看深入」才看得到。</p>` : ''}
-        ${g.pages.length ? `<div class="acts"><a class="btn primary" href="${deckHref(k.name, st.next)}" target="_blank" rel="noopener">${st.done ? '再看一次' : st.n ? '接著看這一章' : '打開這一章'}</a></div>`
-          : '<p class="empty">這一章還沒有頁。傳承者新增這一章的知識時，Agent 會一起做簡報頁。</p>'}
-      </div>` : ''}
-    </div>`;
+      ${miss.length ? `<p class="warn">建議先看完 ${miss.map(p => esc(p.name)).join('、')}；想先看這一章也可以直接打開。</p>` : ''}
+      ${g.deep && g.deep.length ? `<p class="dp">另有 ${g.deep.length} 頁深入（選看，約 ${hm(g.deepMinutes)}）：在簡報上按「看深入」才看得到。</p>` : ''}
+      <div class="acts">${g.pages.length ? `<a class="btn primary" href="${deckHref(k.name, st.next)}" target="_blank" rel="noopener">${st.done ? '再看一次' : st.n ? '接著看這一章' : '打開這一章'}</a>`
+        : '<span class="m">這一章還沒有頁；傳承者新增知識時，Agent 會一起做簡報頁。</span>'}<button type="button" class="lk turn" data-turn="${i}">翻回去</button></div>`;
+  }
+  function chapCard(k, g, i, seen, nx) {
+    const st = rowState(k, g, seen), c = colorOf(k, g), pre = preOf(k, g), p = g.pages.length ? st.n / g.pages.length : 0;
+    const cls = !g.pages.length ? ' empty' : st.done ? ' done' : st.part ? ' half' : '';
+    return `<div class="cc${cls}${i === chapSel ? ' flip' : ''}" data-i="${i}" data-key="${g.key}" style="--c:${c}"><div class="cc-in">
+      <button type="button" class="cc-f" data-i="${i}" aria-label="${esc(label(k, g))}：看細節">
+        <span class="cc-pt">${esc(partOf(k, g))}${i === nx ? '<em class="cc-next">接著看</em>' : ''}</span>
+        <span class="cc-ic">${face(k, g)}</span><b>${esc(label(k, g))}</b>
+        ${g.overview ? `<span class="cc-ov">${esc(g.overview)}</span>` : ''}
+        <span class="cc-ft">${g.pages.length ? `<span class="rg" title="${st.done ? '看完了' : `看了 ${st.n} / ${g.pages.length} 頁`}"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15"/><circle class="v" cx="18" cy="18" r="15" stroke-dasharray="${(p * 94.2).toFixed(1)} 94.2"/></svg><i>${st.done ? '✓' : Math.round(p * 100) + '%'}</i></span>${g.pages.length} 頁 · ${hm(g.minutes)}` : '還沒有頁'}
+          ${pre.length ? `<em title="先修：建議先看的章">先修 ${pre.length}</em>` : ''}${g.deep && g.deep.length ? `<em class="dp" title="深入：選看的補充說明">深入 ${g.deep.length}</em>` : ''}</span></button>
+      <div class="cc-b">${i === chapSel ? back(k, g, i) : ''}</div></div></div>`;
   }
   function path() {
     const k = byName[sel];
     if (!k) return '';
     if (!k.path.length) return `<p class="empty">${esc(k.title)}還沒有簡報頁。傳承者新增第一筆知識時，Agent 會一起做簡報頁，這裡就會出現學習路徑。</p>`;
-    const seen = seenOf(k.name), parts = [];
-    k.path.forEach((g, i) => { if (!parts.length || parts[parts.length - 1].part !== g.part) parts.push({ part: g.part, items: [] }); parts[parts.length - 1].items.push([g, i]); });
+    const seen = seenOf(k.name), nx = nextOf(k, seen);
     const hasPre = k.path.some(g => (g.pre || []).length), hasDeep = k.path.some(g => g.deep && g.deep.length);
     const intro = k.deck
-      ? `由上往下照順序看。點一章看它在講什麼，再打開簡報；看過的章會打勾，下次回來接著看。${hasPre ? '<b>先修</b>是建議先看完的章，沒看完也可以直接打開。' : ''}${hasDeep ? '<b>深入</b>是比較長的補充說明，平常翻頁不會經過，在簡報上按「看深入」才看得到。' : ''}`
-      : '還沒有簡報頁；下面是規劃好的章，點一章看它要講什麼。傳承者新增知識時，Agent 會一起做簡報頁。';
-    return `<p class="sub">${intro}</p><div class="route">${parts.map(c => {
-      const pn = String(k.parts[c.part] || '');
-      if (c.items.length === 1) return step(k, c.items[0][0], c.items[0][1], seen);
-      return `<div class="part"><div class="ph">${esc(pn)}</div>${c.items.map(([g, i], j) => step(k, g, i, seen, !g.chap && j === 0 ? '導讀' : '')).join('')}</div>`;
-    }).join('')}</div>`;
+      ? `一張卡片是一章，照順序由左到右、由上到下；卡片上方的顏色是部分，圓圈是看了多少。點卡片翻面，看它在講什麼、再打開簡報。${hasPre ? '<b>先修</b>是建議先看完的章，沒看完也可以直接打開。' : ''}${hasDeep ? '<b>深入</b>是比較長的補充說明，平常翻頁不會經過，在簡報上按「看深入」才看得到。' : ''}`
+      : '還沒有簡報頁；下面是規劃好的章，點卡片看它要講什麼。傳承者新增知識時，Agent 會一起做簡報頁。';
+    return `<p class="sub">${intro}</p><div class="ccs">${k.path.map((g, i) => chapCard(k, g, i, seen, nx)).join('')}</div>`;
+  }
+  function turn(i) {   // 翻面不重畫整頁，翻的動畫才看得到
+    const k = byName[sel];
+    chapSel = i;
+    document.querySelectorAll('.cc').forEach(c => { const on = +c.dataset.i === i; c.classList.toggle('flip', on); c.querySelector('.cc-b').innerHTML = on ? back(k, k.path[i], i) : ''; });
+    document.querySelectorAll('#map .node').forEach(n => n.classList.toggle('on', +n.dataset.i === i));
+    drawArrows();
+  }
+
+  /* ---------- 怎麼學：五站時間軸，點一站看示意動畫（畫面上的標題取自選到的知識庫） ---------- */
+  const FLOW = [
+    { k: 'pick', ic: 'map', t: '挑一個知識庫', d: '每張卡片是一個領域。點了，下面就換成它的學習路徑：照順序排好的每一章。' },
+    { k: 'deck', ic: 'slides', t: '照順序看簡報', d: '一頁講一個概念，左邊的圖可以動手玩；按「旁白」聽這一頁的講解。' },
+    { k: 'deep', ic: 'doc', t: '想多知道：看深入', d: '比較長的說明放在深入頁，平常翻頁不會經過；在主頁按「看深入」才進去。' },
+    { k: 'ask', ic: 'chat', t: '看不懂：問 Agent', d: '按「問 Agent」複製這一頁的位置，貼到 Claude Code 接著問；答案一定附出處。' },
+    { k: 'check', ic: 'check', t: '章末自我檢查', d: '每章最後有幾題，先自己想再打開答案；看完的章會打勾，下次接著看。' }
+  ];
+  let flowSel = null;   // 打開的那一站；null＝收著（第一次來、還沒有進度時預設打開第一站）
+  function sample(k) {   // 示意畫面用的文字：第一章的第一頁、有深入頁的那一章
+    const T = id => ((P.index.find(x => x[1] === k.name && x[2] === id) || [])[3]) || '';
+    const g1 = k.path.find(g => g.chap && g.pages.length) || k.path.find(g => g.pages.length);
+    const gd = k.path.find(g => g.deep && g.deep.length);
+    return { kb: k.title, ch: g1 ? shortName(g1.name).replace(/^[①-⑳]\s*/, '') : '第一章', page: (g1 && T(g1.pages[0])) || '第一頁的標題',
+      main: (gd && T(gd.pages[0])) || '主頁的標題', deep: (gd && T(gd.deep[0])) || '深入頁的標題' };
+  }
+  function scene(key, x) {
+    const other = (P.kbs.find(k => k.name !== sel) || {}).title || '其他知識庫';
+    if (key === 'pick') return `<div class="mi mi-pick"><div class="mc"><b>${esc(x.kb)}</b><i></i><i></i></div><div class="mc"><b>${esc(other)}</b><i></i><i></i></div><div class="mi-path"><span></span><span></span><span></span><span></span></div></div>`;
+    if (key === 'deck') return `<div class="mi mi-deck"><div class="sl"><div class="sl-h">${esc(x.page)}</div><div class="sl-b"><div class="sl-fig"><i></i></div><div class="sl-pts"><i></i><i></i><i></i></div></div>
+      <div class="sl-btns"><span class="hot">旁白</span><span>看深入</span><span>問 Agent</span></div><div class="sl-narr">旁白：這一頁在講……</div></div><div class="mi-nav">◀　▶</div></div>`;
+    if (key === 'deep') return `<div class="mi mi-deep"><div class="sl main"><div class="sl-h">${esc(x.main)}</div><div class="sl-b"><div class="sl-fig"><i></i></div><div class="sl-pts"><i></i><i></i></div></div><div class="sl-btns"><span>旁白</span><span class="hot">看深入</span><span>問 Agent</span></div></div>
+      <div class="sl deep"><div class="sl-h">${esc(x.deep)} <em>深入</em></div><div class="sl-more">說明：推導、表格、出處都放在這裡……</div></div></div>`;
+    if (key === 'ask') return `<div class="mi mi-ask"><div class="sl"><div class="sl-h">${esc(x.page)}</div><div class="sl-btns"><span>旁白</span><span>看深入</span><span class="hot">問 Agent</span></div><div class="toast">已複製這一頁的位置</div></div>
+      <div class="term"><div class="t1">› 我在看〈${esc(x.kb)}〉簡報的〈${esc(x.page)}〉這一頁，想問：……</div><div class="t2">（Agent 根據簡報回答）……<br><span>出處：${esc(x.kb)} › 簡報 › ${esc(x.ch)} › 〈${esc(x.page)}〉</span></div></div></div>`;
+    return `<div class="mi mi-check"><div class="sl"><div class="sl-h">自我檢查：${esc(x.ch)}</div><div class="qa"><b>第 1 題</b><span class="ans">答案：……<em>回到那一頁 ›</em></span></div><div class="qa"><b>第 2 題</b></div></div><div class="ring"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15"/><circle class="v" cx="18" cy="18" r="15"/></svg><span>✓</span></div></div>`;
+  }
+  function renderFlow() {
+    const k = byName[sel];
+    $('#flow').innerHTML = `<div class="fl-line">${FLOW.map((f, i) => `<button type="button" class="fl-st${i === flowSel ? ' on' : ''}" data-f="${i}" aria-expanded="${i === flowSel}"><span class="fl-dot">${icon(f.ic, 26)}</span><b>${i + 1}. ${f.t}</b></button>`).join('')}<i class="fl-run" aria-hidden="true"></i></div>
+      ${flowSel == null ? '<p class="fl-hint">點一站，看這一步在畫面上長什麼樣子。</p>' : `<div class="fl-show"><div class="fl-scene">${scene(FLOW[flowSel].k, sample(k))}</div>
+        <div class="fl-txt"><b>${flowSel + 1}. ${FLOW[flowSel].t}</b><p>${FLOW[flowSel].d}</p>
+          <div class="acts"><button type="button" class="btn" data-fs="-1">上一步</button><button type="button" class="btn primary" data-fs="1">${flowSel === FLOW.length - 1 ? '收起來' : '下一步'}</button></div></div></div>`}`;
+    const mi = $('#flow .mi'); if (mi) setTimeout(() => mi.classList.add('go'), 350);
   }
 
   /* ---------- 主題索引：術語表的每個術語，點了看講到它的頁 ---------- */
@@ -198,11 +257,8 @@
   function render() {
     $('#cards').innerHTML = cards();
     const k = byName[sel];
-    if (k && (chapSel == null || (chapSel >= 0 && !k.path[chapSel]))) { // 預設打開第一個還沒看完的章；-1 是使用者把它收起來了
-      const seen = seenOf(k.name), i = k.path.findIndex(g => g.pages.length && !rowState(k, g, seen).done);
-      chapSel = i < 0 ? 0 : i;
-    }
-    $('#path-h').textContent = k ? `② 學習路徑：${k.title}` : '② 學習路徑';
+    if (k && chapSel != null && !k.path[chapSel]) chapSel = null;
+    $('#path-h').textContent = k ? `學習路徑：${k.title}` : '學習路徑';
     const seen = k ? seenOf(k.name) : new Set(), n = k ? k.path.reduce((a, g) => a + g.pages.filter(id => seen.has(id)).length, 0) : 0;
     $('#path-n').textContent = k && k.deck ? `看過 ${n} / ${k.pages} 頁` : '';
     $('#path').innerHTML = path();
@@ -220,18 +276,14 @@
   $('#app').innerHTML = `
     <header class="top"><div class="wrap">
       <h1>知識傳承入口</h1>
-      <p class="lead">老手的經驗，整理成一份份簡報。第一次來，照這三步：</p>
-      <ol class="steps">
-        <li><b>挑一個知識庫</b><span>每張卡片是一個領域，點了，下面就換成它的學習路徑。</span></li>
-        <li><b>照學習路徑看簡報</b><span>從第一章由上往下看；看過的頁會自動打勾，下次接著看。</span></li>
-        <li><b>看不懂就問 Agent</b><span>簡報每頁下面按「問 Agent」，貼到 Claude Code 接著問。</span></li>
-      </ol>
+      <p class="lead">老手的經驗，整理成一份份簡報。第一次來，先看看怎麼學：</p>
+      <div id="flow" class="flow"></div>
       <label class="search"><span>搜尋</span><input id="q" type="search" placeholder="找一個詞，例如 EUV、穿隧、OCD" autocomplete="off"></label>
       <div id="hits"></div>
     </div></header>
     <main class="wrap">
-      <section><h2>① 知識庫</h2><div id="cards" class="cards"></div></section>
-      <section><div class="h2row"><h2 id="path-h">② 學習路徑</h2><span id="path-n"></span></div><div id="path"></div>
+      <section><h2>挑一個知識庫</h2><div id="cards" class="cards"></div></section>
+      <section><div class="h2row"><h2 id="path-h">學習路徑</h2><span id="path-n"></span></div><div id="path"></div>
         <details id="mapbox" class="mapbox"><summary>看章節關係圖（全景圖）：每個部分有哪些章、哪一章建議先看</summary><div id="map"></div></details></section>
       <section id="topics-s"><h2 id="topics-h">主題索引</h2><div id="topics"></div></section>
       <section id="roles-s"><h2>角色路徑</h2><div id="roles"></div></section>
@@ -239,13 +291,18 @@
     <footer class="foot"><div class="wrap" id="foot"></div></footer>`;
   let t = null;
   $('#q').addEventListener('input', e => { clearTimeout(t); t = setTimeout(() => { $('#hits').innerHTML = search(e.target.value.trim()); }, 120); });
-  $('#cards').addEventListener('click', e => { const b = e.target.closest('.pick'); if (b && b.dataset.kb !== sel) { sel = b.dataset.kb; chapSel = null; topicSel = 0; allTopics = false; render(); } });
-  const openStep = (i, scroll) => { chapSel = i; render(); if (scroll) document.querySelector(`.step[data-i="${i}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
+  $('#cards').addEventListener('click', e => { const b = e.target.closest('.pick'); if (b && b.dataset.kb !== sel) { sel = b.dataset.kb; chapSel = null; topicSel = 0; allTopics = false; render(); renderFlow(); } });
+  const openCard = i => { turn(i); document.querySelector(`.cc[data-i="${i}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
   $('#path').addEventListener('click', e => {
-    const g = e.target.closest('[data-go]'); if (g) { if (+g.dataset.go >= 0) openStep(+g.dataset.go, true); return; }
-    const b = e.target.closest('.sh'); if (b) { chapSel = +b.dataset.i === chapSel ? -1 : +b.dataset.i; render(); }
+    const g = e.target.closest('[data-go]'); if (g) { if (+g.dataset.go >= 0) openCard(+g.dataset.go); return; }
+    const tb = e.target.closest('[data-turn]'); if (tb) { chapSel = null; document.querySelectorAll('.cc.flip').forEach(c => c.classList.remove('flip')); return; }
+    const f = e.target.closest('.cc-f'); if (f) turn(+f.dataset.i);
   });
-  $('#map').addEventListener('click', e => { const b = e.target.closest('.node'); if (b) openStep(+b.dataset.i, true); });
+  $('#map').addEventListener('click', e => { const b = e.target.closest('.node'); if (b) openCard(+b.dataset.i); });
+  $('#flow').addEventListener('click', e => {
+    const s = e.target.closest('[data-f]'); if (s) { flowSel = +s.dataset.f === flowSel ? null : +s.dataset.f; renderFlow(); return; }
+    const n = e.target.closest('[data-fs]'); if (n) { const j = flowSel + +n.dataset.fs; flowSel = j < 0 ? 0 : j >= FLOW.length ? null : j; renderFlow(); }
+  });
   $('#mapbox').addEventListener('toggle', drawArrows);
   $('#topics').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) { topicSel = +b.dataset.t; render(); return; } if (e.target.closest('[data-all]')) { allTopics = true; render(); } });
   window.addEventListener('resize', drawArrows);
@@ -253,5 +310,9 @@
   document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
   window.addEventListener('focus', render);
   window.addEventListener('storage', render);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && chapSel != null) { chapSel = null; document.querySelectorAll('.cc.flip').forEach(c => c.classList.remove('flip')); } });
+  // 第一次來（每個知識庫都還沒有進度）：「怎麼學」預設打開第一站
+  if (P.kbs.every(k => !seenOf(k.name).size)) flowSel = 0;
+  renderFlow();
   render();
 })();
