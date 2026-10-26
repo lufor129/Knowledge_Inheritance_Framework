@@ -23,4 +23,4 @@ jobs:
         run: |
           tag="build-$(date -u +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
           gh release create "$tag" out/*.html out/portal.zip --target "$GITHUB_SHA" \
-            --title "入口網站、手冊網站與簡報 ${GITHUB_SHA::7}" --notes "主線更新後自動建置。新人下載 portal.zip，解開後打開 index.html。" --latest
+            --title "入口網站與簡報 ${GITHUB_SHA::7}" --notes "主線更新後自動建置。新人下載 portal.zip，解開後打開 index.html。" --latest

@@ -1,10 +1,9 @@
-"""取得入口網站、手冊網站或簡報：先從 Git 主機下載最新發布的；下載不到（手動模式、沒網路、還沒發布）就在本機建置。
+"""取得入口網站或簡報：先從 Git 主機下載最新發布的；下載不到（手動模式、沒網路、還沒發布）就在本機建置。
 
 用法：
-  python3 framework/tools/get.py portal                      入口網站（所有知識庫的簡報、手冊網站、學習路徑、搜尋）
+  python3 framework/tools/get.py portal                      入口網站（所有知識庫的簡報、全景圖、學習路徑、主題索引、搜尋）
   python3 framework/tools/get.py semiconductor deck          簡報
-  python3 framework/tools/get.py semiconductor handbook      手冊網站
-  加 --open 順便用瀏覽器打開；加 --page <頁id>（簡報）或 --page <小節id>（手冊網站）直接打開那一頁
+  加 --open 順便用瀏覽器打開；加 --page <頁id> 直接打開那一頁（深入頁也可以）
   加 --here 不下載，用目前分支的內容在本機建置：傳承者確認、維護者審核時看改過的頁
 
 下載的放在 .kif/downloads/（入口網站解開在 .kif/downloads/portal/），本機建置的在 kb/<知識庫>/dist/、.kif/portal/。
@@ -75,22 +74,21 @@ def main(argv):
             webbrowser.open(f.resolve().as_uri())
         print(K.rel(f))
         return 0
-    if len(args) != 2 or args[1] not in ('deck', 'handbook'):
+    if len(args) != 2 or args[1] != 'deck':
         print(__doc__)
         return 1
     kb = K.find_kb(args[0])
-    kind = args[1]
-    if kind == 'deck' and not (kb.has_deck and K.load_deck(kb).pages):
-        print(f'{kb.title} 還沒有簡報，可以看手冊網站：python3 framework/tools/get.py {kb.name} handbook')
+    if not (kb.has_deck and K.load_deck(kb).pages):
+        print(f'{kb.title} 的簡報還沒有頁；每一章要講什麼，可以在入口網站的全景圖點開來看：python3 framework/tools/get.py portal --open')
         return 1
-    f, why = (None, '用目前分支的內容') if here else download_file(f'{kb.name}-{kind}.html')
+    f, why = (None, '用目前分支的內容') if here else download_file(f'{kb.name}-deck.html')
     if f:
-        print(f'從 Git 主機下載了最新發布的{"簡報" if kind == "deck" else "手冊網站"}')
+        print('從 Git 主機下載了最新發布的簡報')
     else:
         print(f'在本機建置（{why}）' if here else f'下載不到（{why}），改在本機建置')
         r = subprocess.run([sys.executable, str(K.ROOT / 'framework/tools/build.py'), kb.name], cwd=K.ROOT,
                            capture_output=True, text=True)
-        f = kb.dir / 'dist' / f'{kind}.html'
+        f = kb.dir / 'dist' / 'deck.html'
         if r.returncode or not f.exists():
             print(r.stdout.strip()[-500:] or r.stderr.strip()[-500:])
             return 1

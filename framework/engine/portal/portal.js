@@ -8,7 +8,7 @@
   const P = window.PORTAL;
   const $ = s => document.querySelector(s);
   const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
-  const KIND = { 頁: '簡報頁', 深: '深入頁', 節: '手冊小節', 詞: '術語' };
+  const KIND = { 頁: '簡報頁', 深: '深入頁', 詞: '術語' };
   const byName = Object.fromEntries(P.kbs.map(k => [k.name, k]));
   const hm = m => m >= 60 ? `${Math.floor(m / 60)} 小時${m % 60 ? ` ${Math.round(m % 60)} 分` : ''}` : `${Math.round(m)} 分`;
 
@@ -37,13 +37,13 @@
       const seen = seenOf(k.name), n = k.path.reduce((a, g) => a + g.pages.filter(id => seen.has(id)).length, 0);
       const last = load(k.name, 'last');
       const go = k.deck ? `<a class="btn primary" href="${deckHref(k.name, n ? last : '')}" target="_blank" rel="noopener">${n ? '繼續看簡報' : '開始看簡報'}</a>` : '';
-      const meta = k.deck ? `${k.pages} 頁 · 約 ${hm(k.minutes)}${k.deep ? ` · 另有 ${k.deep} 頁深入` : ''}` : (k.sections ? `簡報還沒做 · 手冊 ${k.sections} 個小節` : k.path.length ? `規劃了 ${k.path.length} 章，還沒有頁` : '簡報還在準備');
+      const meta = k.deck ? `${k.pages} 頁 · 約 ${hm(k.minutes)}${k.deep ? ` · 另有 ${k.deep} 頁深入` : ''}` : k.path.length ? `規劃了 ${k.path.length} 章，還沒有頁` : '簡報還在準備';
       return `<article class="card ${k.name === sel ? 'on' : ''}" data-kb="${k.name}">
         <button type="button" class="pick" data-kb="${k.name}"><h3>${esc(k.title)}</h3><p>${esc(k.intro)}</p></button>
         <div class="meta">${meta}${k.maintainers.length ? ` · 維護者：${esc(k.maintainers.join('、'))}` : ''}</div>
         ${k.updated ? `<div class="meta">最近更新 ${esc(k.updated.date)}：${esc(k.updated.subject)}</div>` : ''}
         ${k.deck ? `<div class="pbar" title="看過 ${n} / ${k.pages} 頁"><i style="width:${(n / k.pages * 100).toFixed(1)}%"></i></div><div class="meta">看過 ${n} / ${k.pages} 頁</div>` : ''}
-        <div class="acts">${go}${k.sections ? `<a class="btn" href="${k.name}/handbook.html" target="_blank" rel="noopener">手冊網站</a>` : ''}</div>
+        <div class="acts">${go}</div>
       </article>`;
     }).join('');
   }
@@ -149,7 +149,7 @@
     }).join('');
   }
 
-  /* ---------- 搜尋：所有知識庫的簡報頁、手冊小節、術語 ---------- */
+  /* ---------- 搜尋：所有知識庫的簡報頁、深入頁、術語 ---------- */
   function search(q) {
     const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
     if (!terms.length) return '';
@@ -162,8 +162,9 @@
     hits.sort((a, b) => b.score - a.score);
     const mark = s => { let h = esc(s); terms.forEach(w => { h = h.replace(new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), m => `<mark>${m}</mark>`); }); return h; };
     const snip = s => { const i = s.toLowerCase().indexOf(terms[0]); if (i < 0) return s.slice(0, 90); const a = Math.max(0, i - 40); return (a ? '…' : '') + s.slice(a, i + 60) + '…'; };
-    const link = h => h.kind === '頁' || h.kind === '深' ? deckHref(h.kb, h.id) : `${h.kb}/handbook.html#${h.kind === '詞' ? '/terms' : encodeURIComponent(h.id)}`;
-    if (!hits.length) return `<p class="empty">找不到「${esc(q)}」。換個說法、英文或縮寫試試看；手冊和簡報都沒寫的，可以請 Agent 記成待回答。</p>`;
+    const firstPage = (kb, term) => { const t = ((byName[kb] || {}).topics || []).find(x => term.startsWith(x.zh)); return t && t.pages.length ? t.pages[0][0] : ''; };
+    const link = h => deckHref(h.kb, h.kind === '詞' ? firstPage(h.kb, h.title) : h.id);   // 術語連到它第一次出現的頁
+    if (!hits.length) return `<p class="empty">找不到「${esc(q)}」。換個說法、英文或縮寫試試看；簡報沒寫的，可以請 Agent 記成待回答。</p>`;
     return `<p class="sub">找到 ${hits.length} 筆${hits.length > 30 ? '，先列出最相關的 30 筆' : ''}</p><div class="hits">${hits.slice(0, 30).map(h => `
       <a class="hit" href="${link(h)}" target="_blank" rel="noopener"><span class="k k-${h.kind}">${KIND[h.kind]}</span>
         <span class="t">${mark(h.title)}<small>${esc((byName[h.kb] || {}).title || h.kb)}${h.kind === '詞' ? '' : ' · ' + esc(h.id)}</small></span>
@@ -192,7 +193,7 @@
       <h1>知識傳承入口</h1>
       <p class="lead">挑一個知識庫，照學習路徑看簡報；看不懂就按簡報下面的「問 Agent」。</p>
       <p class="ver">這一份建置於 ${esc(P.built)}${P.commit ? `（${esc(P.commit)}）` : ''}。${P.latest ? `<a href="${P.latest}" target="_blank" rel="noopener">下載最新版</a>` : ''}</p>
-      <label class="search"><span>搜尋</span><input id="q" type="search" placeholder="所有知識庫的簡報頁、手冊小節、術語：例如 EUV、穿隧、OCD" autocomplete="off"></label>
+      <label class="search"><span>搜尋</span><input id="q" type="search" placeholder="所有知識庫的簡報頁、深入頁、術語：例如 EUV、穿隧、OCD" autocomplete="off"></label>
       <div id="hits"></div>
     </div></header>
     <main class="wrap">

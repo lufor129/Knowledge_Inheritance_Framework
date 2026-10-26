@@ -19,7 +19,7 @@
 ## 知識庫清單
 
 <!-- 知識庫清單：由 build.py --readme 產生，請勿手改 -->
-**入口網站**：[下載 portal.zip](https://github.com/lufor129/Knowledge_Inheritance_Framework/releases/latest/download/portal.zip)，解開後用 Chrome 或 Edge 打開裡面的 index.html。所有知識庫的簡報、手冊網站、學習路徑和搜尋都在裡面。
+**入口網站**：[下載 portal.zip](https://github.com/lufor129/Knowledge_Inheritance_Framework/releases/latest/download/portal.zip)，解開後用 Chrome 或 Edge 打開裡面的 index.html。所有知識庫的簡報、全景圖、學習路徑、主題索引和搜尋都在裡面。
 
 | 知識庫 | 介紹 | 維護者 | 簡報 | 單一檔案 |
 |---|---|---|---|---|

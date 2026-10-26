@@ -1,4 +1,4 @@
-/* 給新人的按鈕和進度：旁白、看深入、看詳細和出處、問 Agent；深入頁上還有說明、跳過深入、回主頁。
+/* 給新人的按鈕和進度：旁白、看深入、問 Agent；深入頁上還有說明、跳過深入、回主頁。
    記住看過哪些頁（入口網站讀同一份紀錄）；點註腳小標號看出處。
    進度存在瀏覽器的 localStorage：kif.<知識庫>.seen（看過的頁 id）、kif.<知識庫>.last（最後看的頁 id）。 */
 (function () {
@@ -6,7 +6,6 @@
   const KB = CFG.kb || { name: 'deck', title: document.title };
   const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
   const strip = s => String(s || '').replace(/<[^>]+>/g, '');
-  const href = (kb, file, id) => (CFG.links ? CFG.links[file].replace('{kb}', kb) : file + '.html') + (id ? '#' + id : '');
 
   /* ---------- 進度 ---------- */
   const key = k => `kif.${KB.name}.${k}`;
@@ -29,7 +28,6 @@
     pop.style.bottom = (innerHeight - r.top + 10) + 'px'; pop.style.top = 'auto';
   }
 
-  function maps(s) { return (CFG.maps || {})[s.id] || []; }
   const deepOf = s => Deck.slides.filter(x => x.deep && x.deep === s.id);
 
   function askText(s) {
@@ -49,7 +47,6 @@
   function update(s) {
     if (!bar) return;
     const b = k => bar.querySelector(`[data-b=${k}]`), n = deepOf(s).length;
-    b('src').hidden = !maps(s).length;
     b('deep').hidden = !n; b('deep').textContent = `看深入（${n} 頁）`;
     ['more', 'skip', 'main'].forEach(k => { b(k).hidden = !s.deep; });
     b('narr').classList.toggle('on', Deck.notesOpen() === 'narr');
@@ -65,7 +62,6 @@
       <button type="button" data-b="deep" title="這一頁後面有深入頁：比較長的說明和推導">看深入</button>
       <button type="button" data-b="skip" title="跳過這幾頁深入頁，到下一個主頁">跳過深入</button>
       <button type="button" data-b="main" title="回到這一頁接著的主頁">回主頁</button>
-      <button type="button" data-b="src" title="打開手冊網站裡對應的小節">看詳細和出處</button>
       <button type="button" data-b="ask" title="複製這一頁的位置，貼到 Claude Code 接著問">問 Agent</button>`;
     pop = document.createElement('div'); pop.id = 'learn-pop'; pop.hidden = true;
     document.body.append(bar, pop);
@@ -79,10 +75,6 @@
       if (b.dataset.b === 'skip') { const k = Deck.slides.findIndex((x, j) => j > Deck.cur && !x.deep); Deck.go(k < 0 ? Deck.slides.length - 1 : k); return; }
       if (!pop.hidden && pop.dataset.for === b.dataset.b) { closePop(); return; }
       pop.dataset.for = b.dataset.b;
-      if (b.dataset.b === 'src') {
-        openPop(`<div class="lp-h">手冊網站裡對應的小節</div>${maps(s).map(([kb, id, t, ch]) =>
-          `<a class="lp-item" href="${href(kb, 'handbook', id)}" target="_blank" rel="noopener">${esc(t)}<span>${esc(ch)} › ${esc(id)}</span></a>`).join('')}`, b);
-      }
       if (b.dataset.b === 'ask') {
         const text = askText(s);
         copy(text, ok => openPop(`<div class="lp-h">${ok ? '已複製。貼到 Claude Code，接著打你的問題。' : '複製不了，請選取下面這段文字自己複製：'}</div>
@@ -117,6 +109,6 @@
     makeBar();
     start.apply(this, arguments);
     const help = document.getElementById('help');
-    if (help && !/旁白/.test(help.textContent)) help.textContent = '←/→ 翻頁 · 下面的按鈕：旁白、看詳細、問 Agent · O 總覽 · N 講稿 · P 講者視窗 · F 全螢幕';
+    if (help && !/旁白/.test(help.textContent)) help.textContent = '←/→ 翻頁 · 下面的按鈕：旁白、看深入、問 Agent · O 總覽 · N 講稿 · P 講者視窗 · F 全螢幕';
   };
 })();
