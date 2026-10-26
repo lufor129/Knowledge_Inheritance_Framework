@@ -60,11 +60,12 @@ def page(title, head, body):
 
 
 def inline(text, fns=None):
-    """簡報頁的行內寫法轉成 HTML：**粗體**、`程式`、[文字](網址)、[^註腳]。也可以直接寫 HTML。
+    """簡報頁的行內寫法轉成 HTML：**粗體**、`程式`、[文字](網址)、[文字](#頁id)（跳到那一頁）、[^註腳]。也可以直接寫 HTML。
     fns 是 {註腳名稱: 編號}，照第一次出現的順序編號；不給就拿掉註腳標號。"""
     text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', text)
     text = re.sub(r'`([^`]+)`', r'<code>\1</code>', text)
     text = re.sub(r'\[([^\]^][^\]]*)\]\((https?://[^)\s]+)\)', r'<a href="\2" target="_blank" rel="noopener">\1</a>', text)
+    text = re.sub(r'\[([^\]^][^\]]*)\]\(#([A-Za-z0-9_-]+)\)', r'<a href="#\2" class="go">\1</a>', text)
 
     def fn(m):
         if fns is None:
@@ -92,7 +93,8 @@ def _join(lines):
 
 
 def block_md(text, fns=None):
-    """深入頁「說明：」的 Markdown 轉成 HTML：段落、### 小標題、清單（- 或 1.）、表格；行內寫法照 inline()，註腳和這一頁一起編號。"""
+    """深入頁「說明：」的 Markdown 轉成 HTML：段落、### 小標題、清單（- 或 1.）、表格、圖片（自己一行的 ![說明](assets/img/…)）；
+    行內寫法照 inline()，註腳和這一頁一起編號。"""
     out, buf, kind = [], [], None   # kind：p、ul、ol、table
 
     def flush():
@@ -110,8 +112,12 @@ def block_md(text, fns=None):
 
     for l in text.splitlines():
         h, m = re.match(r'^#{2,6}\s+(.*)$', l), LI.match(l)
+        img = re.match(r'^!\[([^\]]*)\]\(([^)\s]+)\)(.*)$', l.strip())
         if not l.strip():
             flush()
+        elif img:
+            flush()
+            out.append(f'<figure><img src="{img.group(2)}" alt="{html.escape(img.group(1))}"><figcaption>{inline(img.group(1) + img.group(3), fns)}</figcaption></figure>')
         elif h:
             flush()
             out.append(f'<h4>{inline(h.group(1), fns)}</h4>')

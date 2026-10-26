@@ -226,6 +226,7 @@ def check_deck(kb, secs, r):
 
 
 FIG_ADD = re.compile(r"Fig\.add\(\s*'([^']+)'")
+PAGE_LINK = re.compile(r'\]\(#([A-Za-z0-9_-]+)\)')
 PAGE_REF = re.compile(r'\[\[頁:([A-Za-z0-9_-]+)\]\]')
 
 
@@ -273,6 +274,9 @@ def check_deck_md(kb, in_order, r):
             for pid in PAGE_REF.findall(l):
                 if pid not in in_order:
                     r.err(f, i, f'頁碼引用 [[頁:{pid}]] 指到的頁不在頁序裡')
+            for pid in PAGE_LINK.findall(l):
+                if pid not in in_order:
+                    r.err(f, i, f'連結 (#{pid}) 指到的頁不在頁序裡；跳到另一頁寫成 [文字](#頁id)')
 
 
 def claims(p):

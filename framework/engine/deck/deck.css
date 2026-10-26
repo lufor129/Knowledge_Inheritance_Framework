@@ -321,6 +321,10 @@ body.docked #viewport { bottom: 42vh; }
 #notes .md table, .fig-table table { border-collapse: collapse; margin: 6px 0 12px; font-size: 16px; }
 #notes .md th, #notes .md td, .fig-table th, .fig-table td { border: 1px solid var(--line); padding: 5px 10px; text-align: left; vertical-align: top; }
 #notes .md th, .fig-table th { background: var(--panel); font-weight: 600; }
+#notes .md figure { margin: 6px 0 14px; }
+#notes .md img { max-width: min(100%, 720px); max-height: 34vh; border-radius: 4px; border: 1px solid var(--line); display: block; }
+#notes .md figcaption { font-size: 14.5px; color: var(--ink-3); margin-top: 4px; }
+#notes .md a, .slide a.go { color: var(--accent); }
 #notes sup.fn { font: 600 .7em var(--font-mono); color: var(--accent-2); cursor: pointer; padding: 0 1px; }
 .fig-table { flex: 1; min-height: 0; overflow: auto; display: grid; place-items: center; }
 .fig-table table { font-size: 19px; background: #fff; }
