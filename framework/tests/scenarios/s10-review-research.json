@@ -14,15 +14,12 @@
         "name": "kb/semiconductor/euv-power",
         "edits": [
           {
-            "file": "kb/semiconductor/handbook/2-manufacturing/01-litho.md",
+            "file": "kb/semiconductor/deck/2-manufacturing/01-litho.md",
             "before": "<a name=\"litho3m\"></a>",
             "text": "EUV 光源的功率一直在提高：新一代機台的光源功率大約 500 W[^litho3-90]，下一代的目標是 1,000 W 以上。功率越高，同樣的曝光量需要的時間越短，產量就越高[^litho3-91]。\n\n[^litho3-90]: ASML，EUV lithography systems 產品頁，https://www.asml.com/en/products/euv-lithography-systems\n[^litho3-91]: 業界簡報（示意出處）\n\n"
           }
         ],
-        "run": [
-          "python3 framework/tools/check.py --fp semiconductor litho3"
-        ],
-        "commit": "半導體：litho3 補充 EUV 光源功率",
+        "commit": "半導體：litho3-d 補充 EUV 光源功率",
         "pr": {
           "var": "pr_r",
           "title": "半導體製程：EUV 光源功率",
@@ -30,7 +27,7 @@
             "kb:semiconductor",
             "來歷:研究"
           ],
-          "body": "🤖 由 Agent 產生\n\n## 改了什麼\n- 修改 `litho3`：補一段 EUV 光源功率。\n\n## 來歷\n研究\n\n## 影響\n- 簡報頁：litho3 對照過，沒有改。\n- 讀者測試：2/2 題答對。"
+          "body": "🤖 由 Agent 產生\n\n## 改了什麼\n- 修改深入頁 `litho3-d`：補一段 EUV 光源功率。\n\n## 來歷\n研究\n\n## 影響\n- 主頁 litho3 看過，沒有改。\n- 讀者測試：2/2 題答對。"
         }
       }
     }

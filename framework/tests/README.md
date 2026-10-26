@@ -1,6 +1,6 @@
 # 情境測試
 
-用全新的 Claude Code 跑 docs/design.md 的情境（17 個，加上「刪除小節」），由另一個模型扮演使用者回話，最後評分。改了 skill、AGENTS.md 或 framework/guide/ 之後跑一次，看行為有沒有變好或變壞。
+用全新的 Claude Code 跑 docs/design.md 的情境（17 個，加上「刪除深入頁」），由另一個模型扮演使用者回話，最後評分。改了 skill、AGENTS.md 或 framework/guide/ 之後跑一次，看行為有沒有變好或變壞。
 
 ## 怎麼跑
 
@@ -60,6 +60,6 @@ python3 <skill-creator>/eval-viewer/generate_review.py <iteration 資料夾> --s
 | `sessions` | 一段或多段對話：`first` 第一句話、`persona` 人物設定、`goal` 想完成的事、`max_turns`、`after: newest_pr`（把最新的提案編號存成 `{pr_new}`）、`local`（這一段換成另一個人） |
 | `checks` | 程式檢查，種類見 grade.py 的 `check()` |
 | `judge` | 交給評分模型的標準。評分模型看得到對話、測試 repo 的 issue 和提案（含 diff） |
-| `judge_context` | 評分時附上的手冊原文（正式內容的檔案路徑），用來對照「回答有沒有手冊依據」 |
+| `judge_context` | 評分時附上的簡報原文（正式內容的章檔路徑），用來對照「回答有沒有簡報依據」 |
 
 `{issue_pm}` 這類寫法會換成前置步驟產生的編號。

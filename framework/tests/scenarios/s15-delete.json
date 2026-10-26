@@ -1,7 +1,7 @@
 {
   "id": "s15-delete",
   "role": "維護者",
-  "title": "刪除小節",
+  "title": "刪除深入頁",
   "local": {
     "name": "lufor129",
     "watch": [
@@ -22,15 +22,15 @@
     },
     {
       "branch": {
-        "name": "kb/semiconductor/pm-section",
+        "name": "kb/semiconductor/pm-page",
         "edits": [
           {
-            "file": "kb/semiconductor/handbook/2-manufacturing/09-metrology.md",
+            "file": "kb/semiconductor/deck/2-manufacturing/09-metrology.md",
             "before": "<a name=\"wat\"></a>",
-            "text": "<a name=\"pmx\"></a>\n## 機台保養 PM\n\n廠裡會事先排好保養：蝕刻、CVD 照 RF 運轉時數算，CMP 照研磨墊磨了幾片算，天數只是保底[^pmx-1]。\n\n[^pmx-1]: 老王（製程整合）口述，2026-10\n\n"
+            "text": "<a name=\"pmx\"></a>\n## 機台保養 PM\n\n- 深入：apc\n- 圖：同主頁\n- 建議：1 分\n\n重點：\n- 保養照用量排，天數只是保底\n\n說明：\n廠裡會事先排好保養：蝕刻、CVD 照 RF 運轉時數算，CMP 照研磨墊磨了幾片算，天數只是保底[^pmx-1]。\n\n[^pmx-1]: 老王（製程整合）口述，2026-10\n\n"
           },
           {
-            "file": "kb/semiconductor/handbook/2-manufacturing/09-metrology.md",
+            "file": "kb/semiconductor/deck/2-manufacturing/09-metrology.md",
             "append": "\n<details>\n<summary>機台保養（PM）多久做一次？</summary>\n看機台，多半照用量算，天數只是保底。\n相關：pmx、apc\n</details>\n"
           },
           {
@@ -40,8 +40,8 @@
           {
             "file": "kb/semiconductor/deck/order.md",
             "replace": [
-              "→ eyes@",
-              "→ pmx, eyes@"
+              "- apc-d\n",
+              "- apc-d\n- pmx\n"
             ]
           }
         ],
@@ -53,11 +53,8 @@
             "kb:semiconductor",
             "來歷:訪談"
           ],
-          "body": "🤖 由 Agent 產生\n\n## 改了什麼\n- 新增 `pmx` 機台保養 PM、一題常見問題、一個術語。\n\n## 來歷\n訪談\n\nCloses #{issue_pm}"
-        },
-        "run": [
-          "python3 framework/tools/check.py --fp semiconductor eyes"
-        ]
+          "body": "🤖 由 Agent 產生\n\n## 改了什麼\n- 新增深入頁 `pmx` 機台保養 PM（接在 apc 後面）、一題自我檢查、一個術語。\n\n## 來歷\n訪談\n\nCloses #{issue_pm}"
+        }
       }
     },
     {
@@ -66,7 +63,7 @@
   ],
   "sessions": [
     {
-      "first": "檢測量測那章的 pmx 小節（機台保養）是用虛構人物「老王」的口述寫的，不是真的訪談。請把它刪掉，相關的常見問題和術語也一起處理。開變更提案，檢查過了就合併。",
+      "first": "檢測量測那章的 pmx 深入頁（機台保養）是用虛構人物「老王」的口述寫的，不是真的訪談。請把它刪掉，相關的自我檢查和術語也一起處理。開變更提案，檢查過了就合併。",
       "persona": "lufor129，半導體知識庫的維護者，也是框架維護者。Agent 問要不要重新打開相關的 issue 時，說好。",
       "goal": "pmx 刪乾淨、提案合併，相關的 issue 也處理好。都做完就結束。",
       "max_turns": 4
@@ -79,23 +76,23 @@
       "name": "kb-change"
     },
     {
-      "text": "主線上沒有 pmx 小節了",
+      "text": "主線上沒有 pmx 這一頁了",
       "type": "file",
       "ref": "main",
-      "path": "kb/semiconductor/handbook/2-manufacturing/09-metrology.md",
+      "path": "kb/semiconductor/deck/2-manufacturing/09-metrology.md",
       "pattern": "<a name=\"pmx\">",
       "absent": true
     },
     {
-      "text": "常見問題裡沒有指向 pmx 的引用",
+      "text": "自我檢查裡沒有指向 pmx 的引用",
       "type": "file",
       "ref": "main",
-      "path": "kb/semiconductor/handbook/2-manufacturing/09-metrology.md",
+      "path": "kb/semiconductor/deck/2-manufacturing/09-metrology.md",
       "pattern": "相關：[^\\n]*pmx",
       "absent": true
     },
     {
-      "text": "頁序裡沒有指向 pmx 的對應",
+      "text": "頁序裡沒有 pmx",
       "type": "file",
       "ref": "main",
       "path": "kb/semiconductor/deck/order.md",
@@ -116,7 +113,7 @@
       "ref": "main"
     },
     {
-      "text": "原本被這一節回答的 #{issue_pm} 重新打開",
+      "text": "原本被這一頁回答的 #{issue_pm} 重新打開",
       "type": "issue_state",
       "issue": "{issue_pm}",
       "state": "OPEN"

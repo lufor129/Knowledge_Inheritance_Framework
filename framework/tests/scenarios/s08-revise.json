@@ -15,15 +15,14 @@
         "name": "kb/semiconductor/high-na-weight",
         "edits": [
           {
-            "file": "kb/semiconductor/handbook/2-manufacturing/01-litho.md",
-            "before": "<a name=\"litho6\"></a>",
-            "text": "High-NA 機台很大，一台大約重 150 噸。\n\n"
+            "file": "kb/semiconductor/deck/2-manufacturing/01-litho.md",
+            "replace": [
+              "**機台更貴。** 大約 4 億美元[^litho5-6]，是一般 EUV 的兩倍。",
+              "**機台更貴。** 大約 4 億美元[^litho5-6]，是一般 EUV 的兩倍。High-NA 機台很大，一台大約重 150 噸。"
+            ]
           }
         ],
-        "run": [
-          "python3 framework/tools/check.py --fp semiconductor litho5"
-        ],
-        "commit": "半導體：litho5 補充 High-NA 機台重量",
+        "commit": "半導體：litho5-d 補充 High-NA 機台重量",
         "pr": {
           "var": "pr_fix",
           "title": "半導體製程：補充 High-NA 機台重量",
@@ -31,14 +30,14 @@
             "kb:semiconductor",
             "來歷:研究"
           ],
-          "body": "🤖 由 Agent 產生\n\n## 改了什麼\n- 修改 `litho5`：加一句 High-NA 機台的重量。\n\n## 來歷\n研究\n\n## 影響\n- 簡報頁：litho5 對照過，沒有改。\n- 讀者測試：3/3 題答對。"
+          "body": "🤖 由 Agent 產生\n\n## 改了什麼\n- 修改深入頁 `litho5-d`：加一句 High-NA 機台的重量。\n\n## 來歷\n研究\n\n## 影響\n- 主頁 litho5 看過，沒有改。\n- 讀者測試：3/3 題答對。"
         }
       }
     },
     {
       "comment": {
         "pr": "pr_fix",
-        "body": "🤖 由 Agent 代 lufor129 發出\n\n↩ 要求修改\n\n1. `litho5` 新增的「一台大約重 150 噸」沒有出處。請補上出處註腳；找不到可靠的出處就刪掉這個數字。"
+        "body": "🤖 由 Agent 代 lufor129 發出\n\n↩ 要求修改\n\n1. `litho5-d` 新增的「一台大約重 150 噸」沒有出處。請補上出處註腳；找不到可靠的出處就刪掉這個數字。"
       }
     }
   ],
@@ -69,7 +68,7 @@
       "text": "沒有留下沒附出處的「150 噸」",
       "type": "file",
       "ref": "pr:pr_fix",
-      "path": "kb/semiconductor/handbook/2-manufacturing/01-litho.md",
+      "path": "kb/semiconductor/deck/2-manufacturing/01-litho.md",
       "pattern": "^(?!\\[\\^)[^\\n]*150 噸(?![^\\n]*\\[\\^)",
       "absent": true
     },
