@@ -55,7 +55,8 @@
         },
         init: f.init ? (el, ctx) => f.init(el, ctx, p) : null
       };
-      PASS.forEach(k => { if (f[k] !== undefined) s[k] = f[k]; });
+      // 深入頁沿用主頁的圖時，不跟著主頁的「回到哪一頁」設定（深入頁有自己的「回主頁」）
+      PASS.forEach(k => { if (f[k] !== undefined && !(p.deep && ['back', 'hub', 'hubShort'].includes(k))) s[k] = f[k]; });
       Deck.add(s);
     });
   };
