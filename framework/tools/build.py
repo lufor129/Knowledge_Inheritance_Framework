@@ -392,6 +392,8 @@ def portal_data():
         done = set()
         for g in gs:
             ch = deck.chapters.get((g['part'], g['chap']))
+            if ch:
+                g['icon'] = ch.icon   # 圖示每一段都畫（例如導讀和總整理是同一個章檔）
             if g['key'] in done or not ch:
                 continue
             done.add(g['key'])
@@ -399,6 +401,17 @@ def portal_data():
             g['pre'] = [[kn or name, keys[kn or name][K.chapter_name(n)], n] for kn, n, _ in ch.pre
                         if K.chapter_name(n) in keys.get(kn or name, {})]
     host, repo = K.CONFIG.get('host'), K.CONFIG.get('repo', '')
+    # 傳承者分頁「現在可以做的事」：數字還沒附出處的頁（同 index.py --todo），和 Git 主機上待回答、勘誤的連結
+    import check as C
+    from urllib.parse import quote
+    for k in kbs:
+        deck = decks[k['name']][0]
+        k['todo'] = [[p.id, K.plain(p.title), deck.titles.get((p.part, p.chap), ''), K.plain(bare[0][1])[:50], bool(p.deep)]
+                     for p in (deck.pages if deck else []) if p.md for bare in [C.unsourced(p)] if bare]
+        gl = K.CONFIG.get('gitlab_url', 'https://gitlab.com')
+        k['issues'] = {lab: (f'https://github.com/{repo}/issues?q={quote(f"is:issue is:open label:{lab} label:kb:{k["name"]}")}' if host == 'github'
+                             else f'{gl}/{repo}/-/issues?label_name[]={quote(lab)}&label_name[]={quote("kb:" + k["name"])}' if host == 'gitlab' else '')
+                       for lab in ('待回答', '勘誤')}
     latest = (f'https://github.com/{repo}/releases/latest' if host == 'github'
               else f'{K.CONFIG.get("gitlab_url", "https://gitlab.com")}/{repo}/-/releases' if host == 'gitlab' else '')
     commit = K.git('rev-parse', '--short', 'HEAD', check=False)
@@ -415,7 +428,7 @@ def build_portal(dest):
         build(kb, dest / kb.name)
     head = '<style>' + read(ENGINE / 'portal/portal.css') + '</style>'
     body = ('<div id="app"></div>\n' + script('window.PORTAL = ' + json.dumps(portal_data(), ensure_ascii=False) + ';')
-            + script(read(ENGINE / 'portal/portal.js')))
+            + script(read(ENGINE / 'portal/icons.js')) + script(read(ENGINE / 'portal/portal.js')))
     (dest / 'index.html').write_text(page('知識傳承入口', head, body), encoding='utf-8')
     print(f'已建置 {display(dest / "index.html")}')
     return dest

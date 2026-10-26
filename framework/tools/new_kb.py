@@ -13,12 +13,12 @@ new-kb.json 寫訪談的結果：
       {"dir": "1-foundations", "title": "基礎",
        "chapters": [{"file": "01-what-is-mlops", "title": "什麼是 MLOps",
                      "overview": "兩三句：學完會知道什麼、為什麼排在這裡",
-                     "pre": ["別的章名", "cv › 影像分類"]}]}
+                     "pre": ["別的章名", "cv › 影像分類"], "icon": "book"}]}
     ],
     "terms": [{"zh": "模型漂移", "en": "Model Drift", "desc": "一句話解釋"}]
   }
 
-pre（先修）可以不寫；別的知識庫的章寫成「知識庫 › 章名」。
+pre（先修）可以不寫；別的知識庫的章寫成「知識庫 › 章名」。icon（圖示）從 framework/guide/deck.md 的圖示表挑一個名稱，沒寫就顯示章的編號。
 全景圖不用畫：入口網站照部分和章自動排，先修畫成箭頭。kb/<短名>/ 已經存在就不建。建好之後跑 check.py。
 """
 import json
@@ -101,7 +101,8 @@ def main(argv):
     files[d / 'deck/order.md'] = order(plan)
     for p in plan['parts']:
         for c in p['chapters']:
-            head = [f'- 速覽：{c["overview"].strip()}'] + ([f'- 先修：{"、".join(c["pre"])}'] if c.get('pre') else [])
+            head = ([f'- 速覽：{c["overview"].strip()}'] + ([f'- 先修：{"、".join(c["pre"])}'] if c.get('pre') else [])
+                    + ([f'- 圖示：{c["icon"]}'] if c.get('icon') else []))
             files[d / 'deck' / p['dir'] / f'{c["file"]}.md'] = f'# {c["title"]}\n\n' + '\n'.join(head) + '\n'
     for f, text in files.items():
         f.parent.mkdir(parents=True, exist_ok=True)

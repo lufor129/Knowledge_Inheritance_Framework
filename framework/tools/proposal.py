@@ -116,6 +116,15 @@ def main(argv):
     if K.git('status', '--porcelain', check=False):
         print('提醒：還有沒 commit 的改動。commit 之後再推分支、開提案。')
     kb = None if framework else K.find_kb(args[0])
+    # 分支名稱照 framework/guide/host.md：改框架用 framework/<簡短英文>，改知識庫用 kb/<知識庫>/<簡短英文>
+    prefix = 'framework/' if framework else f'kb/{kb.name}/'
+    if not branch.startswith(prefix):
+        fix = f'git branch -m {prefix}{branch.rsplit("/", 1)[-1]}'
+        if K.git('rev-parse', '--abbrev-ref', '@{u}', check=False):
+            print(f'提醒：分支名稱應該是 {prefix}<簡短英文>；這個分支已經推上去了，這次照用。')
+        else:
+            print(f'分支名稱要用 {prefix}<簡短英文>（framework/guide/host.md）。先改名再跑一次：{fix}')
+            return 1
     r = C.Report()
     for k in ([kb] if kb else K.all_kbs()):
         C.check_kb(k, r)

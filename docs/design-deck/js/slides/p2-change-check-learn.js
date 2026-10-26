@@ -178,12 +178,12 @@
   A(Object.assign({
     id: 'learn', part: 2, minutes: 2.5, short: '新人看到的樣子',
     title: '新人看到的樣子：入口網站和簡報', en: 'Learn',
-    thesis: '新人從<b>入口網站</b>開始，照三個步驟、順著學習路徑看<b>簡報</b>；想多知道一點，按「看深入」看<b>深入頁</b>。',
+    thesis: '新人從<b>入口網站</b>開始：「怎麼學」五站看一遍，再照學習路徑的章卡片看<b>簡報</b>；想多知道一點，按「看深入」看<b>深入頁</b>。',
     render: () => `<div class="s-body">
       <div class="col"><div class="controls">${U.seg('ln-seg', ['入口網站', '簡報：一頁', '簡報：深入頁', '簡報：整份'], 0)}</div>
         <div class="mock" id="ln-mock"></div></div>
       ${U.side({
-        points: ['從<b>入口網站</b>開始：三個步驟、學習路徑（每章有速覽和先修）、主題索引、搜尋', '簡報下面有<b>旁白、看深入、問 Agent</b>', '深入頁按「看深入」才進去，說明在下方預設展開', '每章最後有<b>自我檢查</b>，先想再展開答案'],
+        points: ['從<b>入口網站</b>開始：依角色分三頁；新人頁有「怎麼學」五站、學習路徑的章卡片、主題索引、搜尋', '簡報下面有<b>旁白、看深入、問 Agent</b>', '深入頁按「看深入」才進去，說明在下方預設展開', '每章最後有<b>自我檢查</b>，先想再展開答案'],
         fact: { v: '1 個壓縮檔', d: 'portal.zip：入口網站和所有簡報，解開就能離線看' },
         analogy: { icon: 'road', t: '比喻', p: '像逛博物館：入口拿一張導覽圖（全景圖），每個展間有說明牌（簡報），想聽解說戴耳機（旁白），想看更多走進旁邊的小展間（深入頁）。' }
       })}</div>`,
@@ -192,16 +192,15 @@
       const portal = `<div class="mbar"><i></i><i></i><i></i><span>入口網站 · 解開壓縮檔，打開 index.html（示意）</span></div>
         <div class="pg">
           <div style="font-size:22px;font-weight:700">知識傳承入口</div>
-          <div class="chips" style="font-size:14px"><span>① 挑一個知識庫</span><span>② 照學習路徑看簡報</span><span>③ 看不懂就問 Agent</span></div>
+          <div style="display:flex;gap:16px;font-size:14px;font-weight:600;border-bottom:1.5px solid var(--line);margin-top:-6px"><span style="color:var(--accent);border-bottom:3px solid var(--accent);padding-bottom:4px">新人：怎麼學</span><span style="color:var(--ink-2)">傳承者：新增和修改</span><span style="color:var(--ink-2)">維護者：審核</span></div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;text-align:center;font-size:12.5px;color:var(--ink-2)">${['挑一個知識庫', '照順序看簡報', '看深入', '問 Agent', '自我檢查'].map((t, i) => `<div><div style="width:30px;height:30px;margin:0 auto 2px;border-radius:50%;border:2px solid ${i === 3 ? 'var(--accent)' : 'var(--line-strong)'};background:${i === 3 ? 'var(--accent)' : '#fff'};color:${i === 3 ? '#fff' : 'var(--ink-2)'};display:grid;place-items:center;font-weight:700">${i + 1}</div>${t}</div>`).join('')}</div>
+          <div style="font-size:13px;color:var(--ink-3);text-align:center;margin-top:-4px">怎麼學：點一站，看那一步的示意動畫</div>
           <div style="border:1.5px solid var(--line-strong);border-radius:6px;padding:4px 12px;color:var(--ink-3);font-size:15px;background:#fff">搜尋：找一個詞，例如 EUV、穿隧、OCD</div>
-          <div class="cards">
-            <div class="card" style="background:#fff;border-color:var(--accent)"><h4>半導體製程</h4><p>90 頁 · 約 4 小時 12 分 · 看過 18 / 90 頁</p><div class="sbar" style="height:8px"><i style="width:20%;background:var(--good)"></i></div></div>
-            <div class="card" style="background:#fff"><h4>電腦視覺</h4><p>規劃了 13 章，還沒有簡報頁</p></div>
-          </div>
-          <div class="lbl4" style="margin:0">② 學習路徑：由上往下照順序看，每章有速覽和先修；點一章看細節，再打開簡報</div>
-          <div style="background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:14px"><b>○ ① 微影</b><span class="gloss" style="float:right">8 頁 · 19 分</span></div>
-          <div style="background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:14px"><b>○ ② 蝕刻</b><span class="gloss" style="float:right">3 頁 · 8 分</span><br><span class="gloss">先修：微影</span></div>
-          <div class="ov-box"><b>○ ⑦ 環繞式</b><span class="gloss" style="float:right">5 頁 · 14 分</span><br>前面幾章的技術，在這一章組成一顆環繞式電晶體……<br><span class="gloss">先修：蝕刻、沉積、摻雜磊晶、閘極　建議先看完；想先看也可以直接打開　［打開這一章］</span></div>
+          <div class="lbl4" style="margin:0">學習路徑：每章一張圖示卡片，點了翻面看速覽和先修，再打開簡報</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">${[['① 微影', 'M12 2v3M5 5l2 2M19 5l-2 2M8 14a4 4 0 1 1 8 0c0 1.5-1 2.5-1.5 3.5h-5C9 16.5 8 15.5 8 14zM10 21h4', '100%', '', '深入 11'], ['② 蝕刻', 'M14 4l6 6M17 7l-8 8M7 13l4 4-3 3-4-4z', '60%', '接著看', '先修 1'], ['③ 沉積', 'M12 3 2 8l10 5 10-5zM2 13l10 5 10-5M2 17l10 5 10-5', '0%', '', ''], ['⑦ 環繞式', 'M4 9h16M4 15h16M8 6v12M16 6v12', '0%', '', '先修 4']].map(([t, d, pct, nx, tag]) => `<div style="background:#fff;border:1px solid var(--line);border-top:4px solid #1f7a4d;border-radius:8px;padding:6px 8px;font-size:13px;display:flex;flex-direction:column;gap:3px">
+            <span style="display:flex;justify-content:space-between;color:#1f7a4d;font-weight:700;font-size:11px">第二部分${nx ? `<em style="font-style:normal;background:var(--accent-2);color:#fff;border-radius:6px;padding:0 5px">${nx}</em>` : ''}</span>
+            <span style="width:34px;height:34px;border-radius:9px;background:#e6f1eb;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="22" height="22" style="fill:none;stroke:#1f7a4d;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="${d}"/></svg></span>
+            <b>${t}</b><span class="gloss">看了 ${pct}${tag ? ` · ${tag}` : ''}</span></div>`).join('')}</div>
           <div class="lbl4" style="margin:0">下面還有「看章節關係圖」（全景圖，平常收起來）、主題索引；維護者和建置日期在頁尾</div>
         </div>`;
       const b = (k, style, inner) => `<button type="button" class="ritem click" data-k="${k}" style="${style}">${inner}</button>`;
@@ -230,7 +229,7 @@
     },
     notes: `第五章，新人怎麼學。新人以看簡報為主，從入口網站開始。
 
-先看「入口網站」：CI 把入口頁和所有簡報打包成 portal.zip，新人解開就能離線看。最上面是第一次來的三個步驟和搜尋。挑一個知識庫，下面就是它的學習路徑：一條由上往下的路線，每章有速覽和先修；點一章看細節，先修還沒看完會提醒，但照樣能打開。全景圖收在「看章節關係圖」裡，想看全貌再打開；下面還有主題索引。維護者、建置日期這些給開發者看的，放在頁尾。
+先看「入口網站」：CI 把入口頁和所有簡報打包成 portal.zip，新人解開就能離線看。入口網站依角色分三頁：新人、傳承者、維護者；傳承者和維護者那兩頁，同樣用一條流程和動作卡片講怎麼新增、修改、審核，卡片翻面就是跟 Agent 怎麼說。新人頁最上面是「怎麼學」：五個步驟排成一條時間軸，點一站播一小段示意動畫，例如按「問 Agent」之後 Claude Code 怎麼回答、附什麼出處；第一次來會先打開第一站。挑一個知識庫，下面就是它的學習路徑：每章一張圖示卡片，有速覽、看了多少、先修和深入的小標籤；點卡片翻面看細節，先修還沒看完會提醒，但照樣能打開。圖示寫在章檔開頭的「圖示：」，從框架內建的一組挑。全景圖收在「看章節關係圖」裡，想看全貌再打開；下面還有主題索引。維護者、建置日期這些給開發者看的，放在頁尾。
 
 切到「簡報：一頁」，點各個區塊看規則。下面那一排是給新人的按鈕：旁白、看深入、問 Agent。切到「簡報：深入頁」：平常翻頁不會經過，在主頁按「看深入」才進去；標題旁標「深入」，圖可以沿用主頁的，長說明放在下方、預設展開。「簡報：整份」可以看到每章最後自動多一頁自我檢查，最後還有出處頁和問答附錄。`
   }, C5));

@@ -39,7 +39,7 @@ allowed-tools: Bash(git push:*), Bash(gh issue edit:*), Bash(gh issue comment:*)
    - 一頁一個概念：結論、三到四點重點、數字卡、比喻、旁白；數字附出處註腳（寫法見 writing.md）。新的頁取新的頁 id，加進頁序 `deck/order.md`。
    - 圖：會動、會變、有因果的概念做成可以操作的互動圖，先套樣板（`framework/engine/figures/templates.js`），套不上才自己寫；其他可以用圖片、圖表。
    - 一頁放不下時（較長的推導、表格、很多出處，或口述的細節比一頁多很多），建議做成接在後面的深入頁，由傳承者決定：寫「- 深入：<主頁 id>」，長文寫在「說明：」，頁序裡緊接在主頁後面（寫法見 framework/guide/deck.md）。
-   - 新的一章：章檔開頭寫速覽（兩三句：學完會知道什麼、為什麼排在這裡）；真的要先看過別的章才看得懂，再寫先修。
+   - 新的一章：章檔開頭寫速覽（兩三句：學完會知道什麼、為什麼排在這裡）和圖示（從 framework/guide/deck.md 的圖示表挑一個）；真的要先看過別的章才看得懂，再寫先修。
    - 有新術語就在 terms.md 加一列；建議在那一章的「## 自我檢查」替新的頁加一題。
 6. **傳承者確認**：用白話講改了什麼，打開做好的頁給傳承者看：`python3 framework/tools/get.py <知識庫> deck --here --open --page <頁id>`。標出你不確定的地方，照傳承者的意見改。內容是傳承者的經驗，所以傳承者明確說好才往下走。
 7. **檢查**：`python3 framework/tools/check.py <知識庫>`，到沒有 ✗ 為止。

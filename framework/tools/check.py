@@ -141,9 +141,12 @@ def check_deck_md(kb, in_order, r):
     changed = changed_pages(kb)
     check_deep(deck, r)
     check_pre(kb, deck, r)
+    icons = K.icon_names()
     for key, ch in deck.chapters.items():
         if not ch.overview:
             r.err(ch.file, 1, f'章檔「{ch.title}」開頭沒有速覽：在「# 章名」下面寫「- 速覽：」兩三句，學完會知道什麼、為什麼排在這裡')
+        if ch.icon and ch.icon not in icons:
+            r.err(ch.file, ch.icon_line, f'「圖示：{ch.icon}」不是內建的圖示；從 framework/guide/deck.md「章檔開頭」的圖示表挑一個名稱')
     todo = []
     for p in deck.md_pages.values():
         if p.id not in in_order:
