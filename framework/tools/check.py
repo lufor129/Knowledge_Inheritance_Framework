@@ -247,12 +247,13 @@ def check_deck_md(kb, in_order, r):
             r.err(p.file, p.line, f'簡報頁「{p.id}」沒有圖：寫「- 圖：」，放互動圖、圖片或影片')
         elif not name.startswith('assets/') and name not in figs:
             r.err(p.file, p.line, f'簡報頁「{p.id}」的「圖：{name}」找不到；互動圖要在 deck/figures/*.js 用 Fig.add(\'{name}\', …) 註冊')
-        # 數字要附出處：這次新增或改過的頁擋下來；舊頁列成可以做的工作
+        # 數字要附出處：這次新寫或改到的說法擋下來；原本就有的列成可以做的工作
         bare = unsourced(p)
-        if bare and changed is not None and p.id in changed:
-            for label, text in bare:
-                r.err(p.file, p.line, f'簡報頁「{p.id}」的{label}有數字，沒有出處註腳：「{re.sub(chr(10), " ", K.plain(text))[:40]}」；補出處或改成不帶數字的說法')
-        elif bare:
+        before = changed.get(p.id) if changed else None
+        new = [(label, t) for label, t in bare if before is not None and t not in before]
+        for label, text in new:
+            r.err(p.file, p.line, f'簡報頁「{p.id}」的{label}有數字，沒有出處註腳：「{re.sub(chr(10), " ", K.plain(text))[:40]}」；補出處或改成不帶數字的說法')
+        if len(new) < len(bare):
             todo.append(p.id)
     if todo:
         r.warn(kb.dir / 'deck', 0, f'簡報裡有 {len(todo)} 頁的數字還沒有出處，可以慢慢補：python3 framework/tools/index.py {kb.name} --todo')
@@ -270,22 +271,28 @@ def check_deck_md(kb, in_order, r):
                     r.err(f, i, f'頁碼引用 [[頁:{pid}]] 指到的頁不在頁序裡')
 
 
-def unsourced(p):
-    """簡報頁上看得到的說法（結論、重點、圖說、數字卡），有數字卻沒有出處註腳的：[(欄位, 文字)]。比喻和旁白不算。"""
+def claims(p):
+    """簡報頁上看得到的說法（結論、重點、圖說、數字卡）：[(欄位, 文字)]。比喻和旁白不算。"""
     items = [('結論', p.thesis)] + [('重點', x) for x in p.points] + [('圖說', '：'.join(c)) for c in p.captions]
     if p.fact:
         items.append(('數字卡', '｜'.join(p.fact)))
-    return [(label, t) for label, t in items if t and UNIT.search(YEAR.sub('', K.plain(t))) and '[^' not in t]
+    return [(label, t) for label, t in items if t]
+
+
+def unsourced(p):
+    """有數字卻沒有出處註腳的說法：[(欄位, 文字)]。"""
+    return [(label, t) for label, t in claims(p) if UNIT.search(YEAR.sub('', K.plain(t))) and '[^' not in t]
 
 
 def changed_pages(kb):
-    """這個分支新增或改過的 Markdown 簡報頁 id；判斷不了（沒有 Git、找不到起點）時是 None。"""
+    """這個分支新增或改過的 Markdown 簡報頁：{頁 id: 起點上這一頁的說法}，新頁是空集合；判斷不了（沒有 Git、找不到起點）時是 None。"""
     try:
         old = K.base_kb(kb.name, fetch=False)
     except (SystemExit, Exception):  # 手動模式、沒有遠端、找不到起點：判斷不了就不擋
         return None
     od = K.load_deck(old).md_pages if old and old.has_deck else {}
-    return {i for i, p in K.load_deck(kb).md_pages.items() if i not in od or od[i].fp != p.fp}
+    return {i: {t for _, t in claims(od[i])} if i in od else set()
+            for i, p in K.load_deck(kb).md_pages.items() if i not in od or od[i].fp != p.fp}
 
 
 def check_paths(r):
