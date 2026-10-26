@@ -93,14 +93,15 @@ def _join(lines):
 
 
 def block_md(text, fns=None):
-    """深入頁「說明：」的 Markdown 轉成 HTML：段落、### 小標題、清單（- 或 1.）、表格、圖片（自己一行的 ![說明](assets/img/…)）；
+    """深入頁「說明：」的 Markdown 轉成 HTML：段落、### 小標題、清單（- 或 1.）、表格、引言（> 開頭，例如公式）、圖片（自己一行的 ![說明](assets/img/…)）；
     行內寫法照 inline()，註腳和這一頁一起編號。"""
-    out, buf, kind = [], [], None   # kind：p、ul、ol、table
+    out, buf, kind = [], [], None   # kind：p、quote、ul、ol、table
 
     def flush():
         nonlocal buf, kind
-        if kind == 'p':
-            out.append(f'<p>{inline(_join(buf), fns)}</p>')
+        if kind in ('p', 'quote'):
+            tag = '<p>{}</p>' if kind == 'p' else '<blockquote>{}</blockquote>'
+            out.append(tag.format(inline(_join(buf), fns)))
         elif kind in ('ul', 'ol'):
             out.append(f'<{kind}>' + ''.join(f'<li>{inline(_join(x), fns)}</li>' for x in buf) + f'</{kind}>')
         elif kind == 'table':
@@ -121,6 +122,11 @@ def block_md(text, fns=None):
         elif h:
             flush()
             out.append(f'<h4>{inline(h.group(1), fns)}</h4>')
+        elif l.startswith('>'):
+            if kind != 'quote':
+                flush()
+                kind = 'quote'
+            buf.append(l[1:].strip())
         elif l.lstrip().startswith('|'):
             if kind != 'table':
                 flush()
