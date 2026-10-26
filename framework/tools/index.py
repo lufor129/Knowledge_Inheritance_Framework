@@ -48,7 +48,8 @@ def main(argv):
             for p in deck.pages:
                 where = ' › '.join(x for x in (deck.order.parts.get(p.part, ''), deck.titles.get((p.part, p.chap), '') if p.chap else '') if x)
                 ids = '、'.join((f'{k}/' if k else '') + sid for k, sid, _ in maps.get(p.id, []))
-                print(f'{p.id}\t{where} › {K.plain(p.title)}\t→ {ids or "（沒有對應小節）"}\t{K.rel(p.file)}:{p.line}')
+                deep = f'（深入頁，接在 {p.deep} 後面）' if p.deep else ''
+                print(f'{p.id}\t{where} › {K.plain(p.title)}{deep}\t→ {ids or "（沒有對應小節）"}\t{K.rel(p.file)}:{p.line}')
             if deck.checks:
                 print('\n## 自我檢查（簡報）：題目　→ 相關的頁　位置')
                 for qs in deck.checks.values():

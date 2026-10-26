@@ -413,8 +413,12 @@ def changes(old, new):
     d_added = [p for i, p in nd.items() if i not in od]
     d_mod = [p for i, p in nd.items() if i in od and od[i].fp != p.fp]
     d_del = [p for i, p in od.items() if i not in nd]
-    o_files = {rel(f): f.read_text(encoding='utf-8') for f in deck_files(old)} if old and old.has_deck else {}
-    d_chaps = [f for f in deck_files(new) if o_files.get(rel(f)) != f.read_text(encoding='utf-8')] if new.has_deck else []
+    def pages_part(f):  # 只比第一頁之後：章檔開頭的速覽、先修改了，不算簡報頁或自我檢查有變
+        text = f.read_text(encoding='utf-8')
+        m = re.search(r'^<a name="', text, re.M)
+        return text[m.start():] if m else ''
+    o_files = {rel(f): pages_part(f) for f in deck_files(old)} if old and old.has_deck else {}
+    d_chaps = [f for f in deck_files(new) if o_files.get(rel(f)) != pages_part(f)] if new.has_deck else []
     return Changes(chapters, added, modified, deleted, faq_added, faq_changed, faq_deleted, terms_added, pages,
                    d_added, d_mod, d_del, d_chaps)
 
@@ -539,11 +543,14 @@ def slide_ids(kb):
 
 # ---------- 簡報頁 ----------
 # 新的簡報頁寫在 deck/<部分>/<章>.md：一頁一個「錨點＋## 標題」，底下是欄位；互動圖寫在 deck/figures/*.js。
+# 深入頁也是簡報頁：寫「- 深入：<主頁 id>」，接在主頁後面，長說明寫在「說明：」。
+# 章檔開頭（「# 章名」到第一頁之前）寫「- 速覽：」和「- 先修：」，入口網站的學習路徑和全景圖用。
 # 舊的簡報頁寫在 deck/slides/*.js，文字和動畫混在一起；搬到 Markdown 之前，只抓得到標題、結論、講稿這些欄位。
 
 CHECK_HEAD = '## 自我檢查'
-DECK_META = {'短標題': 'short', '英文': 'en', '建議': 'minutes', '圖': 'fig', '標籤': 'badge', '資料': 'src'}
-DECK_FIELD = re.compile(r'^(結論|重點|圖說|數字卡|比喻|旁白)(?:（([a-z]+)(?:｜([^）]+))?）)?[：:]\s*(.*)$')
+DECK_META = {'短標題': 'short', '英文': 'en', '建議': 'minutes', '圖': 'fig', '標籤': 'badge', '資料': 'src', '深入': 'deep'}
+DECK_FIELD = re.compile(r'^(結論|重點|圖說|數字卡|比喻|說明|旁白)(?:（([a-z]+)(?:｜([^）]+))?）)?[：:]\s*(.*)$')
+SAME_FIG, TABLE_FIG = '同主頁', '表格'   # 深入頁的「圖：」可以沿用主頁的圖，或把說明裡的第一個表格當圖
 
 
 @dataclass
@@ -557,7 +564,7 @@ class DeckPage:
     short: str = ''
     en: str = ''
     minutes: float = 0
-    fig: str = ''        # 互動圖名稱，或 assets/img/…、assets/video/…（後面可以接「｜說明」）
+    fig: str = ''        # 互動圖名稱，或 assets/img/…、assets/video/…（後面可以接「｜說明」）；深入頁還可以寫「同主頁」「表格」
     badge: str = ''      # 標題旁的標籤，例如「新技術」
     src: str = ''        # 頁尾的「資料：」
     thesis: str = ''
@@ -566,6 +573,8 @@ class DeckPage:
     fact: tuple = None       # (數字, 說明)
     analogy: tuple = None    # (圖示名稱, 文字, 卡片標題)
     notes: str = ''
+    deep: str = ''           # 深入頁：接在哪一頁後面（主頁 id）；一般的頁是空的
+    body: str = ''           # 深入頁的「說明：」，Markdown（段落、### 小標題、清單、表格、註腳）
     footnotes: dict = field(default_factory=dict)  # 註腳名稱 → 出處
     lines: list = field(default_factory=list)      # 原文：從錨點到下一頁之前
     md: bool = True          # False：舊的程式頁
@@ -582,7 +591,7 @@ class DeckPage:
             parts.append('：'.join(self.fact))
         if self.analogy:
             parts.append(self.analogy[1])
-        parts.append(self.notes)
+        parts += [self.body, self.notes]
         return plain('\n'.join(p for p in parts if p))
 
 
@@ -604,9 +613,19 @@ def deck_page_text(p):
         out.append(f'{plain(p.fact[0])}：{plain(p.fact[1])}')
     if p.analogy:
         out.append(f'比喻：{plain(p.analogy[1])}')
+    if p.body:
+        out += ['', '說明：', plain(p.body)]
     if p.notes:
         out += ['', '講解：', plain(p.notes)]
     return '\n'.join(out)
+
+
+@dataclass
+class DeckChapter:
+    file: pathlib.Path
+    title: str           # 「# 章名」
+    overview: str = ''   # 「- 速覽：」
+    pre: list = field(default_factory=list)   # 「- 先修：」：[(知識庫名稱或 None, 章名, 行號)]
 
 
 @dataclass
@@ -617,6 +636,7 @@ class DeckInfo:
     checks: dict         # (部分, 章) → [(Chapter, Faq)]：簡報章檔裡的自我檢查題目
     titles: dict         # (部分, 章) → 章檔的「# 標題」
     problems: list
+    chapters: dict = field(default_factory=dict)   # (部分, 章) → DeckChapter
 
 
 def deck_files(kb):
@@ -629,13 +649,14 @@ def deck_files(kb):
 def load_deck(kb):
     order = load_order(kb)
     problems = []
-    md_pages, checks, titles = {}, {}, {}
+    md_pages, checks, titles, chapters = {}, {}, {}, {}
     for f in deck_files(kb):
         if not CHAP_FILE.match(f.name):
             problems.append((f, 0, f'簡報的章檔名稱要是「兩位數字-英文.md」，例如 05-gate.md；部分的開場用 00：{f.name}'))
         key = (_num(f.parent.name), _num(f.name))
         ch = load_chapter(f, problems, CHECK_HEAD)
         titles[key] = ch.title
+        chapters[key] = _deck_head(f, ch, problems)
         if ch.faqs:
             checks[key] = [(ch, q) for q in ch.faqs]
         for s in ch.sections:
@@ -650,18 +671,94 @@ def load_deck(kb):
         page = md_pages.get(p.id) or legacy.get(p.id)
         if page:
             pages.append(page)
-    return DeckInfo(order, pages, md_pages, checks, titles, problems)
+    return DeckInfo(order, pages, md_pages, checks, titles, problems, chapters)
+
+
+@dataclass
+class Term:
+    zh: str
+    en: str
+    desc: str
+    first: str           # 「第一次出現」：頁 id（還沒搬的知識庫可能是小節 id）
+    line: int
+
+
+def load_terms(kb):
+    """術語表 terms.md 的每一列（跳過表頭和分隔線）。"""
+    f = kb.dir / 'terms.md'
+    out = []
+    for i, l in enumerate(f.read_text(encoding='utf-8').splitlines() if f.exists() else [], 1):
+        c = [x.strip() for x in l.strip().strip('|').split('|')]
+        if l.startswith('|') and c[0] and c[0] != '中文' and not set(l) <= set('|-: '):
+            c += [''] * (4 - len(c))
+            out.append(Term(c[0], c[1], c[2], c[3], i))
+    return out
+
+
+def term_patterns(t):
+    """比對術語用的寫法：中文、英文全名（不分大小寫），和括號裡的縮寫（前後不能接英文字母）。"""
+    pats = [re.escape(t.zh)]
+    full, _, abbr = t.en.partition('(')
+    if full.strip():
+        pats.append('(?i:' + re.escape(full.strip()) + ')')
+    abbr = abbr.rstrip(') ').strip()
+    if abbr:
+        pats.append(rf'(?<![A-Za-z]){re.escape(abbr)}(?![A-Za-z])')
+    return re.compile('|'.join(pats))
+
+
+PRE_REF = re.compile(r'^(?:([a-z0-9-]+)\s*›\s*)?(.+)$')
+
+
+def _deck_head(f, ch, problems):
+    """章檔開頭的「- 速覽：」（可以換行，下一行縮排兩格接著寫）和「- 先修：章名、章名」；別的知識庫的章寫成「cv › 影像分類」。"""
+    out, cur = DeckChapter(f, ch.title), None
+    ov = []
+    for i, l in enumerate(ch.text.splitlines(), 1):
+        if ANCHOR.match(l):
+            break
+        m = re.match(r'^- (速覽|先修)[：:]\s*(.*?)\s*$', l)
+        if m:
+            cur = m.group(1)
+            if cur == '速覽':
+                ov.append(m.group(2))
+            else:
+                for tok in (t.strip() for t in re.split(r'[、,，]', m.group(2))):
+                    if tok:
+                        r = PRE_REF.match(tok)
+                        out.pre.append((r.group(1), r.group(2).strip(), i))
+            continue
+        if cur == '速覽' and l.startswith('  ') and l.strip():
+            ov.append(l.strip())
+            continue
+        cur = None
+    out.overview = ''.join(ov).strip()
+    return out
+
+
+def chapter_names(deck):
+    """這份簡報裡可以當先修的章名（比對用）：章檔的「# 章名」、頁序的部分名稱和章節列的章名。"""
+    names = list(deck.titles.values()) + list(deck.order.parts.values()) + [n for _, n, _ in deck.order.chaps]
+    return {chapter_name(x) for x in names if x}
+
+
+def chapter_name(name):
+    """比對先修用的章名：拿掉開頭的圈號（①）和「第一部分 · 」。"""
+    return re.sub(r'^(?:[①-⑳]\s*|第.+?部分\s*·\s*)', '', name.strip()).strip()
 
 
 def _deck_page(s, key, problems):
     p = DeckPage(s.id, s.title, s.file, s.line, key[0], key[1], lines=s.lines)
     mode, meta = None, True
-    notes = []
+    notes, body = [], []
     for k, l in enumerate(s.lines[2:], s.line + 2):
         fm = FOOTDEF.match(l)
         if fm:
             p.footnotes[fm.group(1)] = fm.group(2).strip()
             mode = 'fn'
+            continue
+        if mode == '說明' and not re.match(r'^旁白[：:]', l):  # 說明到「旁白：」或註腳之前，原文照收（Markdown）
+            body.append(l.rstrip())
             continue
         if mode == '旁白':  # 旁白是最後一個欄位：之後到註腳之前都是旁白
             notes.append(l.rstrip())
@@ -687,8 +784,8 @@ def _deck_page(s, key, problems):
                 mode = None
             elif name == '比喻':
                 p.analogy = (icon or 'chip', rest, atitle or '比喻')
-            elif name == '旁白' and rest:
-                notes.append(rest)
+            elif name in ('旁白', '說明') and rest:
+                (notes if name == '旁白' else body).append(rest)
             continue
         if not l.strip():
             if mode in ('結論', '比喻', '重點', '圖說'):
@@ -704,8 +801,9 @@ def _deck_page(s, key, problems):
         elif mode == '比喻':
             p.analogy = (p.analogy[0], p.analogy[1] + l.strip(), p.analogy[2])
         else:
-            problems.append((s.file, k, f'簡報頁「{s.id}」看不懂這一行，欄位要寫成「結論：」「重點：」「圖說：」「數字卡：」「比喻：」「旁白：」：{l[:40]}'))
+            problems.append((s.file, k, f'簡報頁「{s.id}」看不懂這一行，欄位要寫成「結論：」「重點：」「圖說：」「數字卡：」「比喻：」「說明：」「旁白：」：{l[:40]}'))
     p.notes = re.sub(r'\n{3,}', '\n\n', '\n'.join(notes)).strip()
+    p.body = re.sub(r'\n{3,}', '\n\n', '\n'.join(body)).strip()
     return p
 
 

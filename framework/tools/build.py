@@ -60,11 +60,12 @@ def page(title, head, body):
 
 
 def inline(text, fns=None):
-    """簡報頁的行內寫法轉成 HTML：**粗體**、`程式`、[文字](網址)、[^註腳]。也可以直接寫 HTML。
+    """簡報頁的行內寫法轉成 HTML：**粗體**、`程式`、[文字](網址)、[文字](#頁id)（跳到那一頁）、[^註腳]。也可以直接寫 HTML。
     fns 是 {註腳名稱: 編號}，照第一次出現的順序編號；不給就拿掉註腳標號。"""
     text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', text)
     text = re.sub(r'`([^`]+)`', r'<code>\1</code>', text)
     text = re.sub(r'\[([^\]^][^\]]*)\]\((https?://[^)\s]+)\)', r'<a href="\2" target="_blank" rel="noopener">\1</a>', text)
+    text = re.sub(r'\[([^\]^][^\]]*)\]\(#([A-Za-z0-9_-]+)\)', r'<a href="#\2" class="go">\1</a>', text)
 
     def fn(m):
         if fns is None:
@@ -77,6 +78,86 @@ def inline(text, fns=None):
 def paras(text):
     """多段文字：空行分段，每段一個 <p>。"""
     return ''.join(f'<p>{inline(p.strip())}</p>' for p in re.split(r'\n\s*\n', text) if p.strip())
+
+
+LI = re.compile(r'^\s*([-*]|\d+\.)\s+(.*)$')
+TABLE_SEP = re.compile(r'^\s*\|?[\s:|-]+\|?\s*$')
+
+
+def _join(lines):
+    """同一段的幾行接起來：中文直接接，英文字之間補一個空白。"""
+    out = ''
+    for x in lines:
+        out += (' ' if out and re.match(r'[A-Za-z0-9]', x) and re.search(r'[A-Za-z0-9,.;:]$', out) else '') + x
+    return out
+
+
+def block_md(text, fns=None):
+    """深入頁「說明：」的 Markdown 轉成 HTML：段落、### 小標題、清單（- 或 1.）、表格、引言（> 開頭，例如公式）、圖片（自己一行的 ![說明](assets/img/…)）；
+    行內寫法照 inline()，註腳和這一頁一起編號。"""
+    out, buf, kind = [], [], None   # kind：p、quote、ul、ol、table
+
+    def flush():
+        nonlocal buf, kind
+        if kind in ('p', 'quote'):
+            tag = '<p>{}</p>' if kind == 'p' else '<blockquote>{}</blockquote>'
+            out.append(tag.format(inline(_join(buf), fns)))
+        elif kind in ('ul', 'ol'):
+            out.append(f'<{kind}>' + ''.join(f'<li>{inline(_join(x), fns)}</li>' for x in buf) + f'</{kind}>')
+        elif kind == 'table':
+            rows = [[c.strip() for c in r.strip().strip('|').split('|')] for r in buf if not TABLE_SEP.match(r)]
+            cell = lambda tag, c: f'<{tag}>{inline(c, fns)}</{tag}>'
+            out.append('<table><thead><tr>' + ''.join(cell('th', c) for c in rows[0]) + '</tr></thead><tbody>'
+                       + ''.join('<tr>' + ''.join(cell('td', c) for c in r) + '</tr>' for r in rows[1:]) + '</tbody></table>')
+        buf, kind = [], None
+
+    for l in text.splitlines():
+        h, m = re.match(r'^#{2,6}\s+(.*)$', l), LI.match(l)
+        img = re.match(r'^!\[([^\]]*)\]\(([^)\s]+)\)(.*)$', l.strip())
+        if not l.strip():
+            flush()
+        elif img:
+            flush()
+            out.append(f'<figure><img src="{img.group(2)}" alt="{html.escape(img.group(1))}"><figcaption>{inline(img.group(1) + img.group(3), fns)}</figcaption></figure>')
+        elif h:
+            flush()
+            out.append(f'<h4>{inline(h.group(1), fns)}</h4>')
+        elif l.startswith('>'):
+            if kind != 'quote':
+                flush()
+                kind = 'quote'
+            buf.append(l[1:].strip())
+        elif l.lstrip().startswith('|'):
+            if kind != 'table':
+                flush()
+                kind = 'table'
+            buf.append(l)
+        elif m:
+            k = 'ol' if m.group(1)[0].isdigit() else 'ul'
+            if kind != k:
+                flush()
+                kind = k
+            buf.append([m.group(2).strip()])
+        elif kind in ('ul', 'ol') and l[:1] in (' ', '\t'):  # 清單項目的下一行縮排：接在同一項
+            buf[-1].append(l.strip())
+        else:
+            if kind != 'p':
+                flush()
+                kind = 'p'
+            buf.append(l.strip())
+    flush()
+    return ''.join(out)
+
+
+def first_table(text):
+    """Markdown 裡第一個表格的原文（「圖：表格」用）。"""
+    rows = []
+    for l in text.splitlines():
+        if l.lstrip().startswith('|'):
+            rows.append(l)
+        elif rows:
+            break
+    return '\n'.join(rows)
 
 
 def linkify(text):
@@ -98,7 +179,8 @@ def chapter_bar(deck):
 
 
 def groups(kb, deck):
-    """照頁序把連續、同一章的頁分成一組：入口網站的學習路徑，和章末自我檢查放在哪裡。"""
+    """照頁序把連續、同一章的頁分成一組：入口網站的學習路徑，和章末自我檢查放在哪裡。
+    深入頁另外記在 deep，不算進 pages 和 minutes（學習路徑的時間和進度只算主頁）；last 是這一組最後一頁，深入頁也算。"""
     order = deck.order
     names = {(part, n): name for n, name, _, part in chapter_bar(deck)}
     out, seen_part = [], set()
@@ -113,13 +195,18 @@ def groups(kb, deck):
                 name = order.parts.get(p.part, deck.titles.get((p.part, 0), ''))
             else:
                 name = p.short or p.title
-            g = {'key': key, 'part': p.part, 'chap': p.chap, 'name': name, 'pages': [], 'minutes': 0}
+            g = {'key': key, 'part': p.part, 'chap': p.chap, 'name': name, 'pages': [], 'minutes': 0, 'deep': [], 'deepMinutes': 0}
             out.append(g)
         seen_part.add(p.part)
-        g['pages'].append(p.id)
-        g['minutes'] += p.minutes
+        if p.deep:
+            g['deep'].append(p.id)
+            g['deepMinutes'] += p.minutes
+        else:
+            g['pages'].append(p.id)
+            g['minutes'] += p.minutes
+        g['last'] = p.id
     for g in out:
-        g['minutes'] = round(g['minutes'], 1)
+        g['minutes'], g['deepMinutes'] = round(g['minutes'], 1), round(g['deepMinutes'], 1)
     return out
 
 
@@ -205,20 +292,28 @@ START = '''(function () {
 })();'''
 
 
-def md_page(p):
-    """一頁 Markdown 簡報頁 → 給 pages.js 的資料。註腳照第一次出現的順序編號。"""
+def md_page(p, main=None):
+    """一頁 Markdown 簡報頁 → 給 pages.js 的資料。註腳照第一次出現的順序編號。
+    深入頁的「圖：同主頁」沿用主頁（main）的圖，自己沒寫圖說就用主頁的；「圖：表格」把說明裡的第一個表格放在圖的位置。"""
     fns = {}
     fig, _, cap = p.fig.partition('｜')
-    fig = fig.strip()
-    kind = 'img' if re.match(r'assets/img/', fig) else 'video' if re.match(r'assets/video/', fig) else 'name' if fig else ''
+    fig, same = fig.strip(), bool(main) and fig.strip() == K.SAME_FIG
+    if same:
+        mfig, _, mcap = main.fig.partition('｜')
+        fig, cap = mfig.strip(), cap or mcap
+    kind = ('table' if fig == K.TABLE_FIG else 'img' if re.match(r'assets/img/', fig) else 'video' if re.match(r'assets/video/', fig)
+            else 'name' if fig else '')
+    captions = p.captions or (main.captions if same else [])
     d = {'id': p.id, 'part': p.part, 'chap': p.chap, 'title': inline(p.title), 'short': p.short, 'en': p.en,
          'minutes': p.minutes, 'fig': fig, 'figKind': kind, 'cap': cap.strip(),
          'thesis': inline(p.thesis, fns), 'points': [inline(x, fns) for x in p.points],
-         'captions': [[inline(t, fns), inline(d, fns)] for t, d in p.captions],
+         'captions': [[inline(t, fns), inline(d, fns)] for t, d in captions],
          'fact': [inline(p.fact[0], fns), inline(p.fact[1], fns)] if p.fact else None,
          'analogy': [p.analogy[0], inline(p.analogy[1], fns), p.analogy[2]] if p.analogy else None,
-         'badge': p.badge, 'src': inline(p.src),
+         'badge': p.badge, 'src': inline(p.src), 'deep': p.deep,
          'notes': inline(p.notes)}
+    d['more'] = block_md(p.body, fns) if p.body else ''
+    d['figHtml'] = block_md(first_table(p.body), fns) if kind == 'table' else ''
     for name in p.footnotes:  # 只在旁白或沒用到的註腳，也照順序編號
         fns.setdefault(name, len(fns) + 1)
     d['fns'] = [[n, name, linkify(p.footnotes.get(name, ''))] for name, n in fns.items()]
@@ -239,7 +334,7 @@ def build_deck(kb, links):
             + [ENGINE / 'deck/engine.js', ENGINE / 'widgets/core.js', ENGINE / 'widgets/anim.js', ENGINE / 'deck/pages.js', ENGINE / 'deck/learn.js']
             + sorted(w.glob('*.js')) + sorted((d / 'data').glob('*.js')) + sorted((ENGINE / 'figures').glob('*.js')) + sorted((d / 'figures').glob('*.js')))
     code = [script('window.DECK_CONFIG = ' + json.dumps(cfg, ensure_ascii=False) + ';'),
-            script(inline_images(kb, 'window.DECK_MD = ' + json.dumps([md_page(p) for p in deck.md_pages.values()], ensure_ascii=False) + ';')),
+            script(inline_images(kb, 'window.DECK_MD = ' + json.dumps([md_page(p, deck.md_pages.get(p.deep)) for p in deck.md_pages.values()], ensure_ascii=False) + ';')),
             script('window.QA = ' + json.dumps(qa_appendix(deck), ensure_ascii=False) + ';')]
     code += [script(inline_images(kb, read(f))) for f in figs]
     code.append(script('Deck.addMarkdown(window.DECK_MD);'))
@@ -318,17 +413,49 @@ def last_change(kb):
     return {'date': date, 'subject': subject}
 
 
+def shown_text(p):
+    """簡報頁上看得到的文字（不含旁白）：主題索引用。"""
+    parts = [p.title, p.thesis, *p.points, *('：'.join(c) for c in p.captions), *(p.fact or ()), p.analogy[1] if p.analogy else '', p.body]
+    return K.plain('\n'.join(x for x in parts if x))
+
+
+def topics(kb, deck):
+    """主題索引：術語表的每個術語，和講到它的頁。「第一次出現」那一頁排最前，再來是主頁，深入頁在後；旁白不算。"""
+    back = section_pages(kb, deck)
+    ids = {p.id: p for p in deck.pages}
+    out = []
+    for t in K.load_terms(kb):
+        pat = K.term_patterns(t)
+        hits = [p for p in deck.pages if pat.search(shown_text(p))]
+        first = ids.get(t.first) or ids.get((back.get(t.first) or [[None]])[0][0])  # 還沒搬的知識庫，「第一次出現」可能是小節 id
+        pages = {p.id: p for p in ([first] if first else []) + [p for p in hits if not p.deep] + [p for p in hits if p.deep]}
+        out.append({'zh': t.zh, 'en': t.en, 'desc': t.desc, 'pages': [[p.id, K.plain(p.title), bool(p.deep)] for p in pages.values()]})
+    return out
+
+
+def chapter_keys(deck, gs):
+    """章名 → 學習路徑上那一章的 key（「部分-章」）：章檔的「# 章名」和學習路徑上的名稱都算，比對時拿掉圈號和「第一部分 · 」。"""
+    out = {}
+    for (part, chap), t in deck.titles.items():
+        out.setdefault(K.chapter_name(t), f'{part}-{chap}')
+    for g in gs:
+        out.setdefault(K.chapter_name(g['name']), g['key'])
+    return out
+
+
 def portal_data():
-    kbs, index = [], []
+    kbs, index, decks = [], [], {}
     for kb in K.all_kbs():
         deck = K.load_deck(kb) if kb.has_deck else None
         gs = groups(kb, deck) if deck else []
+        decks[kb.name] = (deck, gs)
         kbs.append({'name': kb.name, 'title': kb.title, 'intro': kb.intro, 'maintainers': [n for n, _ in kb.maintainers],
                     'deck': bool(deck and deck.pages), 'sections': len(kb.sections),
                     'pages': sum(len(g['pages']) for g in gs), 'minutes': round(sum(g['minutes'] for g in gs)),
-                    'path': gs, 'updated': last_change(kb)})
+                    'deep': sum(len(g['deep']) for g in gs), 'parts': deck.order.parts if deck else {},
+                    'path': gs, 'topics': topics(kb, deck) if deck else [], 'updated': last_change(kb)})
         for p in (deck.pages if deck else []):
-            index.append(['頁', kb.name, p.id, p.title, p.text[len(p.title):].strip()[:600]])
+            index.append(['深' if p.deep else '頁', kb.name, p.id, p.title, p.text[len(p.title):].strip()[:600]])
         for s in kb.sections:
             body = K.plain('\n'.join(l for l in s.lines[2:] if not K.FOOTDEF.match(l)))
             index.append(['節', kb.name, s.id, s.title, re.sub(r'\s+', ' ', body)[:600]])
@@ -337,6 +464,26 @@ def portal_data():
             c = [x.strip() for x in l.strip().strip('|').split('|')]
             if l.startswith('|') and len(c) >= 3 and c[0] and c[0] != '中文' and not set(c[0]) <= set('-: '):
                 index.append(['詞', kb.name, '', f'{c[0]}（{c[1]}）' if c[1] else c[0], c[2]])
+    # 還沒有頁的章（剛建好的骨架）也列出來，全景圖才看得到整個知識庫的樣子
+    for name, (deck, gs) in decks.items():
+        for (part, chap), ch in sorted(deck.chapters.items()) if deck else []:
+            if any((g['part'], g['chap']) == (part, chap) for g in gs):
+                continue
+            label = f'{CIRC[chap - 1] if chap <= len(CIRC) else chap} {ch.title}' if chap else deck.order.parts.get(part, ch.title)
+            at = next((i for i, g in enumerate(gs) if (g['part'], g['chap']) > (part, chap)), len(gs))
+            gs.insert(at, {'key': f'{part}-{chap}', 'part': part, 'chap': chap, 'name': label, 'pages': [], 'minutes': 0, 'deep': [], 'deepMinutes': 0, 'last': None})
+    # 每章的速覽和先修（先修可以是別的知識庫的章）；同一章分成好幾段時，只寫在第一段
+    keys = {name: chapter_keys(d, gs) for name, (d, gs) in decks.items() if d}
+    for name, (deck, gs) in decks.items():
+        done = set()
+        for g in gs:
+            ch = deck.chapters.get((g['part'], g['chap']))
+            if g['key'] in done or not ch:
+                continue
+            done.add(g['key'])
+            g['overview'] = ch.overview
+            g['pre'] = [[kn or name, keys[kn or name][K.chapter_name(n)], n] for kn, n, _ in ch.pre
+                        if K.chapter_name(n) in keys.get(kn or name, {})]
     host, repo = K.CONFIG.get('host'), K.CONFIG.get('repo', '')
     latest = (f'https://github.com/{repo}/releases/latest' if host == 'github'
               else f'{K.CONFIG.get("gitlab_url", "https://gitlab.com")}/{repo}/-/releases' if host == 'gitlab' else '')

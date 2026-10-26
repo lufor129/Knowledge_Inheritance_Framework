@@ -2,7 +2,8 @@
    建置時把 deck/<部分>/<章>.md 轉成 window.DECK_MD；互動圖用 Fig.add(名稱, { render(頁) -> html, init(el, ctx, 頁), meters, layout, side }) 註冊。
    版面跟程式頁一樣：左邊是「圖：」指定的互動圖、圖片或影片；右邊依序是重點、數字卡、比喻卡。
    版面特別的頁，互動圖寫 body: true，render 回傳整個內容區，右欄用 U.pageSide({ top, meters, extra }) 放這一頁的文字；
-   raw: true 連標題都自己畫。cls、eyebrow、back、hub、hubShort、footL 這些頁面設定也可以寫在互動圖裡。 */
+   raw: true 連標題都自己畫。cls、eyebrow、back、hub、hubShort、footL 這些頁面設定也可以寫在互動圖裡。
+   深入頁（Markdown 寫了「深入：」）標題旁標「深入・可略過」，「說明：」的長文由 engine.js 放在畫面下方，預設展開。 */
 (function () {
   const CFG = window.DECK_CONFIG || {};
   const CIRC = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳';
@@ -19,7 +20,9 @@
   const missing = p => ({
     render: () => `<div class="fig grow"><div class="fig-title"><span>找不到互動圖</span></div><p class="caption">「圖：${esc(p.fig || '（沒寫）')}」沒有註冊。互動圖寫在 deck/figures/*.js，用 Fig.add('${esc(p.fig)}', …) 註冊。</p></div>`
   });
-  const figFor = p => p.figKind === 'name' ? Fig.list[p.fig] || missing(p) : p.figKind ? media(p) : missing(p);
+  /* 「圖：表格」：說明裡的第一個表格放在圖的位置 */
+  const table = p => ({ render: () => `<div class="fig grow"><div class="fig-title"><span>${p.cap || ''}</span></div><div class="fig-table">${p.figHtml}</div></div>` });
+  const figFor = p => p.figKind === 'name' ? Fig.list[p.fig] || missing(p) : p.figKind === 'table' ? table(p) : p.figKind ? media(p) : missing(p);
   const PASS = ['raw', 'cls', 'eyebrow', 'back', 'hub', 'hubShort', 'footL'];
 
   /* 這一頁 Markdown 的重點、數字卡、比喻卡，加上互動圖自己的東西（top、meters、extra），排成右欄 */
@@ -44,6 +47,7 @@
       const s = {
         id: p.id, part: p.part, chap: p.chap || undefined, minutes: p.minutes, short: p.short, title: p.title, en: p.en,
         thesis: p.thesis, notes: p.notes, badge: p.badge || undefined, src: p.src || undefined, eyebrow: eyebrow(p), md: p,
+        deep: p.deep || undefined, more: p.more || undefined,
         render: i => {
           if (f.body || f.raw) return f.render(p, i);
           const side = f.side === false ? '' : sideOf(p, { meters: f.meters });
@@ -51,7 +55,8 @@
         },
         init: f.init ? (el, ctx) => f.init(el, ctx, p) : null
       };
-      PASS.forEach(k => { if (f[k] !== undefined) s[k] = f[k]; });
+      // 深入頁沿用主頁的圖時，不跟著主頁的「回到哪一頁」設定（深入頁有自己的「回主頁」）
+      PASS.forEach(k => { if (f[k] !== undefined && !(p.deep && ['back', 'hub', 'hubShort'].includes(k))) s[k] = f[k]; });
       Deck.add(s);
     });
   };
@@ -90,7 +95,7 @@
   Deck.addGenerated = function () {
     const groups = CFG.groups || [], checks = CFG.checks || {};
     // 從後面往前插，前面的位置才不會跑掉
-    groups.map(g => ({ g, qs: checks[g.key], last: g.pages[g.pages.length - 1] }))
+    groups.map(g => ({ g, qs: checks[g.key], last: g.last || g.pages[g.pages.length - 1] }))
       .filter(x => x.qs && x.qs.length && !groups.some(o => o.key === x.g.key && o !== x.g && groups.indexOf(o) < groups.indexOf(x.g)))
       .map(x => Object.assign(x, { at: Deck.slides.findIndex(s => s.id === x.last) }))
       .filter(x => x.at >= 0).sort((a, b) => b.at - a.at)
