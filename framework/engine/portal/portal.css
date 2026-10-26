@@ -81,6 +81,7 @@ mark { background: #f7ead3; color: inherit; padding: 0 1px; border-radius: 2px; 
 .node .far { color: var(--accent-2); font-size: 13px; }
 .node.done { background: var(--good-soft); border-color: var(--good); }
 .node.half { background: linear-gradient(90deg, var(--good-soft) 50%, var(--paper) 50%); border-color: var(--good); }
+.node.empty { border-style: dashed; color: var(--ink-3); }
 .node.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .node.on .dp, .node.on .far { color: #f3d2bd; }
 .lg-arrow { color: var(--accent-2); font-weight: 600; }

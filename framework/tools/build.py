@@ -452,6 +452,14 @@ def portal_data():
             c = [x.strip() for x in l.strip().strip('|').split('|')]
             if l.startswith('|') and len(c) >= 3 and c[0] and c[0] != '中文' and not set(c[0]) <= set('-: '):
                 index.append(['詞', kb.name, '', f'{c[0]}（{c[1]}）' if c[1] else c[0], c[2]])
+    # 還沒有頁的章（剛建好的骨架）也列出來，全景圖才看得到整個知識庫的樣子
+    for name, (deck, gs) in decks.items():
+        for (part, chap), ch in sorted(deck.chapters.items()) if deck else []:
+            if any((g['part'], g['chap']) == (part, chap) for g in gs):
+                continue
+            label = f'{CIRC[chap - 1] if chap <= len(CIRC) else chap} {ch.title}' if chap else deck.order.parts.get(part, ch.title)
+            at = next((i for i, g in enumerate(gs) if (g['part'], g['chap']) > (part, chap)), len(gs))
+            gs.insert(at, {'key': f'{part}-{chap}', 'part': part, 'chap': chap, 'name': label, 'pages': [], 'minutes': 0, 'deep': [], 'deepMinutes': 0, 'last': None})
     # 每章的速覽和先修（先修可以是別的知識庫的章）；同一章分成好幾段時，只寫在第一段
     keys = {name: chapter_keys(d, gs) for name, (d, gs) in decks.items() if d}
     for name, (deck, gs) in decks.items():

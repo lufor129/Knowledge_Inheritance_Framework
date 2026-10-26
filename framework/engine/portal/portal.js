@@ -23,7 +23,7 @@
   function rowState(k, g, seen) {
     const n = g.pages.filter(id => seen.has(id)).length;
     const next = g.pages.find(id => !seen.has(id)) || g.pages[0];
-    return { n, done: n === g.pages.length, part: n > 0 && n < g.pages.length, next };
+    return { n, done: g.pages.length > 0 && n === g.pages.length, part: n > 0 && n < g.pages.length, next };
   }
   function row(k, g, seen, label) {
     const st = rowState(k, g, seen);
@@ -51,26 +51,26 @@
   /* ---------- 全景圖：照部分和章自動排，先修畫成箭頭 ---------- */
   const shortName = n => String(n).replace(/^第.+?部分\s*·\s*/, '');
   const groupsOf = (k, key) => k.path.filter(g => g.key === key);
-  function chapDone(kbName, key) {
+  function chapDone(kbName, key) {   // 看完了：true；還沒：false；那一章還沒有頁：null
     const k = byName[kbName], gs = k ? groupsOf(k, key) : [];
-    if (!gs.length) return false;
+    if (!gs.some(g => g.pages.length)) return null;
     const seen = seenOf(kbName);
     return gs.every(g => g.pages.every(id => seen.has(id)));
   }
   function map() {
     const k = byName[sel];
-    if (!k || !k.deck) return '';
+    if (!k || !k.path.length) return '';
     const seen = seenOf(k.name), cols = [];
     k.path.forEach((g, i) => { if (!cols.length || cols[cols.length - 1].part !== g.part) cols.push({ part: g.part, items: [] }); cols[cols.length - 1].items.push([g, i]); });
     return `<div class="map" id="map-box"><svg class="arrows" aria-hidden="true"></svg><div class="cols">${cols.map(c => `<div class="col">
         <div class="ph">${esc(String(k.parts[c.part] || '').split(' · ')[0])}</div>
         <div class="boxes${c.items.length > 6 ? ' two' : ''}"${c.items.length > 6 ? ` style="grid-template-rows:repeat(${Math.ceil(c.items.length / 2)},auto)"` : ''}>${c.items.map(([g, i]) => {
           const st = rowState(k, g, seen), far = (g.pre || []).some(p => p[0] !== k.name);
-          return `<button type="button" class="node ${st.done ? 'done' : st.part ? 'half' : ''}${i === chapSel ? ' on' : ''}" data-i="${i}" data-key="${g.key}">
+          return `<button type="button" class="node ${!g.pages.length ? 'empty' : st.done ? 'done' : st.part ? 'half' : ''}${i === chapSel ? ' on' : ''}" data-i="${i}" data-key="${g.key}">
             <span class="nm">${esc(shortName(g.name))}${far ? ' <span class="far" title="先修有別的知識庫的章">↗</span>' : ''}</span>
             ${g.deep && g.deep.length ? `<span class="dp">另有 ${g.deep.length} 頁深入</span>` : ''}</button>`;
         }).join('')}</div></div>`).join('')}</div></div>
-      <p class="sub" style="margin-top:6px">綠色是看完的章；<span class="lg-arrow">橘色箭頭</span>是先修：箭頭指向的章，建議先看完箭頭出發的那一章。點一章看它在講什麼。</p>`;
+      <p class="sub" style="margin-top:6px">綠色是看完的章，虛線是還沒有頁的章；<span class="lg-arrow">橘色箭頭</span>是先修：箭頭指向的章，建議先看完箭頭出發的那一章。點一章看它在講什麼。</p>`;
   }
   function drawArrows() {
     const box = $('#map-box'), k = byName[sel];
@@ -100,23 +100,24 @@
     if (!g) return '';
     const st = rowState(k, g, seenOf(k.name));
     const pre = (g.pre || []).map(([kb, key, name]) => ({ kb, key, name, done: chapDone(kb, key), far: kb !== k.name, title: (byName[kb] || {}).title || kb }));
-    const miss = pre.filter(p => !p.done);
+    const miss = pre.filter(p => p.done === false);
     const preLink = p => p.far
       ? `<a href="${deckHref(p.kb, (groupsOf(byName[p.kb], p.key)[0] || {}).pages?.[0] || '')}" target="_blank" rel="noopener">${esc(p.title)} › ${esc(p.name)}</a>`
       : `<button type="button" class="lk" data-go="${k.path.findIndex(x => x.key === p.key)}">${esc(p.name)}</button>`;
     return `<div class="chap">
-      <div class="ch-h"><h3>${esc(g.name)}</h3><span class="m">${g.pages.length} 頁 · 約 ${hm(g.minutes)}${g.deep && g.deep.length ? ` · 另有 ${g.deep.length} 頁深入（選看，約 ${hm(g.deepMinutes)}）` : ''}</span></div>
+      <div class="ch-h"><h3>${esc(g.name)}</h3><span class="m">${g.pages.length ? `${g.pages.length} 頁 · 約 ${hm(g.minutes)}` : '還沒有頁'}${g.deep && g.deep.length ? ` · 另有 ${g.deep.length} 頁深入（選看，約 ${hm(g.deepMinutes)}）` : ''}</span></div>
       ${g.overview ? `<p class="ov">${esc(g.overview)}</p>` : ''}
-      ${pre.length ? `<p class="pre">先修：${pre.map(p => `${preLink(p)} ${p.done ? '<span class="ok">✓ 看完了</span>' : '<span class="no">還沒看完</span>'}`).join('、')}</p>` : ''}
+      ${pre.length ? `<p class="pre">先修：${pre.map(p => `${preLink(p)} ${p.done ? '<span class="ok">✓ 看完了</span>' : p.done === null ? '<span class="m">還沒有頁</span>' : '<span class="no">還沒看完</span>'}`).join('、')}</p>` : ''}
       ${miss.length ? `<p class="warn">建議先看完 ${miss.map(p => esc(p.name)).join('、')}；想先看這一章也可以直接打開。</p>` : ''}
-      <div class="acts"><a class="btn primary" href="${deckHref(k.name, st.next)}" target="_blank" rel="noopener">${st.done ? '再看一次' : st.n ? '接著看這一章' : '打開這一章'}</a></div>
+      ${g.pages.length ? `<div class="acts"><a class="btn primary" href="${deckHref(k.name, st.next)}" target="_blank" rel="noopener">${st.done ? '再看一次' : st.n ? '接著看這一章' : '打開這一章'}</a></div>`
+        : '<p class="empty">這一章還沒有頁。傳承者新增這一章的知識時，Agent 會一起做簡報頁。</p>'}
     </div>`;
   }
 
   /* ---------- 主題索引：術語表的每個術語，點了看講到它的頁 ---------- */
   function topics() {
     const k = byName[sel];
-    if (!k || !k.deck) return '';
+    if (!k || !k.path.length) return '';
     if (!k.topics.length) return '<p class="empty">術語表還是空的。傳承者新增知識時，新的術語會加進術語表，這裡就會出現。</p>';
     const t = k.topics[topicSel] || k.topics[0];
     return `<p class="sub">從術語表自動產生：術語的中文、英文或縮寫出現在哪幾頁。第一次出現的頁排最前，深入頁排在後面。</p>
@@ -130,7 +131,7 @@
   function path() {
     const k = byName[sel];
     if (!k) return '';
-    if (!k.deck) return `<p class="empty">${esc(k.title)}還沒有簡報。傳承者新增第一筆知識時，Agent 會一起做簡報頁，這裡就會出現學習路徑。</p>`;
+    if (!k.deck) return `<p class="empty">${esc(k.title)}還沒有簡報頁。${k.path.length ? '上面的全景圖是規劃好的章，點一章看它要講什麼。' : ''}傳承者新增第一筆知識時，Agent 會一起做簡報頁，這裡就會出現學習路徑。</p>`;
     const seen = seenOf(k.name);
     return `<p class="sub">照簡報的章排；時間是每頁建議時間加起來。一章每頁都翻過，就會打勾。點一章從還沒看的頁接著看。</p>
       <div class="rows">${k.path.map(g => row(k, g, seen)).join('')}</div>`;
