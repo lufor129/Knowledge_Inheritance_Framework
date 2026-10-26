@@ -14,7 +14,7 @@ jobs:
           fetch-depth: 0  # 入口網站的卡片要列出每個知識庫最近一次的變更
       - name: 檢查
         run: python3 framework/tools/check.py
-      - name: 建置每個知識庫的手冊網站和簡報，和入口網站的壓縮檔
+      - name: 建置每個知識庫的簡報，和入口網站的壓縮檔
         run: python3 framework/tools/build.py --release-dir out
       - name: 發布到 Release（只在主線更新時）
         if: github.event_name == 'push'

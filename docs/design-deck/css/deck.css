@@ -357,6 +357,7 @@ pre.code { margin: 0; background: #fff; border: 1px solid var(--line); border-ra
 .fchip.now { background: var(--accent-2-soft); color: var(--ink); outline: 1.5px solid var(--accent-2); text-decoration: none; opacity: 1; }
 .fchip.new { background: var(--accent-soft); color: var(--ink); }
 .fchip.wait { opacity: .12; }
+.fchip.now.gone { text-decoration: line-through; opacity: .7; }
 .farrow { display: grid; place-items: center; color: var(--accent-2); font-size: 30px; }
 table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var(--bad); } table.t td.m { color: var(--warn); }
 .adr-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
