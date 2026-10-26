@@ -38,9 +38,9 @@ def download_file(fname):
     return f, None
 
 
-def portal():
-    """入口網站：下載 portal.zip 解開；下載不到就在本機建置。回傳 index.html。"""
-    z, why = download_file('portal.zip')
+def portal(here=False):
+    """入口網站：下載 portal.zip 解開；下載不到，或 here（用目前分支的內容），就在本機建置。回傳 index.html。"""
+    z, why = (None, '用目前分支的內容') if here else download_file('portal.zip')
     if z:
         dest = DOWNLOADS / 'portal'
         shutil.rmtree(dest, ignore_errors=True)
@@ -51,7 +51,7 @@ def portal():
             print('從 Git 主機下載了最新發布的入口網站')
             return index
         why = '壓縮檔裡沒有 index.html'
-    print(f'下載不到（{why}），改在本機建置')
+    print(f'在本機建置（{why}）' if here else f'下載不到（{why}），改在本機建置')
     dest = K.ROOT / '.kif/portal'
     r = subprocess.run([sys.executable, str(K.ROOT / 'framework/tools/build.py'), '--portal', str(dest)], cwd=K.ROOT,
                        capture_output=True, text=True)
@@ -67,7 +67,7 @@ def main(argv):
     here = '--here' in argv
     args = [a for a in argv if a not in ('--open', '--here')]
     if args == ['portal']:
-        f = portal()
+        f = portal(here)
         if not f:
             return 1
         if '--open' in argv:
