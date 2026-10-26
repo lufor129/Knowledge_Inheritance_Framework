@@ -597,45 +597,9 @@ NVIDIA 宣稱，計算時間能從兩週縮到一個晚上。2023 年剛發表�
 ### 微影：常見問題
 
 <details>
-<summary>DUV 的波長是 193 nm，怎麼畫得出 40 nm 的線？</summary>
-靠浸水和大鏡頭：在鏡頭和晶圓之間加一層水，讓光在水裡等效變短；把鏡頭收光的角度（NA）做到 1.35。這樣一次曝光的極限大約是 38–40 nm；要再更密，就搭配多重曝光。
-相關：litho1-d、reso-d、mpat-d
-</details>
-
-<details>
-<summary>EUV 波長是 13.5 nm，怎麼畫得出 8 nm 的線？</summary>
-能畫多細，看「波長 ÷ 收光角度（NA）」，再乘一個製程係數（約 0.3）。High-NA 的 NA 是 0.55：13.5 ÷ 0.55 × 0.3 ≈ 7–8 nm。
-相關：reso-d、litho5-d
-</details>
-
-<details>
-<summary>為什麼不用波長更短的 X 光？</summary>
-波長再短，幾乎沒有材料能反射或聚焦它；而且每顆光子能量更大、數量更少，隨機缺陷會更嚴重。有人在研究，但離量產還很遠。
-相關：litho2-d、litho3m-d、litho4-d
-</details>
-
-<details>
-<summary>一台 EUV 一小時能曝光幾片晶圓？</summary>
-最新的機型大約每小時兩百片左右。
-相關：litho4-d、field-d
-</details>
-
-<details>
-<summary>一次曝光的範圍為什麼剛好是 26 × 33 mm？</summary>
-光罩上的圖案區大約是 104 × 132 mm，縮小 4 倍印到晶圓上，就是 26 × 33 mm。High-NA 有一個方向改成縮小 8 倍，所以只剩一半。
-相關：field-d、litho5-d
-</details>
-
-<details>
 <summary>High-NA EUV 現在有誰在用？</summary>
 Intel 最積極：已經用 High-NA 印 18A 的部分圖層，做出一部分 Panther Lake 處理器出貨，計畫在 14A 用在關鍵圖層。記憶體廠 SK hynix 也裝了量產型的 EXE:5200B，準備做下一代 DRAM。台積電則表示到 A13、A12 都還不需要。
 相關：litho5-d
-</details>
-
-<details>
-<summary>為什麼不用電子束直接在晶圓上畫？</summary>
-電子束可以畫得更細，但它是一點一點寫，速度太慢，量產來不及，所以只拿來製作光罩。
-相關：cmask-d
 </details>
 
 <details>
@@ -666,19 +630,19 @@ Intel 最積極：已經用 High-NA 印 18A 的部分圖層，做出一部分 Pa
 <details>
 <summary>DUV 是 193 nm，怎麼畫出 40 nm？</summary>
 鏡頭和晶圓之間加一層水，讓光在水裡等效變短；鏡頭收光角度（NA）做到 1.35；再搭配多次曝光。單次極限約 38–40 nm。
-相關：litho1
+相關：litho1、litho1-d、reso-d、mpat-d
 </details>
 
 <details>
 <summary>EUV 波長 13.5 nm，怎麼畫出 8 nm？</summary>
 能畫多細，看「波長 ÷ 收光角度（NA）」，再乘一個製程係數（約 0.3）：13.5 ÷ 0.55 × 0.3 ≈ 7–8 nm。
-相關：litho1、litho5
+相關：litho1、litho5、reso-d、litho5-d
 </details>
 
 <details>
 <summary>為什麼不用更短的 X 光？</summary>
 波長更短時，幾乎沒有材料能反射或聚焦它；每顆光子能量更大、數量更少，隨機缺陷更嚴重。有人在研究，但離量產很遠。
-相關：lithoL、litho3m、litho4
+相關：lithoL、litho3m、litho4、litho2-d、litho3m-d、litho4-d
 </details>
 
 <details>
@@ -708,7 +672,7 @@ EUV 會被空氣吸收，走不到晶圓上，所以整條光路都在真空中�
 <details>
 <summary>一次曝光為什麼剛好 26 × 33 mm？</summary>
 光罩圖案區約 104 × 132 mm，縮小 4 倍印到晶圓上。High-NA 有一個方向縮小 8 倍，所以只剩一半。
-相關：litho5、pkg0
+相關：litho5、pkg0、field-d、litho5-d
 </details>
 
 <details>
@@ -738,7 +702,7 @@ EUV 會被空氣吸收，走不到晶圓上，所以整條光路都在真空中�
 <details>
 <summary>一台 EUV 一小時能曝幾片晶圓？</summary>
 最新的機型大約每小時兩百片左右。
-相關：litho3
+相關：litho3、litho4-d、field-d
 </details>
 
 <details>
@@ -762,5 +726,5 @@ EUV 會被空氣吸收，走不到晶圓上，所以整條光路都在真空中�
 <details>
 <summary>為什麼不用電子束直接畫？</summary>
 電子束可以畫得更細，但它是一點一點寫，速度太慢，量產來不及，所以只拿來製作光罩。
-相關：cmask、d2m
+相關：cmask、d2m、cmask-d
 </details>
