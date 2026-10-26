@@ -37,7 +37,7 @@
       const seen = seenOf(k.name), n = k.path.reduce((a, g) => a + g.pages.filter(id => seen.has(id)).length, 0);
       const last = load(k.name, 'last');
       const go = k.deck ? `<a class="btn primary" href="${deckHref(k.name, n ? last : '')}" target="_blank" rel="noopener">${n ? '繼續看簡報' : '開始看簡報'}</a>` : '';
-      const meta = k.deck ? `${k.pages} 頁 · 約 ${hm(k.minutes)}` : (k.sections ? `簡報還沒做 · 手冊 ${k.sections} 個小節` : '簡報和手冊都還在準備');
+      const meta = k.deck ? `${k.pages} 頁 · 約 ${hm(k.minutes)}${k.deep ? ` · 另有 ${k.deep} 頁深入` : ''}` : (k.sections ? `簡報還沒做 · 手冊 ${k.sections} 個小節` : k.path.length ? `規劃了 ${k.path.length} 章，還沒有頁` : '簡報還在準備');
       return `<article class="card ${k.name === sel ? 'on' : ''}" data-kb="${k.name}">
         <button type="button" class="pick" data-kb="${k.name}"><h3>${esc(k.title)}</h3><p>${esc(k.intro)}</p></button>
         <div class="meta">${meta}${k.maintainers.length ? ` · 維護者：${esc(k.maintainers.join('、'))}` : ''}</div>
