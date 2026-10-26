@@ -1,39 +1,36 @@
 {
   "id": "s17-conflict",
   "role": "新人",
-  "title": "簡報和手冊說法不同",
+  "title": "兩頁說法不同",
   "setup": [
     {
       "branch": {
-        "name": "kb/semiconductor/hk2-five",
+        "name": "kb/semiconductor/hk2d-five",
         "edits": [
           {
-            "file": "kb/semiconductor/handbook/2-manufacturing/05-gate.md",
+            "file": "kb/semiconductor/deck/2-manufacturing/05-gate.md",
             "replace": [
-              "牆每薄 0.2 nm，漏電大約多 10 倍[^hk2-1]",
-              "牆每薄 0.2 nm，漏電大約多 5 倍[^hk2-1]"
+              "牆每薄 0.2 nm，漏電大約多 10 倍[^hk2-1][^hk2-2]",
+              "牆每薄 0.2 nm，漏電大約多 5 倍[^hk2-1][^hk2-2]"
             ]
           },
           {
-            "file": "kb/semiconductor/handbook/2-manufacturing/05-gate.md",
+            "file": "kb/semiconductor/deck/2-manufacturing/05-gate.md",
             "replace": [
-              "牆每薄約 0.2 nm，漏電就多約 10 倍。",
-              "牆每薄約 0.2 nm，漏電就多約 5 倍。"
+              "- 牆每薄 0.2 nm，漏電大約多 10 倍[^hk2-1]",
+              "- 牆每薄 0.2 nm，漏電大約多 5 倍[^hk2-1]"
             ]
           }
         ],
-        "run": [
-          "python3 framework/tools/check.py --fp semiconductor hk1"
-        ],
-        "commit": "半導體：hk2 的倍數（測試用，故意和簡報不同）",
+        "commit": "半導體：hk2-d 的倍數（測試用，故意和主頁不同）",
         "pr": {
           "var": "pr_five",
-          "title": "半導體製程：hk2 的倍數",
+          "title": "半導體製程：hk2-d 的倍數",
           "labels": [
             "kb:semiconductor",
             "來歷:整理"
           ],
-          "body": "🤖 由 Agent 產生\n\n## 改了什麼\n- 修改 `hk2`：倍數改成 5 倍。\n\n## 來歷\n整理"
+          "body": "🤖 由 Agent 產生\n\n## 改了什麼\n- 修改深入頁 `hk2-d`：倍數改成 5 倍。\n\n## 來歷\n整理"
         }
       }
     },
@@ -56,18 +53,18 @@
       "name": "kb-learn"
     },
     {
-      "text": "回答講到簡報寫的 10 倍",
+      "text": "回答講到主頁寫的 10 倍",
       "type": "reply",
       "pattern": "10 ?倍"
     },
     {
-      "text": "回答講到手冊寫的 5 倍",
+      "text": "回答講到深入頁寫的 5 倍",
       "type": "reply",
       "pattern": "5 ?倍"
     }
   ],
   "judge": [
-    "兩種說法都列出來，各附出處（簡報頁 hk1 和手冊小節 hk2），說清楚哪裡不一樣；沒有自己挑一個當答案、只講一個",
+    "兩種說法都列出來，各附出處（主頁 hk1 和深入頁 hk2-d），說清楚哪裡不一樣；沒有自己挑一個當答案、只講一個",
     "問小美要不要記成勘誤"
   ],
   "judge_context": [

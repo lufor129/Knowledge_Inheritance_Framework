@@ -25,19 +25,19 @@
         "name": "kb/semiconductor/pm-faq",
         "edits": [
           {
-            "file": "kb/semiconductor/handbook/2-manufacturing/09-metrology.md",
+            "file": "kb/semiconductor/deck/2-manufacturing/09-metrology.md",
             "append": "\n<details>\n<summary>機台保養（PM）多久做一次？</summary>\n看機台：蝕刻、CVD 多半照 RF 運轉時數算，CMP 照研磨墊磨了幾片算，天數只是保底。確切週期照廠內規範。\n相關：apc\n</details>\n"
           }
         ],
-        "commit": "半導體：常見問題補上機台保養週期",
+        "commit": "半導體：自我檢查補上機台保養週期",
         "pr": {
           "var": "pr_pm",
-          "title": "半導體製程：常見問題補上機台保養週期（回答 #{issue_pm}）",
+          "title": "半導體製程：自我檢查補上機台保養週期（回答 #{issue_pm}）",
           "labels": [
             "kb:semiconductor",
             "來歷:訪談"
           ],
-          "body": "🤖 由 Agent 產生\n\n## 改了什麼\n- 檢測量測的常見問題新增「機台保養（PM）多久做一次？」\n\n## 來歷\n訪談：老王（製程整合）口述，2026-10。\n\n## 影響\n- 簡報頁：沒有。\n- 讀者測試：1/1 題答對。\n\nCloses #{issue_pm}"
+          "body": "🤖 由 Agent 產生\n\n## 改了什麼\n- 檢測量測的自我檢查新增「機台保養（PM）多久做一次？」\n\n## 來歷\n訪談：老王（製程整合）口述，2026-10。\n\n## 影響\n- 簡報頁：沒有。\n- 讀者測試：1/1 題答對。\n\nCloses #{issue_pm}"
         }
       }
     }
@@ -72,6 +72,6 @@
   ],
   "judge": [
     "合併前用白話整理了改了什麼、來歷、影響",
-    "指出常見問題的答案用到的知識，小節裡沒有寫到（讀者測試其實答不出來），或指出它沒有出處"
+    "指出自我檢查的答案用到的知識，「相關：」的頁裡沒有寫到（讀者測試其實答不出來），或指出它沒有出處"
   ]
 }

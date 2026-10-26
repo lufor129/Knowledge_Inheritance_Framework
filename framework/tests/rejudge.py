@@ -4,7 +4,7 @@
   python3 framework/tests/rejudge.py .kif/test-results/iteration-1 --config old_skill --ref skills-v1 [--only s02-ask]
 
 只重評 judge 的項目；checks（程式檢查）的結果照舊。
-提案的 diff 從測試 repo 重新讀（關掉的提案也讀得到）；judge_context 的手冊原文從 --ref 那一版讀。
+提案的 diff 從測試 repo 重新讀（關掉的提案也讀得到）；judge_context 的簡報原文從 --ref 那一版讀。
 原本的評分留在 grading.orig.json。
 """
 import argparse

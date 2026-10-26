@@ -1,7 +1,7 @@
 """評分：先收集測試 repo 上的結果，再逐條檢查。
 
 能用程式判斷的（有沒有開 issue、標籤、提案說明、檔案內容、檢查有沒有過）由 CHECKS 處理；
-要看內容才能判斷的（回答有沒有只根據手冊、有沒有先問使用者）交給評分模型。
+要看內容才能判斷的（回答有沒有只根據簡報、有沒有先問使用者）交給評分模型。
 每一條都輸出 {text, passed, evidence}，格式和 skill-creator 的 grading.json 一樣。
 """
 import json
@@ -274,7 +274,7 @@ def would_prompt(tools, settings, skills=None, user_msgs=()):
 # ---------- 評分模型 ----------
 
 def context_md(clone, paths):
-    """情境指定的手冊原文（正式內容），讓評分模型對照 Agent 的回答。"""
+    """情境指定的簡報原文（正式內容），讓評分模型對照 Agent 的回答。"""
     out = []
     for path in paths:
         text = _show(clone, 'origin/main', path)

@@ -3,8 +3,6 @@
 用法：
   python3 framework/tools/check.py                      檢查全部
   python3 framework/tools/check.py semiconductor        只檢查一個知識庫（寫 kb/semiconductor 也可以）
-  python3 framework/tools/check.py --fp semiconductor 頁id [頁id …]
-                                                        重看並改好這些簡報頁之後，更新頁序裡的指紋
 
 ✗ 是錯誤，結束碼 1，不能開變更提案、不能合併；△ 是提醒，由維護者決定。
 """
@@ -32,7 +30,7 @@ class Report:
         self.warns.append(f'△ {K.rel(f)}{":" + str(line) if line else ""}  {msg}')
 
 
-def check_kb(kb, secs, r):
+def check_kb(kb, r):
     for f, line, msg in kb.problems:
         r.err(f, line, msg)
     readme = kb.dir / 'README.md'
@@ -44,40 +42,21 @@ def check_kb(kb, secs, r):
         r.err(readme, 0, 'README 的「## 維護者」底下至少要列一位維護者')
     if not (kb.dir / 'terms.md').exists():
         r.err(kb.dir / 'terms.md', 0, '每個知識庫都要有術語表 terms.md（可以先只有表頭）')
-
-    # 小節 id：格式、不重複
-    seen = {}
-    for s in kb.sections:
-        if not K.ID_OK.match(s.id):
-            r.err(s.file, s.line, f'小節 id「{s.id}」只能用小寫英文開頭、後面接小寫英文或數字，例如 hk1')
-        if s.id in seen:
-            o = seen[s.id]
-            r.err(s.file, s.line, f'小節 id「{s.id}」重複，{K.rel(o.file)}:{o.line} 已經用過；請換一個 id')
-        else:
-            seen[s.id] = s
-
-    for ch in kb.chapters:
-        # 常見問題的「相關：」要指到存在的小節
-        for q in ch.faqs:
-            for kname, sid, line in q.rel:
-                if (kname or kb.name, sid) not in secs:
-                    where = f'知識庫「{kname}」裡' if kname else '這個知識庫裡'
-                    r.err(ch.file, line, f'常見問題「{q.q}」的「相關：」指向「{sid}」，但{where}沒有這個小節')
-        check_footnotes(ch, r)
-        # 數字沒附出處：只提醒
-        for s in ch.sections:
-            for para, line in paragraphs(s):
-                if UNIT.search(YEAR.sub('', para)) and '[^' not in para:
-                    snippet = re.sub(r'\s+', ' ', para)[:40]
-                    r.warn(ch.file, line, f'小節「{s.id}」這段有數字，但沒有出處註腳：「{snippet}…」')
-        for q, ans, line in faq_answers(ch):
-            if UNIT.search(YEAR.sub('', ans)) and '[^' not in ans:
-                snippet = re.sub(r'\s+', ' ', ans)[:40]
-                r.warn(ch.file, line, f'常見問題「{q}」的答案有數字，但沒有出處註腳：「{snippet}…」')
-
     check_images(kb, r)
-    if (kb.dir / 'deck').exists():
-        check_deck(kb, secs, r)
+    if not kb.has_deck:
+        r.err(kb.dir / 'deck/order.md', 0, '每個知識庫都要有簡報：頁序 deck/order.md 和章檔 deck/<部分>/<章>.md（framework/guide/deck.md）')
+        return
+    check_deck(kb, r)
+    check_terms(kb, r)
+
+
+def check_terms(kb, r):
+    """術語表的「第一次出現」要指到這份簡報裡的頁；還沒有頁的術語寫「（待補）」或空著。"""
+    ids = {p.id for p in K.load_order(kb).pages}
+    for t in K.load_terms(kb):
+        first = t.first.strip()
+        if first and first not in ('（待補）', '(待補)') and first not in ids:
+            r.err(kb.dir / 'terms.md', t.line, f'術語「{t.zh}」的「第一次出現」寫的是「{first}」，但頁序裡沒有這一頁；寫頁 id，還沒有頁就寫「（待補）」')
 
 
 def check_footnotes(ch, r):
@@ -101,53 +80,6 @@ def check_footnotes(ch, r):
     for name, i in defs.items():
         if name not in used:
             r.warn(ch.file, i, f'出處註腳 [^{name}] 沒有被任何地方用到')
-
-
-def paragraphs(s):
-    """小節裡的一般段落（跳過標題、錨點、程式碼、註解、註腳定義），回傳 (文字, 起始行號)。"""
-    out, buf, start, code = [], [], 0, False
-    for k, l in enumerate(s.lines):
-        ln = s.line + k
-        if l.startswith('```'):
-            code = not code
-            continue
-        skip = code or l.startswith(('#', '<a ', '<!--', '[^')) or K.ANCHOR.match(l)
-        if skip or not l.strip():
-            if buf:
-                out.append((' '.join(buf), start))
-            buf = []
-            continue
-        if not buf:
-            start = ln
-        buf.append(l.strip())
-    if buf:
-        out.append((' '.join(buf), start))
-    return out
-
-
-def faq_answers(ch):
-    """常見問題的答案（跳過題目和「相關：」），回傳 (題目, 答案文字, 起始行號)。"""
-    lines = ch.text.splitlines()
-    if K.FAQ_HEAD not in lines:
-        return []
-    out, q, buf, start = [], None, [], 0
-    for i in range(lines.index(K.FAQ_HEAD) + 1, len(lines)):
-        l = lines[i]
-        sm = re.search(r'<summary>(.*?)</summary>', l)
-        if sm:
-            q, buf = sm.group(1).strip(), []
-            continue
-        if l.strip() == '</details>':
-            if q and buf:
-                out.append((q, ' '.join(buf), start))
-            q = None
-            continue
-        if q is None or not l.strip() or K.REL.match(l) or l.startswith('[^'):
-            continue
-        if not buf:
-            start = i + 1
-        buf.append(l.strip())
-    return out
 
 
 def check_images(kb, r):
@@ -174,55 +106,23 @@ def kind(asset):
     return '影片' if asset.startswith('video/') else '圖片'
 
 
-def check_deck(kb, secs, r):
+def check_deck(kb, r):
     of = kb.dir / 'deck/order.md'
-    if not of.exists():
-        r.err(of, 0, '有 deck/ 資料夾就要有頁序 deck/order.md')
-        return
     order = K.load_order(kb)
     for f, line, msg in order.problems:
         r.err(f, line, msg)
     ids = K.slide_ids(kb)
-    md = K.load_deck(kb).md_pages
     seen = set()
-    stale = []
     for p in order.pages:
         if p.id not in ids:
-            r.err(of, p.line, f'頁序裡的簡報頁「{p.id}」在 deck/slides/ 裡找不到')
+            r.err(of, p.line, f'頁序裡的簡報頁「{p.id}」在章檔和 deck/slides/ 裡都找不到')
         if p.id in seen:
             r.err(of, p.line, f'簡報頁「{p.id}」在頁序裡出現兩次')
         seen.add(p.id)
-        for kname, sid, fp in p.maps:
-            s = secs.get((kname or kb.name, sid))
-            if s is None:
-                r.err(of, p.line, f'簡報頁「{p.id}」對應的小節「{sid}」不存在')
-            elif fp is None:
-                r.err(of, p.line, f'簡報頁「{p.id}」對應的小節「{sid}」還沒有指紋')
-                stale.append(p.id)
-            elif fp != s.fp:
-                r.err(of, p.line, f'簡報頁「{p.id}」對應的小節「{sid}」改過了（記錄的指紋 {fp}，現在是 {s.fp}），要重看這一頁')
-                stale.append(p.id)
-        # 反過來：簡報頁改了，對應的小節也要重看（兩邊一樣重要）
-        if p.maps and p.id in md:
-            secs_of = '、'.join(sid for _, sid, _ in p.maps)
-            if p.fp is None:
-                r.err(of, p.line, f'簡報頁「{p.id}」還沒有頁的指紋；和對應的小節 {secs_of} 對照過之後更新指紋')
-                stale.append(p.id)
-            elif p.fp != md[p.id].fp:
-                r.err(of, p.line, f'簡報頁「{p.id}」改過了（記錄的指紋 {p.fp}，現在是 {md[p.id].fp}），對應的小節 {secs_of} 要重看，說法要一致')
-                stale.append(p.id)
     for n, name, first in order.chaps:
         if first not in seen:
             r.err(of, 0, f'章節列第 {n} 章「{name}」的第一頁「{first}」不在頁序裡')
-    # 每個小節都要有簡報頁講到：新人主要看簡報
-    covered = {sid for p in order.pages for kname, sid, _ in p.maps if (kname or kb.name) == kb.name}
-    for s in kb.sections:
-        if s.id not in covered:
-            r.err(s.file, s.line, f'小節「{s.id}」沒有簡報頁講到：在講它的簡報頁後面加上「→ {s.id}」（deck/order.md），沒有的話做一頁（framework/guide/deck.md）')
     check_deck_md(kb, seen, r)
-    if stale:
-        pages = ' '.join(dict.fromkeys(stale))
-        r.errors.append(f'  → 重看並改好上面點名的簡報頁之後，執行：python3 framework/tools/check.py --fp {kb.name} {pages}')
 
 
 FIG_ADD = re.compile(r"Fig\.add\(\s*'([^']+)'")
@@ -241,6 +141,9 @@ def check_deck_md(kb, in_order, r):
     changed = changed_pages(kb)
     check_deep(deck, r)
     check_pre(kb, deck, r)
+    for key, ch in deck.chapters.items():
+        if not ch.overview:
+            r.err(ch.file, 1, f'章檔「{ch.title}」開頭沒有速覽：在「# 章名」下面寫「- 速覽：」兩三句，學完會知道什麼、為什麼排在這裡')
     todo = []
     for p in deck.md_pages.values():
         if p.id not in in_order:
@@ -257,7 +160,7 @@ def check_deck_md(kb, in_order, r):
         before = changed.get(p.id) if changed else None
         new = [(label, t) for label, t in bare if before is not None and t not in before]
         for label, text in new:
-            r.err(p.file, p.line, f'簡報頁「{p.id}」的{label}有數字，沒有出處註腳：「{re.sub(chr(10), " ", K.plain(text))[:40]}」；補出處或改成不帶數字的說法')
+            r.err(p.file, p.line, f'{"深入頁" if p.deep else "簡報頁"}「{p.id}」的{label}有數字，沒有出處註腳：「{re.sub(chr(10), " ", K.plain(text))[:40]}」；補出處或改成不帶數字的說法')
         if len(new) < len(bare):
             todo.append(p.id)
     if todo:
@@ -280,11 +183,24 @@ def check_deck_md(kb, in_order, r):
 
 
 def claims(p):
-    """簡報頁上看得到的說法（結論、重點、圖說、數字卡）：[(欄位, 文字)]。比喻和旁白不算。"""
+    """簡報頁上看得到的說法：結論、重點、圖說、數字卡，和深入頁說明的每一段：[(欄位, 文字)]。比喻和旁白不算。"""
     items = [('結論', p.thesis)] + [('重點', x) for x in p.points] + [('圖說', '：'.join(c)) for c in p.captions]
     if p.fact:
         items.append(('數字卡', '｜'.join(p.fact)))
+    items += [('說明', b) for b in body_blocks(p.body)]
     return [(label, t) for label, t in items if t]
+
+
+def body_blocks(text):
+    """說明拆成一段一段（空行分段；小標題不算，清單和表格的每一列各算一段）。"""
+    out = []
+    for block in re.split(r'\n\s*\n', text or ''):
+        lines = [l for l in block.splitlines() if l.strip() and not l.startswith('#') and not K.FOOTDEF.match(l)]
+        if lines and all(l.lstrip().startswith(('|', '- ', '* ')) or re.match(r'^\s*\d+\.\s', l) for l in lines):
+            out += [l.strip() for l in lines if not set(l.strip()) <= set('|-: ')]
+        elif lines:
+            out.append(' '.join(l.strip() for l in lines))
+    return out
 
 
 def check_deep(deck, r):
@@ -376,21 +292,13 @@ def check_readme(r):
 
 
 def main(argv):
-    if argv[:1] == ['--fp']:
-        if len(argv) < 3:
-            raise SystemExit('用法：check.py --fp 知識庫 頁id [頁id …]')
-        kb = K.find_kb(argv[1])
-        done = K.update_fingerprints(kb, set(argv[2:]))
-        missing = set(argv[2:]) - set(done)
-        print(f'已更新指紋：{"、".join(done) or "（沒有）"}')
-        if missing:
-            print(f'這些頁在頁序裡沒有對應小節，沒有更新：{"、".join(sorted(missing))}')
-        return 0
+    if any(a.startswith('--') for a in argv):
+        print(__doc__)
+        return 1
     kbs = [K.find_kb(a) for a in argv] if argv else K.all_kbs()
-    secs = K.section_index()
     r = Report()
     for kb in kbs:
-        check_kb(kb, secs, r)
+        check_kb(kb, r)
     if not argv:
         check_readme(r)
         check_paths(r)

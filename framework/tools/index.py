@@ -1,4 +1,4 @@
-"""查找用的索引：列出每個簡報頁、小節、常見問題、自我檢查和術語在哪裡。Agent 先讀索引，再打開對應的檔案。
+"""查找用的索引：列出每個簡報頁（主頁、深入頁）、每章的速覽、自我檢查和術語在哪裡。Agent 先讀索引，再打開對應的檔案。
 
 用法：
   python3 framework/tools/index.py                  全部知識庫
@@ -24,7 +24,7 @@ def todo(kb):
         return
     pages = [(p, C.unsourced(p)) for p in K.load_deck(kb).pages if p.md]
     pages = [(p, bare) for p, bare in pages if bare]
-    print(f'# {kb.title}：數字還沒有出處的簡報頁（{len(pages)} 頁）\n')
+    print(f'# {kb.title}：數字還沒有出處的簡報頁和深入頁（{len(pages)} 頁）\n')
     for p, bare in pages:
         print(f'{p.id}\t{p.title}\t{K.rel(p.file)}:{p.line}')
         for label, text in bare:
@@ -41,31 +41,26 @@ def main(argv):
     kbs = [K.find_kb(a, base) for a in argv] if argv else K.all_kbs(base)
     for kb in kbs:
         print(f'# {kb.title}（kb/{kb.name}{"，正式內容" if base else ""}）')
-        if kb.has_deck:
+        if not kb.has_deck:
+            print('\n（還沒有簡報）')
+        else:
             deck = K.load_deck(kb)
-            maps = {p.id: p.maps for p in deck.order.pages}
-            print('\n## 簡報頁：頁 id　部分 › 章 › 標題　→ 對應小節　位置')
+            print('\n## 章：章檔　章名　→ 先修　｜ 速覽')
+            for f in K.deck_files(kb):
+                ch = deck.chapters.get((K._num(f.parent.name), K._num(f.name)))
+                pre = '、'.join((f'{k} › ' if k else '') + n for k, n, _ in ch.pre) if ch else ''
+                print(f'{K.rel(f)}\t{ch.title if ch else ""}\t→ {pre or "（沒有先修）"}\t｜ {ch.overview[:60] if ch and ch.overview else "（沒有速覽）"}')
+            print('\n## 簡報頁：頁 id　部分 › 章 › 標題　位置（深入頁標出接在哪一頁後面）')
             for p in deck.pages:
                 where = ' › '.join(x for x in (deck.order.parts.get(p.part, ''), deck.titles.get((p.part, p.chap), '') if p.chap else '') if x)
-                ids = '、'.join((f'{k}/' if k else '') + sid for k, sid, _ in maps.get(p.id, []))
                 deep = f'（深入頁，接在 {p.deep} 後面）' if p.deep else ''
-                print(f'{p.id}\t{where} › {K.plain(p.title)}{deep}\t→ {ids or "（沒有對應小節）"}\t{K.rel(p.file)}:{p.line}')
+                print(f'{p.id}\t{where} › {K.plain(p.title)}{deep}\t{K.rel(p.file)}:{p.line}')
             if deck.checks:
-                print('\n## 自我檢查（簡報）：題目　→ 相關的頁　位置')
+                print('\n## 自我檢查：題目　→ 相關的頁　位置')
                 for qs in deck.checks.values():
                     for ch, q in qs:
                         ids = '、'.join(pid for _, pid, _ in q.rel)
                         print(f'{"【深入】" if q.deep else ""}{q.q}\t→ {ids}\t{K.rel(ch.file)}:{q.line}')
-        print('\n## 小節：id　部分 › 章 › 小節　位置')
-        for p in kb.parts:
-            for c in p.chapters:
-                for s in c.sections:
-                    print(f'{s.id}\t{p.title} › {c.title} › {s.title}\t{K.rel(s.file)}:{s.line}')
-        print('\n## 常見問題：題目　→ 相關小節　位置')
-        for c in kb.chapters:
-            for q in c.faqs:
-                ids = '、'.join((f'{k}/' if k else '') + sid for k, sid, _ in q.rel)
-                print(f'{"【深入】" if q.deep else ""}{q.q}\t→ {ids}\t{K.rel(c.file)}:{q.line}')
         terms = kb.dir / 'terms.md'
         if terms.exists():
             print('\n## 術語（terms.md）')

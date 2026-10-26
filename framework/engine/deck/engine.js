@@ -1,7 +1,8 @@
 /* 簡報引擎（所有知識庫共用）：翻頁、縮放、講稿和旁白、總覽、章節列
    每頁用 Deck.add({ id, part, title, minutes, render(h) -> html, init(el, ctx), notes }) 註冊；
    Markdown 寫的頁由 pages.js 註冊，給新人的按鈕（旁白、說明、看深入、問 Agent）和進度在 learn.js
-   深入頁（s.deep）的長說明（s.more）放在畫面下方的面板，預設展開；展開時簡報縮到面板上面，不會被蓋住 */
+   深入頁（s.deep）的長說明（s.more）放在畫面下方的面板，預設展開；展開時簡報縮到面板上面，不會被蓋住
+   深入頁平常翻頁不會經過，主頁按「看深入」才進去；頁碼只算主頁，深入頁顯示成「15 · 深入 2/4」 */
 (function () {
   const W = 1600, H = 900;
   /* 由 build.py 從頁序（deck/order.md）產生：部分、章節列、浮水印 */
@@ -24,9 +25,28 @@
 
   /* ---------- 版面輔助 ---------- */
   function esc(s) { return String(s); }
+  /* 頁碼只算主頁：pos(i) 是 { m: 第幾個主頁, k: 第幾頁深入頁, n: 這個主頁有幾頁深入頁 }（主頁沒有 k、n） */
+  Deck.pos = function (i) {
+    const S = Deck.slides, s = S[i]; let m = 0;
+    for (let j = 0; j <= i && j < S.length; j++) if (!S[j].deep) m++;
+    if (!s || !s.deep) return { m };
+    const sib = S.filter(x => x.deep === s.deep);
+    return { m, k: sib.indexOf(s) + 1, n: sib.length };
+  };
+  Deck.mains = () => Deck.slides.filter(x => !x.deep).length;
+  Deck.pageName = i => { const p = Deck.pos(i); return p.k ? `第 ${p.m} 頁的深入頁 ${p.k}/${p.n}` : `第 ${p.m} 頁`; };
+  /* 上一頁、下一頁：主頁之間跳過深入頁；在深入頁上照順序走，最後一頁深入頁的下一頁是下一個主頁 */
+  Deck.nextIndex = function (d) {
+    const S = Deck.slides, s = S[Deck.cur];
+    let j = Deck.cur + d;
+    if (d > 0) { if (!s || !s.deep) while (j < S.length && S[j].deep) j++; }
+    else while (j > 0 && S[j] && S[j].deep && !(s && s.deep === S[j].deep)) j--;
+    return j >= 0 && j < S.length ? j : -1;
+  };
+  Deck.step = d => { const j = Deck.nextIndex(d); if (j >= 0) Deck.go(j); };
   /* 頁碼引用：文字裡寫 [[頁:頁id]]，顯示時換成「第 N 頁」。頁序調整、插入自動產生的頁，頁碼都會跟著對 */
   Deck.ref = t => String(t == null ? '' : t).replace(/\[\[頁:([A-Za-z0-9_-]+)\]\]/g, (m, id) => {
-    const k = Deck.slides.findIndex(x => x.id === id); return k >= 0 ? `第 ${k + 1} 頁` : m;
+    const k = Deck.slides.findIndex(x => x.id === id); return k >= 0 ? Deck.pageName(k) : m;
   });
   function fixRefs(node) {
     if (node.nodeType === 3) { if (node.data.includes('[[頁:')) node.data = Deck.ref(node.data); return; }
@@ -41,9 +61,9 @@
         `<span class="${k === s.chap ? 'on' : ''}" data-chap="${go}" title="跳到第 ${k} 章">${'①②③④⑤⑥⑦⑧⑨⑩'[k - 1]} ${n}</span>`).join('') + '</div>';
     }
     return `<header class="s-head">
-      <div class="s-eyebrow"><span class="num">${String(i + 1).padStart(2, '0')}</span><span>${esc(s.eyebrow || PARTS[s.part] || '')}</span></div>
+      <div class="s-eyebrow"><span class="num">${(p => String(p.m).padStart(2, '0') + (p.k ? ` · 深入 ${p.k}/${p.n}` : ''))(Deck.pos(i))}</span><span>${esc(s.eyebrow || PARTS[s.part] || '')}</span></div>
       ${flow}
-      <h2 class="s-title">${s.title}${s.deep ? '<span class="newtag deeptag">深入・可略過</span>' : ''}${s.badge ? `<span class="newtag">${s.badge}</span>` : ''}${s.en ? `<span class="en">${s.en}</span>` : ''}</h2>
+      <h2 class="s-title">${s.title}${s.deep ? '<span class="newtag deeptag">深入</span>' : ''}${s.badge ? `<span class="newtag">${s.badge}</span>` : ''}${s.en ? `<span class="en">${s.en}</span>` : ''}</h2>
       ${s.thesis ? `<p class="s-thesis">${s.thesis}</p>` : ''}
     </header>`;
   };
@@ -126,7 +146,7 @@
     Deck.cur = i; Deck._builtScale = Deck.scale;
     const el = document.createElement('section');
     el.className = 'slide enter ' + (s.cls || '');
-    el.setAttribute('aria-label', `第 ${i + 1} 頁：${String(s.title).replace(/<[^>]+>/g, '')}`);
+    el.setAttribute('aria-label', `${Deck.pageName(i)}：${String(s.title).replace(/<[^>]+>/g, '')}`);
     try {
       el.innerHTML = s.raw ? s.render(i) : Deck.head(s, i) + s.render(i) + Deck.foot(s);
     } catch (e) { el.innerHTML = `<pre>${e.stack}</pre>`; console.error(e); }
@@ -160,8 +180,9 @@
       const keep = opts && (opts.returning || opts.keep) && Deck._state[s.id];
       if (keep) { try { applyState(el, keep); } catch (e) { console.error('restore error on slide', i + 1, e); } }
     }
-    progress.style.width = ((i + 1) / n * 100) + '%';
-    hudNum.textContent = `${i + 1} / ${n}`;
+    const ps = Deck.pos(i), N = Deck.mains();
+    progress.style.width = (ps.m / N * 100) + '%';
+    hudNum.textContent = `${ps.m} / ${N}` + (ps.k ? ` · 深入 ${ps.k}/${ps.n}` : '');
     // 網址記頁 id，頁序調整了連結也不會跳錯（舊的頁碼網址照樣能開）
     try { history.replaceState(null, '', '#' + s.id); } catch (e) { location.hash = s.id; }
     Deck.onGo.forEach(fn => { try { fn(s, i); } catch (e) { console.error(e); } });
@@ -194,14 +215,14 @@
     const t = Deck.slides[Deck._back];
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'backbtn';
-    b.innerHTML = `↩ 回到第 ${Deck._back + 1} 頁：${String(t.short || t.title).replace(/<[^>]+>/g, '')}`;
+    b.innerHTML = `↩ 回到${Deck.pageName(Deck._back)}：${String(t.short || t.title).replace(/<[^>]+>/g, '')}`;
     b.onclick = Deck.goBack;
     const eb = el.querySelector('.s-eyebrow');
     if (eb) eb.appendChild(b); else { b.classList.add('float'); el.appendChild(b); }
   }
 
   function cumMinutes(upto) {
-    let m = 0; for (let k = 0; k < upto; k++) m += Deck.slides[k].minutes || 0; return m;
+    let m = 0; for (let k = 0; k < upto; k++) if (!Deck.slides[k].deep) m += Deck.slides[k].minutes || 0; return m; // 深入頁平常不經過，不算時間
   }
   // 計時基準：按 T 時記下目前頁，計畫進度從這一頁起算（第二場從中間開講時才不會顯示超前一大截）
   let planBase = 0;
@@ -244,8 +265,8 @@
     const total = planAt(Deck.slides.length);
     const el = startTime ? (Date.now() - startTime) / 60000 : 0;
     const paras = notesHTML(s);
-    notesEl.innerHTML = `<div class="nh"><span>講稿 · 第 ${Deck.cur + 1} 頁 · 建議 <b>${s.minutes || 0} 分</b></span>
-      <span>計畫進度 ${fmtMin(Math.max(0, planAt(Deck.cur)))} → ${fmtMin(Math.max(0, planAt(Deck.cur + 1)))} / ${planBase ? '本場（從第 ' + (planBase + 1) + ' 頁起）' : '全場'} ${fmtMin(total)}</span>
+    notesEl.innerHTML = `<div class="nh"><span>講稿 · ${Deck.pageName(Deck.cur)} · 建議 <b>${s.minutes || 0} 分</b></span>
+      <span>計畫進度 ${fmtMin(Math.max(0, planAt(Deck.cur)))} → ${fmtMin(Math.max(0, planAt(Deck.cur + 1)))} / ${planBase ? '本場（從' + Deck.pageName(planBase) + '起）' : '全場'} ${fmtMin(total)}</span>
       <span>實際經過 <b id="elapsed">${fmtMin(el)}</b>（按 T 重設計時）</span></div>${paras}`;
   }
 
@@ -268,43 +289,44 @@
       <div><button id="bp">◀ 上一頁</button> <button id="bn">下一頁 ▶</button></div></header>
       <div class="bar"><i id="pb"></i></div><main id="pm"></main></body></html>`);
     d.close();
-    d.getElementById('bp').onclick = () => Deck.go(Deck.cur - 1);
-    d.getElementById('bn').onclick = () => Deck.go(Deck.cur + 1);
+    d.getElementById('bp').onclick = () => Deck.step(-1);
+    d.getElementById('bn').onclick = () => Deck.step(1);
     d.addEventListener('keydown', e => {
-      if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { Deck.go(Deck.cur + 1); e.preventDefault(); }
-      if (['ArrowLeft', 'PageUp'].includes(e.key)) { Deck.go(Deck.cur - 1); e.preventDefault(); }
+      if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { Deck.step(1); e.preventDefault(); }
+      if (['ArrowLeft', 'PageUp'].includes(e.key)) { Deck.step(-1); e.preventDefault(); }
     });
     renderPresenter();
   }
   function renderPresenter() {
     if (!presenter || presenter.closed) return;
-    const d = presenter.document, s = Deck.slides[Deck.cur], nx = Deck.slides[Deck.cur + 1];
+    const d = presenter.document, s = Deck.slides[Deck.cur], nx = Deck.slides[Deck.nextIndex(1)], ps = Deck.pos(Deck.cur), N = Deck.mains();
     const strip = x => String(x || '').replace(/<[^>]+>/g, '');
     const el = startTime ? (Date.now() - startTime) / 60000 : 0, plan = Math.max(0, planAt(Deck.cur));
     const q = id => d.getElementById(id);
     if (!q('pc')) return;
-    q('pc').textContent = `${Deck.cur + 1} / ${Deck.slides.length}　${strip(s.title)}（建議 ${s.minutes || 0} 分）`;
+    q('pc').textContent = `${ps.m} / ${N}${ps.k ? ` · 深入 ${ps.k}/${ps.n}` : ''}　${strip(s.title)}（建議 ${s.minutes || 0} 分）`;
     q('pn').textContent = nx ? '下一頁：' + strip(nx.short || nx.title) : '最後一頁';
     q('pt').textContent = fmtMin(el);
     const diff = el - plan;
     q('pp').textContent = `計畫 ${fmtMin(plan)}　${diff > 1 ? '落後 ' + fmtMin(diff) : diff < -1 ? '超前 ' + fmtMin(-diff) : '準時'}`;
-    q('pb').style.width = ((Deck.cur + 1) / Deck.slides.length * 100) + '%';
+    q('pb').style.width = (ps.m / N * 100) + '%';
     q('pm').innerHTML = notesHTML(s);
   }
   Deck.openPresenter = openPresenter;
 
   function renderOverview() {
     const total = cumMinutes(Deck.slides.length);
-    let html = `<div class="ot">全場 ${Deck.slides.length} 頁 · 預估 ${fmtMin(total)} · 點擊跳頁 · Esc 關閉</div>`;
+    const nd = Deck.slides.length - Deck.mains();
+    let html = `<div class="ot">全場 ${Deck.mains()} 頁${nd ? `（另有 ${nd} 頁深入，虛線框）` : ''} · 預估 ${fmtMin(total)} · 點擊跳頁 · Esc 關閉</div>`;
     let part = null;
     Deck.slides.forEach((s, i) => {
       if (s.part !== part) {
         if (part !== null) html += '</div>';
         part = s.part;
-        const pm = Deck.slides.filter(x => x.part === part).reduce((a, x) => a + (x.minutes || 0), 0);
+        const pm = Deck.slides.filter(x => x.part === part && !x.deep).reduce((a, x) => a + (x.minutes || 0), 0);
         html += `<h3>${PARTS[part]} · ${fmtMin(pm)}</h3><div class="og">`;
       }
-      html += `<div class="oc ${i === Deck.cur ? 'cur' : ''}${s.deep ? ' deep' : ''}" data-i="${i}"><span class="i">${i + 1}</span><span>${s.deep ? '<small>深入</small> ' : ''}${String(s.short || s.title).replace(/<[^>]+>/g, '')}</span><span class="m">${s.minutes || 0}′</span></div>`;
+      html += `<div class="oc ${i === Deck.cur ? 'cur' : ''}${s.deep ? ' deep' : ''}" data-i="${i}"><span class="i">${s.deep ? '' : Deck.pos(i).m}</span><span>${s.deep ? '<small>深入</small> ' : ''}${String(s.short || s.title).replace(/<[^>]+>/g, '')}</span><span class="m">${s.minutes || 0}′</span></div>`;
     });
     html += '</div>';
     overviewEl.innerHTML = html;
@@ -340,8 +362,8 @@
       if (isRange && ['ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', ' '].includes(e.key)) t.blur();
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       switch (e.key) {
-        case 'ArrowRight': case 'PageDown': case ' ': Deck.go(Deck.cur + 1); e.preventDefault(); break;
-        case 'ArrowLeft': case 'PageUp': Deck.go(Deck.cur - 1); e.preventDefault(); break;
+        case 'ArrowRight': case 'PageDown': case ' ': Deck.step(1); e.preventDefault(); break;
+        case 'ArrowLeft': case 'PageUp': Deck.step(-1); e.preventDefault(); break;
         case 'Home': Deck.go(0); break;
         case 'End': Deck.go(Deck.slides.length - 1); break;
         case 'n': case 'N': Deck.toggleNotes('talk'); break;
@@ -380,8 +402,8 @@
       const c = e.target.closest('.oc'); if (!c) return;
       toggle(overviewEl, false); Deck.go(+c.dataset.i);
     });
-    document.getElementById('btn-prev').onclick = () => Deck.go(Deck.cur - 1);
-    document.getElementById('btn-next').onclick = () => Deck.go(Deck.cur + 1);
+    document.getElementById('btn-prev').onclick = () => Deck.step(-1);
+    document.getElementById('btn-next').onclick = () => Deck.step(1);
     document.getElementById('btn-notes').onclick = () => Deck.toggleNotes('talk');
     document.getElementById('btn-ov').onclick = () => { toggle(overviewEl); if (!overviewEl.hidden) renderOverview(); };
 
@@ -390,16 +412,17 @@
     document.addEventListener('touchstart', e => { if (e.target.tagName !== 'INPUT') tx = e.touches[0].clientX; }, { passive: true });
     document.addEventListener('touchend', e => {
       if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; tx = null;
-      if (Math.abs(dx) > 60) Deck.go(Deck.cur + (dx < 0 ? 1 : -1));
+      if (Math.abs(dx) > 60) Deck.step(dx < 0 ? 1 : -1);
     });
 
     setInterval(() => { const e = document.getElementById('elapsed'); if (e && startTime) e.textContent = fmtMin((Date.now() - startTime) / 60000); renderPresenter(); }, 1000);
     const bpv = document.getElementById('btn-pv'); if (bpv) bpv.onclick = openPresenter;
     startTime = Date.now();
-    // 網址可以是頁 id（#hk1）或頁碼（#12）
+    // 網址可以是頁 id（#hk1）或頁碼（#12，只算主頁）
     const h = decodeURIComponent((location.hash || '').replace('#', ''));
     const byId = Deck.slides.findIndex(x => x.id === h), n = parseInt(h, 10);
-    Deck.go(byId >= 0 ? byId : isNaN(n) ? 0 : n - 1, { force: true });
+    const byNo = isNaN(n) ? 0 : Math.max(0, Deck.slides.findIndex((x, k) => !x.deep && Deck.pos(k).m === n));
+    Deck.go(byId >= 0 ? byId : byNo, { force: true });
     window.addEventListener('hashchange', () => {
       const id = decodeURIComponent(location.hash.slice(1)), k = Deck.slides.findIndex(x => x.id === id);
       if (k >= 0 && k !== Deck.cur) Deck.go(k);

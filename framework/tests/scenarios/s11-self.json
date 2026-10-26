@@ -12,20 +12,20 @@
     {
       "issue": {
         "var": "issue_err",
-        "title": "hk3：二氧化鉿傳電場的能力是 4–6 倍還是約 5 倍？",
+        "title": "hk3-d：二氧化鉿傳電場的能力是 4–6 倍還是約 5 倍？",
         "labels": [
           "勘誤",
           "kb:semiconductor"
         ],
-        "body": "🤖 由 Agent 產生\n\n## 小節\nhk3\n\n## 原文\n它傳遞電場的能力約是二氧化矽的 4–6 倍。\n\n## 為什麼覺得不對\n手冊這句沒有出處；部門講義寫「約 5 倍」。\n\n## 誰回報的\n小美"
+        "body": "🤖 由 Agent 產生\n\n## 頁\nhk3-d\n\n## 原文\n它傳遞電場的能力約是二氧化矽的 4–6 倍。\n\n## 為什麼覺得不對\n簡報這句沒有出處；部門講義寫「約 5 倍」。\n\n## 誰回報的\n小美"
       }
     }
   ],
   "sessions": [
     {
-      "first": "我是半導體的維護者。#{issue_err} 那個勘誤我自己來處理：查清楚 hk3 的倍數對不對，補上出處。改完開變更提案，檢查過了就合併。",
+      "first": "我是半導體的維護者。#{issue_err} 那個勘誤我自己來處理：查清楚 hk3-d 的倍數對不對，補上出處。改完開變更提案，檢查過了就合併。",
       "persona": "lufor129，半導體知識庫的維護者，也是框架維護者。Agent 給你看結論或草稿時，有可靠出處就同意，請它開提案、檢查過了就合併。",
-      "goal": "處理完 #{issue_err}：hk3 補上出處、提案合併、勘誤關閉。合併好就結束。",
+      "goal": "處理完 #{issue_err}：hk3-d 補上出處、提案合併、勘誤關閉。合併好就結束。",
       "max_turns": 4
     }
   ],
@@ -48,10 +48,10 @@
       "state": "CLOSED"
     },
     {
-      "text": "hk3 那句（倍數或介電常數）有出處註腳",
+      "text": "hk3-d 那句（倍數或介電常數）有出處註腳",
       "type": "file",
       "ref": "main",
-      "path": "kb/semiconductor/handbook/2-manufacturing/05-gate.md",
+      "path": "kb/semiconductor/deck/2-manufacturing/05-gate.md",
       "pattern": "^- 它[^\\n]*(倍|介電常數)[^\\n]*\\[\\^"
     },
     {

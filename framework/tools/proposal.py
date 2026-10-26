@@ -34,11 +34,8 @@ def changed_files(base):
 
 
 def changed_spans(ch):
-    """改過的小節和常見問題在哪幾行：[(檔案, 第一行, 最後一行)]。"""
-    out = [(K.rel(x.file), x.line, x.line + len(x.lines) - 1) for x in ch.added + ch.modified]
-    for c, q in ch.faq_added + ch.faq_changed:
-        out.append((K.rel(c.file), q.line - 1, q.line - 1 + len(K.faq_block(c, q).splitlines())))
-    return out
+    """改過的簡報頁在哪幾行：[(檔案, 第一行, 最後一行)]。"""
+    return [(K.rel(x.file), x.line, x.line + len(x.lines) - 1) for x in ch.deck_added + ch.deck_modified]
 
 
 def in_spans(warn, spans):
@@ -48,33 +45,27 @@ def in_spans(warn, spans):
 
 def kb_body(kb, ch, source, closes, reader, warns, files):
     out = ['🤖 由 Agent 產生', '', '## 改了什麼']
-    out += [f'- 新增簡報頁 `{p.id}`「{K.plain(p.title)}」：（一句話說這一頁講什麼、用什麼圖）' for p in ch.deck_added]
-    out += [f'- 修改簡報頁 `{p.id}`「{K.plain(p.title)}」：（一句話說改了什麼、為什麼改）' for p in ch.deck_modified]
-    out += [f'- 刪除簡報頁 `{p.id}`「{K.plain(p.title)}」：（一句話說為什麼刪）' for p in ch.deck_deleted]
-    out += [f'- 新增小節 `{x.id}`「{x.title}」：（一句話說這一節講什麼）' for x in ch.added]
-    out += [f'- 修改小節 `{x.id}`「{x.title}」：（一句話說改了什麼、為什麼改）' for x in ch.modified]
-    out += [f'- 刪除小節 `{x.id}`「{x.title}」：（一句話說為什麼刪）' for x in ch.deleted]
-    for label, items in (('新增', ch.faq_added), ('修改', ch.faq_changed), ('刪除', ch.faq_deleted)):
-        if items:
-            out.append(f'- 常見問題{label}：' + '、'.join(f'「{q.q}」（{c.title}）' for c, q in items))
+    kind = lambda p: f'深入頁（接在 {p.deep} 後面）' if p.deep else '簡報頁'
+    out += [f'- 新增{kind(p)} `{p.id}`「{K.plain(p.title)}」：（一句話說這一頁講什麼、用什麼圖）' for p in ch.deck_added]
+    out += [f'- 修改{kind(p)} `{p.id}`「{K.plain(p.title)}」：（一句話說改了什麼、為什麼改）' for p in ch.deck_modified]
+    out += [f'- 刪除{kind(p)} `{p.id}`「{K.plain(p.title)}」：（一句話說為什麼刪）' for p in ch.deck_deleted]
+    if ch.deck_chapters and not (ch.deck_added or ch.deck_modified or ch.deck_deleted):
+        out.append('- 自我檢查：（新增或修改了哪幾題）')
     if ch.terms_added:
         out.append(f'- 術語表新增 {len(ch.terms_added)} 個：' + '、'.join(l.strip('|').split('|')[0].strip() for l in ch.terms_added))
     if len(out) == 3:
-        out.append('- （這個分支沒有改到簡報頁、小節、常見問題或術語；寫出改了什麼）')
+        out.append('- （這個分支沒有改到簡報頁、自我檢查或術語；寫出改了什麼）')
     if source == '研究':  # 研究來的說法沒有人親身確認過，維護者要知道哪些只是報導
         origin = ['研究：', '- 第一手：（原廠文件、論文、官方網頁，各支持哪些說法）',
                   '- 報導：（新聞、業界媒體，各支持哪些說法；沒有就寫「沒有」）']
     else:
         origin = [f'{source}：（內容從哪裡來：整理了哪份資料／誰口述的）']
     out += ['', '## 來歷', *origin, '', '## 影響']
-    out.append(f'- 頁和小節的對應：{"、".join(ch.pages) + "（兩邊對照過，寫出哪一邊改了什麼）" if ch.pages else "沒有變"}')
-    chap_files = {K.rel(c.file) for c in kb.chapters}
-    others = [f for f in files if f not in chap_files and not f.startswith(f'kb/{kb.name}/deck/')
-              and f != f'kb/{kb.name}/terms.md']
+    others = [f for f in files if not f.startswith(f'kb/{kb.name}/deck/') and f != f'kb/{kb.name}/terms.md']
     out.append(f'- 一起改的檔案：{"、".join(others) if others else "沒有"}')
     out.append(f'- 讀者測試：{reader + " 題答對" if reader else "（n/n 題答對）"}')
     if warns:
-        out.append(f'- 檢查的提醒（{len(warns)} 個，在這次改的小節和常見問題裡；補不了出處的寫原因，由維護者決定）：')
+        out.append(f'- 檢查的提醒（{len(warns)} 個，在這次改的簡報頁裡，由維護者決定）：')
         out += [f'  - {w[2:]}' for w in warns]
     if closes:
         out += [''] + [f'Closes #{n}' for n in closes]
@@ -126,9 +117,8 @@ def main(argv):
         print('提醒：還有沒 commit 的改動。commit 之後再推分支、開提案。')
     kb = None if framework else K.find_kb(args[0])
     r = C.Report()
-    secs = K.section_index()
     for k in ([kb] if kb else K.all_kbs()):
-        C.check_kb(k, secs, r)
+        C.check_kb(k, r)
     if framework:
         C.check_readme(r)
     if r.errors:
@@ -153,7 +143,7 @@ def main(argv):
         body = kb_body(kb, ch, source, opt(argv, '--closes', many=True), opt(argv, '--reader'), warns, files)
         title = f'{kb.title}：（改了什麼）'
         labels = [f'kb:{kb.name}', f'來歷:{source}']
-        if not opt(argv, '--reader') and ch.chapters:
+        if not opt(argv, '--reader') and ch.deck_chapters:
             print('提醒：還沒寫讀者測試的結果。先跑 reader_test.py，再用 --reader n/n 重跑這個指令。')
     BODY.write_text('\n'.join(body) + '\n', encoding='utf-8')
     print(f'說明的草稿：{K.rel(BODY)}（把「（……）」換成你的話）')

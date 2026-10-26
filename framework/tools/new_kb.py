@@ -1,4 +1,4 @@
-"""建立新知識庫的骨架：README（介紹、維護者、全景圖草稿）、術語表、簡報的頁序和每一章的章檔、手冊每個部分的 README 和每一章只有標題的檔案、圖片清單，並更新首頁的知識庫清單。
+"""建立新知識庫的骨架：README（介紹、維護者）、術語表、簡報的頁序和每一章的章檔（章名、速覽、先修）、圖片清單，並更新首頁的知識庫清單。
 
 用法：
   python3 framework/tools/new_kb.py .kif/tmp/new-kb.json
@@ -10,13 +10,16 @@ new-kb.json 寫訪談的結果：
     "intro": "給……的知識庫：讀完會懂……",
     "maintainers": [{"name": "lufor129", "login": "lufor129"}],
     "parts": [
-      {"dir": "1-foundations", "title": "基礎", "intro": "一兩句話介紹這個部分",
-       "chapters": [{"file": "01-what-is-mlops", "title": "什麼是 MLOps"}]}
+      {"dir": "1-foundations", "title": "基礎",
+       "chapters": [{"file": "01-what-is-mlops", "title": "什麼是 MLOps",
+                     "overview": "兩三句：學完會知道什麼、為什麼排在這裡",
+                     "pre": ["別的章名", "cv › 影像分類"]}]}
     ],
     "terms": [{"zh": "模型漂移", "en": "Model Drift", "desc": "一句話解釋"}]
   }
 
-kb/<短名>/ 已經存在就不建。建好之後跑 check.py。
+pre（先修）可以不寫；別的知識庫的章寫成「知識庫 › 章名」。
+全景圖不用畫：入口網站照部分和章自動排，先修畫成箭頭。kb/<短名>/ 已經存在就不建。建好之後跑 check.py。
 """
 import json
 import pathlib
@@ -49,6 +52,8 @@ def problems(plan):
         for c in p.get('chapters', []):
             if not K.CHAP_FILE.match(c.get('file', '') + '.md'):
                 out.append(f'章的 file「{c.get("file", "")}」要像 01-what-is-mlops：兩位數字-小寫英文')
+            if not c.get('overview', '').strip():
+                out.append(f'章「{c.get("title", c.get("file", ""))}」要寫速覽（overview）：學完會知道什麼、為什麼排在這裡')
     return out
 
 
@@ -56,11 +61,8 @@ def readme(plan):
     host = 'GitLab' if K.CONFIG.get('host') == 'gitlab' else 'GitHub'
     people = [f'- {m["name"]}（{host}: {m["login"]}）' if m.get('login') else f'- {m["name"]}'
               for m in plan['maintainers']]
-    nodes = [f'{chr(65 + i)}[{p["title"]}]' for i, p in enumerate(plan['parts'])]
-    chain = ' --> '.join(nodes) if len(nodes) > 1 else nodes[0]
     return '\n'.join([f'# {plan["title"]}', '', plan['intro'].strip(), '', '## 維護者', '', *people, '',
-                      '## 全景圖', '', '```mermaid', 'flowchart LR', f'  {chain}', '```', '',
-                      '（草稿）各部分、各章之間的關係。', ''])
+                      '## 全景圖', '', '全景圖在入口網站：照部分和章自動排，先修畫成箭頭，點一章看它要講什麼。', ''])
 
 
 def order(plan):
@@ -98,11 +100,9 @@ def main(argv):
              d / 'assets/SOURCES.md': (TEMPLATES / 'SOURCES.md').read_text(encoding='utf-8')}
     files[d / 'deck/order.md'] = order(plan)
     for p in plan['parts']:
-        files[d / 'handbook' / p['dir'] / 'README.md'] = f'# {p["title"]}\n\n{p.get("intro", "").strip()}\n'
         for c in p['chapters']:
-            # 部分和章由簡報決定，手冊用同樣的編號；新人主要看簡報，手冊放一頁放不下的細節
-            files[d / 'deck' / p['dir'] / f'{c["file"]}.md'] = f'# {c["title"]}\n'
-            files[d / 'handbook' / p['dir'] / f'{c["file"]}.md'] = f'# {c["title"]}\n'
+            head = [f'- 速覽：{c["overview"].strip()}'] + ([f'- 先修：{"、".join(c["pre"])}'] if c.get('pre') else [])
+            files[d / 'deck' / p['dir'] / f'{c["file"]}.md'] = f'# {c["title"]}\n\n' + '\n'.join(head) + '\n'
     for f, text in files.items():
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(text, encoding='utf-8')

@@ -1,4 +1,4 @@
-"""知識庫的共用解析：知識庫、部分、章、小節、常見問題、頁序、圖片清單。
+"""知識庫的共用解析：知識庫、簡報的章檔和頁、自我檢查、頁序、術語、圖片清單。
 
 framework/tools/ 的工具都用這裡的函式讀檔案。只用 Python 標準函式庫。
 """
@@ -18,7 +18,7 @@ KB_DIR = ROOT / 'kb'
 CONFIG = json.loads((ROOT / 'framework/config.json').read_text(encoding='utf-8'))
 LOCAL = ROOT / '.kif/local.json'     # 使用者的名字、帳號、關心的知識庫；只存在本機
 TMP = ROOT / '.kif/tmp'              # Agent 的暫存檔（issue 內文、提案說明、讀者測試）
-SNAP = ROOT / '.kif/snapshot'        # 某一版手冊的快照（正式內容、分支的起點）
+SNAP = ROOT / '.kif/snapshot'        # 某一版知識庫的快照（正式內容、分支的起點）
 
 ANCHOR = re.compile(r'^<a name="([^"]*)"></a>\s*$')
 ID_OK = re.compile(r'^[a-z][a-z0-9]*$')
@@ -28,17 +28,18 @@ FOOTREF = re.compile(r'\[\^([^\]\s]+)\](?!:)')
 FOOTDEF = re.compile(r'^\[\^([^\]\s]+)\]:\s*(.*)$')
 IMG = re.compile(r'assets/(img/[\w.-]+\.(?:jpe?g|png|gif|svg|webp)|video/[\w.-]+\.(?:mp4|webm))')
 REL = re.compile(r'^\s*相關[：:]\s*(.+?)\s*$')
-REF = re.compile(r'^(?:([a-z0-9-]+)/)?([A-Za-z0-9_-]+)(?:@([0-9a-f]+))?$')
-FAQ_HEAD = '## 常見問題'
+REF = re.compile(r'^(?:([a-z0-9-]+)/)?([A-Za-z0-9_-]+)$')   # 「相關：」的一個頁 id（別的知識庫寫成 知識庫/頁id）
+CHECK_HEAD = '## 自我檢查'
 
 
 @dataclass
 class Section:
+    """章檔裡一個「錨點＋## 標題」的區塊，也就是一頁簡報頁的原文。"""
     id: str
     title: str
     file: pathlib.Path
     line: int            # 錨點所在的行（從 1 起算）
-    lines: list          # 小節的原文，從錨點到下一個錨點或常見問題之前
+    lines: list          # 原文，從錨點到下一個錨點或「## 自我檢查」之前
     chapter: 'Chapter' = None
 
     @property
@@ -48,9 +49,10 @@ class Section:
 
 @dataclass
 class Faq:
+    """自我檢查的一題。"""
     q: str
     deep: bool
-    rel: list            # [(知識庫名稱或 None, 小節 id, 行號)]
+    rel: list            # 「相關：」：[(知識庫名稱或 None, 頁 id, 行號)]
     line: int
     topic: str = ''      # 前面最近的「### 主題」（簡報的自我檢查用來分組）
 
@@ -68,31 +70,13 @@ class Chapter:
 
 
 @dataclass
-class Part:
-    dir: pathlib.Path
-    num: int
-    title: str
-    chapters: list
-
-
-@dataclass
 class KB:
     name: str
     dir: pathlib.Path
     title: str
     intro: str
     maintainers: list    # [(名字, 帳號或 None)]
-    bigpicture: str      # README 裡「全景圖」那一節的 Mermaid 原文
-    parts: list
     problems: list = field(default_factory=list)   # 解析時就發現的結構錯誤 [(檔案, 行, 訊息)]
-
-    @property
-    def sections(self):
-        return [s for p in self.parts for c in p.chapters for s in c.sections]
-
-    @property
-    def chapters(self):
-        return [c for p in self.parts for c in p.chapters]
 
     @property
     def has_deck(self):
@@ -156,7 +140,7 @@ def save_local(data):
 
 # ---------- 正式內容和分支的起點 ----------
 
-SNAP_FILES = re.compile(r'^kb/[^/]+/(?:README\.md|terms\.md|handbook/.+|deck/order\.md|deck/\d+-[^/]+/[^/]+\.md)$')
+SNAP_FILES = re.compile(r'^kb/[^/]+/(?:README\.md|terms\.md|deck/order\.md|deck/\d+-[^/]+/[^/]+\.md)$')
 
 
 def git(*args, check=True):
@@ -185,7 +169,7 @@ def base_ref(fetch=True):
 
 
 def snapshot(ref, name):
-    """把 ref 那一版的手冊（各知識庫的 README、terms、handbook、頁序）放到 .kif/snapshot/<name>/kb/。
+    """把 ref 那一版的知識庫（各知識庫的 README、terms、頁序、簡報章檔）放到 .kif/snapshot/<name>/kb/。
 
     回傳那個 kb 資料夾，可以直接給 all_kbs()、find_kb() 當 base。
     """
@@ -232,31 +216,9 @@ def load_kb(d):
             intro = ' '.join(l.strip() for l in para.splitlines())
             break
     maint = people(_block(readme, '維護者'))
-    big = _block(readme, '全景圖') or ''
-    mm = re.search(r'```mermaid\n(.*?)```', big, re.S)
-    parts = []
-    hb = d / 'handbook'
-    if hb.exists():
-        for pd in sorted(hb.iterdir(), key=lambda p: (_num(p.name), p.name)):
-            if not pd.is_dir():
-                continue
-            if not PART_DIR.match(pd.name):
-                problems.append((pd, 0, f'部分的資料夾名稱要是「數字-英文」，例如 2-manufacturing：{pd.name}'))
-            pr = pd / 'README.md'
-            ptitle = _h1(pr.read_text(encoding='utf-8')) if pr.exists() else ''
-            if not ptitle:
-                problems.append((pr, 0, '部分要有 README.md，第一行寫「# 部分名稱」'))
-            part = Part(pd, _num(pd.name), ptitle or pd.name, [])
-            for cf in sorted(pd.glob('*.md'), key=lambda p: (_num(p.name), p.name)):
-                if cf.name == 'README.md':
-                    continue
-                if not CHAP_FILE.match(cf.name):
-                    problems.append((cf, 0, f'章的檔名要是「兩位數字-英文.md」，例如 05-gate.md：{cf.name}'))
-                ch = load_chapter(cf, problems)
-                ch.part = part
-                part.chapters.append(ch)
-            parts.append(part)
-    return KB(d.name, d, title, intro, maint, mm.group(1).strip() if mm else '', parts, problems)
+    if (d / 'handbook').exists():  # 手冊已經拿掉（ADR-0007）：內容要搬成簡報頁或深入頁
+        problems.append((d / 'handbook', 0, '知識庫不再有手冊（ADR-0007）：handbook/ 的內容要搬成簡報頁或深入頁（framework/guide/deck.md），再刪掉這個資料夾'))
+    return KB(d.name, d, title, intro, maint, problems)
 
 
 def _num(name):
@@ -264,8 +226,8 @@ def _num(name):
     return int(m.group(1)) if m else 999
 
 
-def load_chapter(path, problems, faq_head=FAQ_HEAD):
-    """手冊的一章；簡報的章檔（deck/）也用這個讀，題目的標題是「## 自我檢查」。"""
+def load_chapter(path, problems, faq_head=CHECK_HEAD):
+    """簡報的一個章檔（deck/<部分>/<章>.md）：每一頁的原文，和「## 自我檢查」的題目。"""
     text = path.read_text(encoding='utf-8')
     lines = text.splitlines()
     title = _h1(text)
@@ -284,7 +246,7 @@ def load_chapter(path, problems, faq_head=FAQ_HEAD):
         if m:
             nxt = lines[i] if i < len(lines) else ''
             if not nxt.startswith('## '):
-                problems.append((path, i, f'小節錨點「{m.group(1)}」的下一行要是「## 小節標題」'))
+                problems.append((path, i, f'頁的錨點「{m.group(1)}」的下一行要是「## 頁標題」'))
             cur = Section(m.group(1), nxt[3:].strip() if nxt.startswith('## ') else '', path, i, [l])
             sections.append(cur)
             in_faq = False
@@ -297,7 +259,7 @@ def load_chapter(path, problems, faq_head=FAQ_HEAD):
     for s in sections:
         while s.lines and not s.lines[-1].strip():
             s.lines.pop()
-    # 常見問題：<details><summary>題目</summary> … 相關：id、id </details>
+    # 自我檢查：<details><summary>題目</summary> … 相關：頁id、頁id </details>
     if faq_head in lines:
         start = lines.index(faq_head)
         q = None
@@ -321,10 +283,8 @@ def load_chapter(path, problems, faq_head=FAQ_HEAD):
                     if r:
                         q.rel.append((r.group(1), r.group(2), i + 1))
                     else:
-                        problems.append((path, i + 1, f'「相關：」裡的「{tok}」不是小節 id'))
+                        problems.append((path, i + 1, f'「相關：」裡的「{tok}」不是頁 id'))
             if l.strip() == '</details>':
-                if q is not None and not q.rel and faq_head == FAQ_HEAD:  # 簡報的自我檢查可以不指向任何一頁
-                    problems.append((path, q.line, f'常見問題「{q.q}」沒有寫「相關：」指向任何小節'))
                 q = None
     ch = Chapter(path, _num(path.name), title, overview, sections, faqs, text)
     for s in sections:
@@ -333,7 +293,7 @@ def load_chapter(path, problems, faq_head=FAQ_HEAD):
 
 
 def faq_block(ch, q):
-    """一題常見問題的原文：從 <details> 到 </details>。"""
+    """一題自我檢查的原文：從 <details> 到 </details>。"""
     lines = ch.text.splitlines()
     start = q.line - 1
     if start > 0 and lines[start - 1].strip() == '<details>':
@@ -343,7 +303,7 @@ def faq_block(ch, q):
 
 
 def faq_answer(ch, q):
-    """一題常見問題的答案：<summary> 之後、「相關：」之前。"""
+    """一題自我檢查的答案：<summary> 之後、「相關：」之前。"""
     body = []
     for l in faq_block(ch, q).splitlines()[1:]:
         if '<summary>' in l or l.strip() in ('<details>', '</details>') or REL.match(l):
@@ -352,28 +312,12 @@ def faq_answer(ch, q):
     return '\n'.join(body).strip()
 
 
-def chapter_body(ch):
-    """章的內文，不含常見問題（讀者測試給外行讀者看的部分）。"""
-    lines = ch.text.splitlines()
-    if FAQ_HEAD in lines:
-        lines = lines[:lines.index(FAQ_HEAD)]
-    return '\n'.join(lines).rstrip() + '\n'
-
-
 # ---------- 這次改了什麼 ----------
 
 @dataclass
 class Changes:
-    chapters: list       # 內容有變的章（新的這一版）
-    added: list          # [Section]
-    modified: list       # [Section]
-    deleted: list        # [Section]（舊的那一版）
-    faq_added: list      # [(Chapter, Faq)]
-    faq_changed: list
-    faq_deleted: list
     terms_added: list    # terms.md 新增的列
-    pages: list          # 頁序裡對應或指紋改過的簡報頁 id
-    deck_added: list = field(default_factory=list)      # [DeckPage]：Markdown 簡報頁
+    deck_added: list = field(default_factory=list)      # [DeckPage]
     deck_modified: list = field(default_factory=list)
     deck_deleted: list = field(default_factory=list)    # [DeckPage]（舊的那一版）
     deck_chapters: list = field(default_factory=list)   # 簡報頁或自我檢查有變的章檔（新的這一版的路徑）
@@ -381,21 +325,6 @@ class Changes:
 
 def changes(old, new):
     """比較同一個知識庫的兩版（old 可以是 None，表示新的知識庫）。"""
-    o_secs = {x.id: x for x in old.sections} if old else {}
-    n_secs = {x.id: x for x in new.sections}
-    o_chaps = {rel(c.file): c for c in old.chapters} if old else {}
-    chapters = [c for c in new.chapters if rel(c.file) not in o_chaps or o_chaps[rel(c.file)].text != c.text]
-    added = [x for i, x in n_secs.items() if i not in o_secs]
-    modified = [x for i, x in n_secs.items() if i in o_secs and (o_secs[i].fp != x.fp or o_secs[i].title != x.title)]
-    deleted = [x for i, x in o_secs.items() if i not in n_secs]
-
-    def faqs(kb):
-        return {(rel(c.file), q.q): (c, q, faq_block(c, q)) for c in kb.chapters for q in c.faqs} if kb else {}
-    of, nf = faqs(old), faqs(new)
-    faq_added = [(c, q) for k, (c, q, _) in nf.items() if k not in of]
-    faq_changed = [(c, q) for k, (c, q, b) in nf.items() if k in of and of[k][2] != b]
-    faq_deleted = [(c, q) for k, (c, q, _) in of.items() if k not in nf]
-
     def term_rows(kb):
         f = kb.dir / 'terms.md' if kb else None
         if not f or not f.exists():
@@ -403,24 +332,19 @@ def changes(old, new):
         return [l for l in f.read_text(encoding='utf-8').splitlines() if l.startswith('|') and not set(l) <= set('|-: ')]
     o_terms = set(term_rows(old))
     terms_added = [l for l in term_rows(new)[1:] if l not in o_terms]
-
-    def page_maps(kb):
-        return {p.id: p.maps for p in load_order(kb).pages} if kb and kb.has_deck else {}
-    op, np_ = page_maps(old), page_maps(new)
-    pages = [i for i, m in np_.items() if op.get(i) != m]
     od = load_deck(old).md_pages if old and old.has_deck else {}
     nd = load_deck(new).md_pages if new.has_deck else {}
     d_added = [p for i, p in nd.items() if i not in od]
     d_mod = [p for i, p in nd.items() if i in od and od[i].fp != p.fp]
     d_del = [p for i, p in od.items() if i not in nd]
+
     def pages_part(f):  # 只比第一頁之後：章檔開頭的速覽、先修改了，不算簡報頁或自我檢查有變
         text = f.read_text(encoding='utf-8')
         m = re.search(r'^<a name="', text, re.M)
         return text[m.start():] if m else ''
     o_files = {rel(f): pages_part(f) for f in deck_files(old)} if old and old.has_deck else {}
     d_chaps = [f for f in deck_files(new) if o_files.get(rel(f)) != pages_part(f)] if new.has_deck else []
-    return Changes(chapters, added, modified, deleted, faq_added, faq_changed, faq_deleted, terms_added, pages,
-                   d_added, d_mod, d_del, d_chaps)
+    return Changes(terms_added, d_added, d_mod, d_del, d_chaps)
 
 
 def base_kb(name, fetch=True):
@@ -434,9 +358,7 @@ def base_kb(name, fetch=True):
 @dataclass
 class Page:
     id: str
-    maps: list           # [(知識庫名稱或 None, 小節 id, 指紋或 None)]
     line: int
-    fp: str = None       # 簡報頁自己的指紋（有對應小節的頁才記）：頁改了，就要回頭看對應的小節
 
 
 @dataclass
@@ -454,7 +376,7 @@ class Order:
 
 
 ORDER_FIXED = ('設定', '部分', '章節列')
-PAGE_LINE = re.compile(r'^- ([A-Za-z0-9_-]+)(?:@([0-9a-f]+))?(?:\s*→\s*(.+?))?\s*$')
+PAGE_LINE = re.compile(r'^- ([A-Za-z0-9_-]+)\s*$')
 
 
 def load_order(kb):
@@ -488,50 +410,10 @@ def load_order(kb):
         else:
             m = PAGE_LINE.match(l)
             if not m:
-                problems.append((f, i, f'看不懂這一行，簡報頁要寫成「- 頁 id」或「- 頁 id → 小節@指紋, 小節@指紋」：{l}'))
+                problems.append((f, i, f'看不懂這一行，頁序裡的簡報頁寫成「- 頁 id」：{l}'))
                 continue
-            maps = []
-            for tok in re.split(r'\s*[,，、]\s*', m.group(3) or ''):
-                if not tok:
-                    continue
-                r = REF.match(tok.strip())
-                if r:
-                    maps.append((r.group(1), r.group(2), r.group(3)))
-                else:
-                    problems.append((f, i, f'「{tok}」要寫成「小節 id@指紋」'))
-            groups[-1][1].append(Page(m.group(1), maps, i, m.group(2)))
+            groups[-1][1].append(Page(m.group(1), i))
     return Order(f, settings, parts, chaps, groups, problems)
-
-
-def update_fingerprints(kb, page_ids):
-    """把頁序裡這些簡報頁的指紋更新成現在的：頁自己的指紋，和對應小節的指紋。回傳更新了哪些。"""
-    secs = section_index()
-    pages = load_deck(kb).md_pages
-    f = kb.dir / 'deck/order.md'
-    out, done = [], []
-    for l in f.read_text(encoding='utf-8').splitlines():
-        m = PAGE_LINE.match(l)
-        if m and m.group(3) and m.group(1) in page_ids:
-            toks = []
-            for tok in re.split(r'\s*[,，、]\s*', m.group(3)):
-                r = REF.match(tok.strip())
-                if not r:
-                    toks.append(tok)
-                    continue
-                kname, sid = r.group(1) or kb.name, r.group(2)
-                s = secs.get((kname, sid))
-                prefix = f'{r.group(1)}/' if r.group(1) else ''
-                toks.append(f'{prefix}{sid}@{s.fp}' if s else tok)
-            pid = m.group(1) + (f'@{pages[m.group(1)].fp}' if m.group(1) in pages else '')
-            l = f'- {pid} → ' + ', '.join(toks)
-            done.append(m.group(1))
-        out.append(l)
-    f.write_text('\n'.join(out) + '\n', encoding='utf-8')
-    return done
-
-
-def section_index():
-    return {(k.name, s.id): s for k in all_kbs() for s in k.sections}
 
 
 def slide_ids(kb):
@@ -547,7 +429,6 @@ def slide_ids(kb):
 # 章檔開頭（「# 章名」到第一頁之前）寫「- 速覽：」和「- 先修：」，入口網站的學習路徑和全景圖用。
 # 舊的簡報頁寫在 deck/slides/*.js，文字和動畫混在一起；搬到 Markdown 之前，只抓得到標題、結論、講稿這些欄位。
 
-CHECK_HEAD = '## 自我檢查'
 DECK_META = {'短標題': 'short', '英文': 'en', '建議': 'minutes', '圖': 'fig', '標籤': 'badge', '資料': 'src', '深入': 'deep'}
 DECK_FIELD = re.compile(r'^(結論|重點|圖說|數字卡|比喻|說明|旁白)(?:（([a-z]+)(?:｜([^）]+))?）)?[：:]\s*(.*)$')
 SAME_FIG, TABLE_FIG = '同主頁', '表格'   # 深入頁的「圖：」可以沿用主頁的圖，或把說明裡的第一個表格當圖
@@ -679,7 +560,7 @@ class Term:
     zh: str
     en: str
     desc: str
-    first: str           # 「第一次出現」：頁 id（還沒搬的知識庫可能是小節 id）
+    first: str           # 「第一次出現」：頁 id；還沒有頁的術語寫「（待補）」或空著
     line: int
 
 
@@ -908,18 +789,14 @@ def release_url(fname):
 
 def kb_list_block():
     portal = release_url('portal.zip')
-    head = (f'**入口網站**：[下載 portal.zip]({portal})，解開後用 Chrome 或 Edge 打開裡面的 index.html。所有知識庫的簡報、手冊網站、學習路徑和搜尋都在裡面。'
+    head = (f'**入口網站**：[下載 portal.zip]({portal})，解開後用 Chrome 或 Edge 打開裡面的 index.html。所有知識庫的簡報、全景圖、學習路徑、主題索引和搜尋都在裡面。'
             if portal else '**入口網站**：請 Agent 建置，或執行 `python3 framework/tools/get.py portal --open`。')
     rows = [head, '', '| 知識庫 | 介紹 | 維護者 | 簡報 | 單一檔案 |', '|---|---|---|---|---|']
     for k in all_kbs():
         who = '、'.join(n for n, _ in k.maintainers) or '（還沒有）'
-        links, pages = [], k.has_deck and bool(load_deck(k).pages)   # 剛建好骨架、還沒有頁的簡報不建置，也不列連結
-        if download_url(k.name, 'handbook'):
-            if k.sections:
-                links.append(f'[手冊網站]({download_url(k.name, "handbook")})')
-            if pages:
-                links.append(f'[簡報]({download_url(k.name, "deck")})')
-        dl = '・'.join(links) or ('請 Agent 現場建置' if not download_url(k.name, 'handbook') else '還沒有')
+        pages = k.has_deck and bool(load_deck(k).pages)   # 剛建好骨架、還沒有頁的簡報不建置，也不列連結
+        url = download_url(k.name, 'deck')
+        dl = (f'[簡報]({url})' if pages else '還沒有') if url else '請 Agent 現場建置'
         rows.append(f'| [{k.title}](kb/{k.name}/) | {k.intro} | {who} | {"有" if pages else "還沒有"} | {dl} |')
     return '\n'.join([KB_LIST_START, *rows, KB_LIST_END])
 

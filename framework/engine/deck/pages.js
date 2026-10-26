@@ -3,7 +3,7 @@
    版面跟程式頁一樣：左邊是「圖：」指定的互動圖、圖片或影片；右邊依序是重點、數字卡、比喻卡。
    版面特別的頁，互動圖寫 body: true，render 回傳整個內容區，右欄用 U.pageSide({ top, meters, extra }) 放這一頁的文字；
    raw: true 連標題都自己畫。cls、eyebrow、back、hub、hubShort、footL 這些頁面設定也可以寫在互動圖裡。
-   深入頁（Markdown 寫了「深入：」）標題旁標「深入・可略過」，「說明：」的長文由 engine.js 放在畫面下方，預設展開。 */
+   深入頁（Markdown 寫了「深入：」）標題旁標「深入」，平常翻頁不會經過，主頁按「看深入」才進去；「說明：」的長文由 engine.js 放在畫面下方，預設展開。 */
 (function () {
   const CFG = window.DECK_CONFIG || {};
   const CIRC = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳';
@@ -62,19 +62,17 @@
   };
 
   /* ---------- 自動產生的頁 ---------- */
-  const href = (kb, file, id) => (CFG.links ? CFG.links[file].replace('{kb}', kb) : file + '.html') + (id ? '#' + id : '');
-
-  /* 章末自我檢查：這一章的題目（手冊的常見問題，或簡報章檔的「## 自我檢查」）；先想，再展開答案 */
+  /* 章末自我檢查：這一章的題目（簡報章檔的「## 自我檢查」）；先想，再展開答案 */
   function checkPage(g, qs) {
     return {
       id: 'check-' + g.key, part: g.part, chap: g.chap || undefined, minutes: 0, generated: true,
       short: '自我檢查：' + g.name, title: '自我檢查：' + g.name, en: 'Self-check',
       thesis: '先自己想，<b>再展開答案</b>；答不出來的，點「回到那一頁」再看一次。',
-      notes: '這一頁是自動產生的：題目來自這一章的常見問題。先自己想，再展開答案。',
+      notes: '這一頁是自動產生的：題目來自這一章的自我檢查。先自己想，再展開答案。',
       render: () => `<div class="s-body full"><div class="col checks">${qs.map(q => `<details class="ck">
           <summary>${q.deep ? '<span class="tag w">深入</span> ' : ''}${q.q}</summary>
           <div class="ans">${q.a}</div>
-          <div class="ck-go">${q.pages.map(([id, t]) => `<button type="button" class="btn" data-go="${id}">↩ 回到那一頁：${t}</button>`).join('')}${q.secs.map(([kb, id, t]) => `<a class="btn" href="${href(kb, 'handbook', id)}" target="_blank" rel="noopener">手冊：${t}</a>`).join('')}</div>
+          <div class="ck-go">${q.pages.map(([id, t]) => `<button type="button" class="btn" data-go="${id}">↩ 回到那一頁：${t}</button>`).join('')}</div>
         </details>`).join('')}</div></div>`,
       init(el) { el.querySelectorAll('[data-go]').forEach(b => b.onclick = () => Deck.goId(b.dataset.go)); }
     };

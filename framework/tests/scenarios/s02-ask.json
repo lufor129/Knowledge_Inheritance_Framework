@@ -17,22 +17,21 @@
       "name": "kb-learn"
     },
     {
-      "text": "讀的是正式內容（主線上的簡報和手冊）",
+      "text": "讀的是正式內容（主線上的簡報）",
       "type": "ran",
       "pattern": "origin/main|framework/tools/read\\.py|index\\.py.*--main"
     },
     {
-      "text": "回答附上出處小節 litho6",
+      "text": "回答附上出處頁 litho6（或它的深入頁 litho6-d）",
       "type": "reply",
       "pattern": "litho6"
     }
   ],
   "judge": [
-    "回答的內容都找得到依據（簡報頁或手冊小節，例如微影章的 litho6、cmask），沒有加入兩邊都沒寫的說法",
-    "最後列出出處，格式像「知識庫 › 章 › 小節 id」或「知識庫 › 簡報 › 章 › 〈頁標題〉（頁 id）」"
+    "回答的內容都找得到依據（簡報頁，例如微影章的主頁 litho6、cmask 和它們的深入頁 litho6-d、cmask-d），沒有加入簡報沒寫的說法",
+    "最後列出出處，格式像「知識庫 › 簡報 › 章 › 〈頁標題〉（頁 id）」"
   ],
   "judge_context": [
-    "kb/semiconductor/handbook/2-manufacturing/01-litho.md",
     "kb/semiconductor/deck/2-manufacturing/01-litho.md"
   ]
 }

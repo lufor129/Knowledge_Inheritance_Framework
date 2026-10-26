@@ -13,14 +13,14 @@
           <div>
             <div class="s-eyebrow">KNOWLEDGE INHERITANCE FRAMEWORK · 2026</div>
             <h1>知識傳承框架</h1>
-            <div class="sub">老手的經驗，變成新人看得懂的簡報和手冊；<br>增刪修改，跟 Agent 說就好</div>
+            <div class="sub">老手的經驗，變成新人看得懂的互動簡報；<br>增刪修改，跟 Agent 說就好</div>
           </div>
           <div class="cards" style="margin-top:28px;grid-template-columns:repeat(2,1fr)">
             <div class="card"><h4>第一部分</h4><p><b>為什麼、給誰</b><br>知識只在人腦袋裡、給主管的總覽、四種角色與使用情境、全景圖</p></div>
             <div class="card"><h4>第二部分</h4><p><b>怎麼運作</b><br>五章：知識怎麼存、新增、修改與刪除、檢查與審核、新人怎麼學</p></div>
             <div class="card"><h4>第三部分</h4><p><b>跟 Git 主機結合</b><br>對到 Git 上、誰能合併、待回答與勘誤</p></div>
             <div class="card"><h4>第四部分</h4><p><b>怎麼開始</b><br>技術選擇、skill 設計、搬半導體、新增知識庫</p></div>
-            <div class="card" style="grid-column:1/-1;background:var(--accent-2-soft);border-color:#eccab4"><h4>第五部分</h4><p><b>現況</b><br>已合併的 17 個變更提案、情境測試、新人以簡報為主（ADR-0006）實際做成的樣子，和之後還可以做的事</p></div>
+            <div class="card" style="grid-column:1/-1;background:var(--accent-2-soft);border-color:#eccab4"><h4>第五部分</h4><p><b>現況</b><br>已合併的 20 個變更提案、情境測試、只留簡報（ADR-0007）實際做成的樣子，和之後還可以做的事</p></div>
           </div>
           <div class="meta">設計說明 · 10-24 定案，10-26 更新 · ${total()}<br>每頁左邊的互動元件都可以操作；對話與情境為示意</div>
         </div>
@@ -28,7 +28,7 @@
           <div style="position:absolute;left:50px;right:50px;top:50px;bottom:200px"><canvas id="cv-cover" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas></div>
           <div style="position:absolute;left:50px;right:50px;bottom:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
             <div class="card key"><h4>從哪開始</h4><div class="big" style="font-size:28px">入口網站</div><p style="margin:0;font-size:14px">一個壓縮檔，離線能看</p></div>
-            <div class="card key"><h4>新人主要看</h4><div class="big" style="font-size:28px">簡報</div><p style="margin:0;font-size:14px">簡報必備、手冊選配</p></div>
+            <div class="card key"><h4>新人主要看</h4><div class="big" style="font-size:28px">簡報</div><p style="margin:0;font-size:14px">主頁＋按了才看的深入頁</p></div>
             <div class="card key"><h4>怎麼改</h4><div class="big" style="font-size:28px">跟 Agent 說</div><p style="margin:0;font-size:14px">維護者核准才算數</p></div>
           </div>
         </div>
@@ -66,18 +66,18 @@
           U.dot(c, p[0], p[1], 5.5, '#1f4fb5');
         });
         for (let k = 0; k < 5; k++) { const p = bez((k / 5 + t * .06) % 1); U.dot(c, p[0], p[1], 5, '#b3541e'); }
-        U.txt(c, '待回答：新人問倒了手冊，就變成下一筆要補的知識', w * .52, h * .9, { align: 'center', size: 15, w: 600, color: '#b3541e', bg: 'rgba(242,245,248,.94)' });
+        U.txt(c, '待回答：簡報沒寫的問題，就變成下一筆要補的知識', w * .52, h * .9, { align: 'center', size: 15, w: 600, color: '#b3541e', bg: 'rgba(242,245,248,.94)' });
         node(A0, '傳承者', '老手的經驗', 140, '#b3541e');
         node(B0, 'Agent', '研究・整理・訪談', 160, '#1f4fb5');
-        node(C0, '簡報＋手冊', '新人看這裡', 150, '#17202b');
+        node(C0, '簡報', '新人看這裡', 150, '#17202b');
         L.forEach(p => node(p, '新人', '', 96, '#1f4fb5'));
       });
     },
-    notes: `大家好，今天介紹「知識傳承框架」：讓 Agent 幫忙，把各領域老手的經驗整理成新人看得懂的簡報和手冊。
+    notes: `大家好，今天介紹「知識傳承框架」：讓 Agent 幫忙，把各領域老手的經驗整理成新人看得懂的互動簡報。
 
-右邊這張圖就是整件事。藍點是知識，從傳承者出發，經過 Agent 整理、維護者核准，進到簡報和手冊，再流到新人身上。橘點反過來走：新人問倒了簡報和手冊，問題回到傳承者手上，變成下一筆要補的知識。
+右邊這張圖就是整件事。藍點是知識，從傳承者出發，經過 Agent 整理、維護者核准，進到簡報，再流到新人身上。橘點反過來走：簡報沒寫的問題，回到傳承者手上，變成下一筆要補的知識。
 
-這份是 10-24 定案的設計說明，10-26 更新成現在的樣子。最大的改變是 10-25 定案的「新人以簡報為主」（ADR-0006）：新人從入口網站開始看簡報，簡報必備、手冊選配，兩邊一樣重要。這件事分三個變更提案做完了。
+這份是 10-24 定案的設計說明，10-26 更新成現在的樣子。中間有兩次大改變：10-25 定案「新人以簡報為主」（ADR-0006），新人從入口網站開始看簡報；10-26 再定案「只留簡報」（ADR-0007），拿掉手冊，一頁放不下的長說明做成接在主頁後面的深入頁（平常翻頁不經過，按「看深入」才進去），入口網站多了全景圖、速覽、先修和主題索引。兩次都分三個變更提案做完了。
 
 前四部分講設計，第五部分講已經做完的、實際做成什麼樣子，和之後還可以做的事。每頁左邊都可以動手操作。`
   });
@@ -106,6 +106,6 @@
     init(el) { U.$$(el, '[data-go]').forEach(c => c.onclick = () => Deck.goId(c.dataset.go)); },
     notes: `今天分四部分。第一部分講為什麼需要這套框架、誰會用它，最後用一張全景圖串起來。第二部分是重點，分五章講它怎麼運作。
 
-第三部分講怎麼跟 GitHub 或 GitLab 結合；第四部分講技術選擇、要設計的 skill，和第一步要做什麼。第五部分是現況：已經合併了哪些變更提案、情境測試的結果、「新人以簡報為主」實際做成什麼樣子，以及之後還可以做的事。點任何一張卡片可以直接跳過去。`
+第三部分講怎麼跟 GitHub 或 GitLab 結合；第四部分講技術選擇、要設計的 skill，和第一步要做什麼。第五部分是現況：已經合併了哪些變更提案、情境測試的結果、「只留簡報」實際做成什麼樣子，以及之後還可以做的事。點任何一張卡片可以直接跳過去。`
   });
 })();

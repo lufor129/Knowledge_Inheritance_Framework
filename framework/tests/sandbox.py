@@ -20,7 +20,7 @@ if SANDBOX == OFFICIAL:
 
 # 測試 repo 需要的標籤（和正式 repo 一樣）
 LABELS = [
-    ('待回答', 'a8660a', '手冊沒寫到的問題'), ('勘誤', 'b3261e', '手冊可能寫錯'),
+    ('待回答', 'a8660a', '簡報沒寫到的問題'), ('勘誤', 'b3261e', '簡報可能寫錯'),
     ('來歷:研究', 'b3541e', 'Agent 用自己的知識和找到的資料寫'), ('來歷:整理', '1f7a4d', '改寫自參考資料'),
     ('來歷:訪談', '6a4bb5', '傳承者口述'),
 ]
@@ -156,7 +156,7 @@ def setup(steps, work, vars):
             sh(['git', 'switch', '--quiet', '-c', s['name']], cwd=fx)
             for e in s['edits']:
                 apply_edit(fx, e, vars)
-            for cmd in s.get('run', []):  # 例如更新簡報頁的指紋，讓前置提案本身通過檢查
+            for cmd in s.get('run', []):  # 例如前置提案要先跑的指令，讓它本身通過檢查
                 sh(shlex.split(cmd), cwd=fx)
             sh(['git', 'commit', '--quiet', '-am', fill(s['commit'], vars)], cwd=fx)
             sh(['git', 'push', '--quiet', '-u', 'origin', s['name']], cwd=fx)

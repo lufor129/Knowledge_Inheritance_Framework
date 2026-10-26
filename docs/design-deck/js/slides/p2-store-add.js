@@ -15,7 +15,7 @@
 ├─ .claude/          skills/（五個流程）、settings.json（允許清單、擋危險 git 指令）
 ├─ .github/          CI：檢查、建置、發布到 Release
 ├─ framework/
-│  ├─ engine/        入口網站、簡報、手冊網站的共用引擎；
+│  ├─ engine/        入口網站和簡報的共用引擎；
 │  │                 figures/ 是互動圖樣板
 │  ├─ tools/         check、build、read、index、who、proposal、
 │  │                 get、reader_test、new_kb
@@ -25,16 +25,15 @@
 │  └─ paths.md       入口網站的角色路徑
 └─ kb/
    ├─ semiconductor/
-   │  ├─ README.md   介紹、維護者、全景圖
-   │  ├─ terms.md    術語表
-   │  ├─ deck/       order.md（頁序）、<部分>/<章>.md（15 個章檔，
-   │  │              90 頁的文字和自我檢查）、figures/（互動圖）
-   │  ├─ handbook/   部分 → 章 → 小節（3 章、28 個小節）
+   │  ├─ README.md   介紹、維護者
+   │  ├─ terms.md    術語表（主題索引從它產生）
+   │  ├─ deck/       order.md（頁序）、<部分>/<章>.md（15 個章檔：
+   │  │              速覽、先修、主頁、深入頁、自我檢查）、figures/（互動圖）
    │  ├─ widgets/    互動圖共用的程式
    │  ├─ assets/     圖片＋SOURCES.md
    │  └─ dist/       建置結果，不進版控
-   └─ cv/            電腦視覺：手冊骨架（4 個部分、15 章），還沒有簡報` },
-    { label: 'kb/semiconductor/README.md', d: 1, note: '知識庫的首頁：介紹、維護者名單，以及全景圖（建議有）。', code: `# 半導體製程
+   └─ cv/            電腦視覺：簡報骨架（4 個部分、13 章，還沒有頁）` },
+    { label: 'kb/semiconductor/README.md', d: 1, note: '知識庫的首頁：介紹和維護者名單。全景圖不用畫：入口網站照部分和章自動排。', code: `# 半導體製程
 
 給半導體新人的知識庫：從電晶體結構演進、
 十章製程與量產，到先進封裝與背面供電。
@@ -43,69 +42,33 @@
 - （維護者名字）
 
 ## 全景圖
-\`\`\`mermaid
-flowchart LR
-  A[演進與現況] --> B[製造：從電晶體到量產]
-  B --> C[突破摩爾定律]
-\`\`\`
-部分和章的方塊由程式從資料夾自動產生，
-人只補上「章和章之間的關係」。` },
-    { label: 'handbook/2-manufacturing/', d: 1, note: '部分就是一個資料夾，只用來分組；編號跟簡報一樣。手冊是選配：半導體寫了 3 章。', code: `handbook/
-├─ 1-evolution/          演進與現況（只有部分的簡介）
-├─ 2-manufacturing/      製造：從電晶體到量產
-│  ├─ README.md          這個部分的簡介
-│  ├─ 01-litho.md        微影
-│  ├─ 05-gate.md         閘極
-│  └─ 09-metrology.md    檢測量測
-└─ 3-beyond-moore/       突破摩爾定律（只有部分的簡介）
-
-其他章只有簡報頁。手冊是選配：
-一頁簡報放不下的細節才寫，不用每章都有。` },
-    { label: '05-gate.md', d: 2, note: '一章一個檔案：速覽（建議有）、小節、常見問題（有題目才建）。小節內容格式自由。', code: `# 閘極
-
-> 速覽：閘極隔著一道很薄的絕緣牆，用電場開關電晶體。
-> 這章講牆為什麼不能再薄，換成 High-k 之後怎麼兩全。
-
-<a name="hk1"></a>
-## 閘極絕緣層
-
-牆要薄，電場才夠強；太薄，電子會直接穿過去
-（量子穿隧，Quantum Tunneling）。
-牆每薄 0.2 nm，漏電大約多 10 倍[^hk1-1]。
-
-<!-- 元件: gate-leakage -->
-
-[^hk1-1]: 出處（論文、文件位置或網址）
-
-## 常見問題
-
-<details>
-<summary>電晶體會壞嗎？可以用多久？</summary>
-正常使用可以用十年以上……
-相關：hk1、wat
-</details>` },
-    { label: 'deck/order.md', d: 1, note: '頁序：由上到下就是播放順序；有對應小節的頁記下兩邊的指紋，哪一邊改了，檢查程式就點名另一邊。', code: `# 頁序（節錄）
+全景圖在入口網站：照部分和章自動排，
+先修畫成箭頭，點一章看它在講什麼。` },
+    { label: 'deck/order.md', d: 1, note: '頁序：由上到下就是播放順序，一行一頁；深入頁緊接在它的主頁後面。', code: `# 頁序（節錄）
 
 ## 章節列
 - 1：微影 → litho1
 - 5：閘極 → hk1
-（沒寫的話，照簡報章檔的「# 章名」自動產生）
+（沒寫的話，照章檔的「# 章名」自動產生）
 
 ## 頁面
 - cover
 - etch1
-- hk1@f0cc3a → hk1@4c046b, hk2@b86b6a, hk3@e3a45c, hk4@9e6156
-- ocd@c8420c → ocd@7654cc
+- hk1
+- hk1-d
+- hk2-d
+- hk3-d
+- hk4-d
+- cmp1` },
+    { label: 'deck/2-manufacturing/05-gate.md', d: 1, note: '章檔：開頭是速覽和先修，接著一頁一個「錨點＋## 標題」，最後是這一章的自我檢查。', code: `# 閘極
 
-頁 id@頁的指紋 → 小節@小節的指紋：
-簡報頁改了，點名小節；小節改了，點名簡報頁。
-指紋由 check.py --fp 產生，人不用管。` },
-    { label: 'deck/2-manufacturing/05-gate.md', d: 1, note: '簡報章檔：一章一個檔，編號跟手冊一樣。一頁是「錨點＋## 標題」，底下是欄位；最後的「## 自我檢查」是這一章的題目。', code: `# 閘極
+- 速覽：閘極不碰通道，而是隔著一道很薄的絕緣牆，
+  用電場控制通道開或關……
+- 先修：第一部分 · 演進與現況
 
 <a name="hk1"></a>
 ## 絕緣牆的兩難：電場要過得去，電子不要過去
 
-- 短標題：閘極絕緣層：電場過、電子不過
 - 建議：5.2 分
 - 圖：hk1              互動圖在 deck/figures/
 
@@ -115,21 +78,38 @@ flowchart LR
 - **電場要過得去**：牆越薄，閘極越控制得住通道
 - 二氧化鉿傳電場的能力約是二氧化矽的 **4–6 倍**
 
-數字卡：約 1.2 nm｜2000 年代初期二氧化矽已經薄到這裡
-
 比喻（wall）：隔著牆用磁鐵（閘極）吸鐵片……
 
 旁白：
 第五章：閘極。回到電晶體的核心……
+
+（後面接 hk1-d … hk4-d 四頁深入頁，下一頁看）
 
 ## 自我檢查
 
 <details>
 <summary>為什麼選二氧化鉿？</summary>
 它傳遞電場的能力約是二氧化矽的 4–6 倍……
-相關：hk1
+相關：hk1、hk3-d
 </details>` },
-    { label: 'deck/figures/', d: 1, note: '互動圖只畫圖、管操作；要讓新人讀的文字寫在章檔（重點、圖說、旁白）。新做的頁先套三種樣板。', code: `// 拉桿看變化、切換比較
+    { label: '…　深入頁 hk3-d', d: 2, note: '深入頁也是簡報頁：「深入：」寫它接在哪一頁後面；畫面放圖和重點，「說明：」的長文放在畫面下方。', code: `<a name="hk3-d"></a>
+## 換成二氧化鉿：牆做厚，電場照樣過得去
+
+- 深入：hk1
+- 圖：同主頁           沿用 hk1 的互動圖
+- 建議：3 分
+
+重點：
+- 換材料：傳電場能力（介電常數 k）高的牆，可以做厚
+- 二氧化鉿和矽接觸時比較穩定，但怕高溫，要最後才鋪
+
+說明：
+既然二氧化矽不能再薄，解法就是換材料……
+
+### 實際的牆：介面層加上二氧化鉿
+
+比較兩道不同材料的牆時，業界用等效氧化層厚度……` },
+    { label: 'deck/figures/', d: 1, note: '互動圖只畫圖、管操作；要讓新人讀的文字寫在章檔（重點、圖說、說明、旁白）。新做的頁先套三種樣板。', code: `// 拉桿看變化、切換比較
 Fig.add('hk-wall', Fig.canvas({
   title: '閘極與通道之間',
   segs: [{ id: 'k', items: ['二氧化矽', '二氧化鉿'] }],
@@ -157,8 +137,8 @@ Fig.add('mos-parts', Fig.parts({ … }));
   ];
   A(Object.assign({
     id: 'struct', part: 2, minutes: 2, short: '知識怎麼存',
-    title: '知識怎麼存：簡報章檔和手冊，編號一樣', en: 'Structure',
-    thesis: '簡報頁寫在<b>簡報章檔</b>，手冊分<b>部分 → 章 → 小節</b>；固定的只有 id、題目的格式和數字的出處註腳。',
+    title: '知識怎麼存：一章一個章檔，主頁加深入頁', en: 'Structure',
+    thesis: '內容只有<b>簡報</b>一份：章檔開頭是<b>速覽和先修</b>，接著是主頁和接在後面的<b>深入頁</b>，最後是自我檢查。',
     render: () => `<div class="s-body w66">
       <div class="col"><div class="fig grow"><div class="fig-title"><span>點左邊的檔案看內容</span><span>路徑英文、內容繁中</span></div>
         <div style="flex:1;min-height:0;display:grid;grid-template-columns:290px 1fr;gap:14px">
@@ -166,69 +146,70 @@ Fig.add('mos-parts', Fig.parts({ … }));
           <div style="display:flex;flex-direction:column;gap:8px;min-height:0;min-width:0"><p class="caption" id="st-note" style="margin:0;font-size:16px"></p><pre class="code" id="st-code" style="flex:1;min-height:0"></pre></div>
         </div></div></div>
       ${U.side({
-        points: ['<b>一個 repo</b> 放所有知識庫，全公司都能看', '頁 id、小節 id 用短英文（hk1），<b>建立後不改名</b>', '數字用註腳附出處；圖片要列進<b>圖片清單</b>', '簡報頁的文字寫在 <b>Markdown</b>，互動圖寫在程式'],
-        fact: { v: '15 個章檔', d: '半導體 90 頁簡報的文字和 197 題自我檢查' },
-        analogy: { icon: 'tile', t: '比喻', p: '像一座書架：一層放一個部分，一本書是一章，書裡每一節都有固定的頁籤，別人引用時說「第幾節」就找得到。' }
+        points: ['<b>一個 repo</b> 放所有知識庫，全公司都能看', '頁 id 用短英文（hk1、深入頁 hk3-d），<b>建立後不改名</b>', '數字用註腳附出處；圖片要列進<b>圖片清單</b>', '文字寫在 <b>Markdown</b> 章檔，互動圖寫在程式'],
+        fact: { v: '90 ＋ 28 頁', d: '半導體的主頁和深入頁，寫在 15 個章檔；200 題自我檢查' },
+        analogy: { icon: 'tile', t: '比喻', p: '像一本圖解書：每一頁講一件事，想多知道一點就翻後面的「延伸閱讀」，不想看就跳過。' }
       })}</div>`,
     init(el) {
       const btns = U.$$(el, '#st-tree button');
       const show = i => { btns.forEach((b, k) => b.classList.toggle('on', k === i)); U.$(el, '#st-note').textContent = FILES[i].note; U.$(el, '#st-code').textContent = FILES[i].code; };
       btns.forEach((b, i) => b.onclick = () => show(i));
-      show(5);
+      show(3);
     },
-    notes: `第一章，知識怎麼存。框架和所有知識庫都放在同一個 repo，每個知識庫是 kb 底下的一個資料夾。手冊分三層：部分是資料夾，只用來分組；章是檔案；小節是一個概念。
+    notes: `第一章，知識怎麼存。框架和所有知識庫都放在同一個 repo，每個知識庫是 kb 底下的一個資料夾。2026-10-26 起，知識庫的內容只有簡報一份，沒有手冊了。
 
-點左邊的 deck/2-manufacturing/05-gate.md 看簡報章檔：一頁是一個錨點加標題，底下是結論、重點、數字卡、比喻、旁白這些欄位，最後是這一章的自我檢查題目。互動圖寫在 deck/figures/，先套樣板。頁 id 和小節 id 一樣，建立之後就不改名。
+點左邊的 deck/2-manufacturing/05-gate.md 看章檔：開頭是這一章的速覽和先修，入口網站會顯示；接著一頁是一個錨點加標題，底下是結論、重點、數字卡、比喻、旁白；最後是這一章的自我檢查。一頁放不下的長說明，做成接在後面的深入頁，點 hk3-d 看：「深入：」寫它接在哪一頁後面，圖可以沿用主頁的，長文寫在「說明：」。
 
-手冊照舊是部分、章、小節，編號跟簡報一樣；手冊是選配，半導體寫了微影、閘極、檢測量測三章。頁序 order.md 記下每一頁對應哪些小節，和兩邊的指紋。路徑用英文，內容用繁體中文。`
+頁 id 建立之後就不改名。頁序 order.md 一行一頁，深入頁緊接在主頁後面。路徑用英文，內容用繁體中文。`
   }, C1));
 
-  /* ① 簡報和手冊：簡報必備、手冊選配，兩邊一樣重要，雙向點名（ADR-0006） */
-  const CN_SECS = [{ id: 'hk1', t: '閘極絕緣層' }, { id: 'ocd', t: 'OCD 光學量測' }, { id: 'tem', t: 'TEM 電子顯微鏡' }];
-  const CN_PAGES = [{ id: 'cover', s: [] }, { id: 'hk1', s: ['hk1'] }, { id: 'ocd', s: ['ocd'] }, { id: 'ocdf', s: ['ocd'] }, { id: 'ocdb', s: ['ocd', 'tem'] }, { id: 'etch1', s: [] }];
-  const CN_EV = [
-    { n: '原本', p: {}, s: {}, m: '<b style="color:var(--good)">✓ 全部對得上</b>：頁序記的兩邊指紋都和現在一樣。etch1 沒有對應小節，照樣算數。' },
-    { n: '改了簡報頁 ocdb', p: { ocdb: 'sel' }, s: { ocd: 'hit', tem: 'hit' }, m: '<b>點名小節</b>：簡報頁 ocdb 改了，它對應的小節 ocd、tem 要重看，說法要一致。Agent 對照好兩邊，跑 check.py --fp 更新指紋，才能開提案。' },
-    { n: '改了小節 ocd', p: { ocd: 'hit', ocdf: 'hit', ocdb: 'hit' }, s: { ocd: 'sel' }, m: '<b>點名簡報頁</b>：小節 ocd 改了，對應的 3 頁簡報要重看。' },
-    { n: '兩邊說法不一樣', p: { hk1: 'hit' }, s: { hk1: 'hit' }, m: '<b>兩種都列</b>：Agent 查找時發現兩邊寫的不一樣，兩種說法都告訴使用者、各附出處，再問要不要記成勘誤。沒有哪一邊自動算對。' },
-    { n: '新增小節沒做簡報頁', p: {}, s: { hk5: 'hit del' }, m: '<b>擋下</b>：每個小節都要有簡報頁講到。反過來可以：簡報頁可以沒有小節（例如 etch1）。' }
+  /* ① 主頁和深入頁（ADR-0007） */
+  const DP_MAIN = [{ id: 'hk1', t: '絕緣牆的兩難' }, { id: 'cmp1', t: 'CMP：把每一層都磨到平' }];
+  const DP_DEEP = [{ id: 'hk1-d', t: '絕緣牆的兩難（長說明）' }, { id: 'hk2-d', t: '太薄就漏電：量子穿隧' }, { id: 'hk3-d', t: '換成二氧化鉿' }, { id: 'hk4-d', t: '金屬閘極' }];
+  const DP_EV = [
+    { n: '照順序翻', m: { hk1: 'sel', cmp1: 'sel' }, d: {}, x: '照順序翻只會經過主頁：hk1 的下一頁就是 cmp1，四頁深入頁不會出現。頁碼、學習路徑的時間和進度都只算主頁：閘極這一章 1 頁、約 5 分，另有 4 頁深入（選看）。' },
+    { n: '按「看深入」', m: { hk1: 'sel' }, d: { 'hk1-d': 'hit' }, x: '主頁下面的「看深入（4 頁）」翻到第一頁深入頁，頁碼顯示成「主頁的頁碼 · 深入 1/4」。畫面縮到上面，說明放在下面、預設展開；圖沿用主頁的互動圖。' },
+    { n: '在深入頁上翻', m: { cmp1: 'sel' }, d: { 'hk1-d': 'sel', 'hk2-d': 'sel', 'hk3-d': 'sel', 'hk4-d': 'sel' }, x: '深入頁之間照順序翻；看完最後一頁 hk4-d 再翻，就到下一個主頁 cmp1。不想看完，按「跳過深入」直接到 cmp1，或按「回主頁」回到 hk1。' },
+    { n: '改了主頁 hk1', m: { hk1: 'sel' }, d: { 'hk3-d': 'hit' }, x: '改主頁時，Agent 一起看後面的深入頁和指向它的自我檢查，說法要一致。只有一份內容，沒有另一份文件要對照，也沒有指紋要更新。' },
+    { n: '新寫一段沒出處', m: {}, d: { 'hk3-d': 'hit del' }, x: '<b>擋下</b>：深入頁說明裡新寫的一段有數字、沒有出處。原本就有、還沒出處的只提醒，列在 index.py --todo 慢慢補。' }
   ];
   A(Object.assign({
-    id: 'canon', part: 2, minutes: 2.5, short: '簡報和手冊', badge: '10-25 起',
-    title: '簡報和手冊：簡報必備、手冊選配，兩邊一樣重要', en: 'Deck & Handbook',
-    thesis: '<b>每個小節都要有簡報頁</b>，簡報頁可以沒有小節；頁序記下兩邊的指紋，<b>哪一邊改了，另一邊就要重看</b>。',
+    id: 'canon', part: 2, minutes: 2.5, short: '主頁和深入頁', badge: '10-26 起',
+    title: '主頁和深入頁：一頁放不下的，接在後面', en: 'Main & Deep-dive',
+    thesis: '主頁一頁講一個概念；推導、表格、很多出處做成<b>深入頁</b>，平常翻頁不會經過，<b>按「看深入」才進去</b>。',
     render: () => `<div class="s-body">
-      <div class="col"><div class="controls">${U.seg('cn-seg', CN_EV.map(x => x.n), 0)}</div>
-        <div class="fig grow"><div class="fig-title"><span>手冊小節 ⇄ 簡報頁序</span><span>ADR-0006 取代 ADR-0002</span></div>
+      <div class="col"><div class="controls">${U.seg('cn-seg', DP_EV.map(x => x.n), 0)}</div>
+        <div class="fig grow"><div class="fig-title"><span>閘極這一章：主頁 → 深入頁 → 下一章</span><span>ADR-0007</span></div>
           <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1.3fr;gap:16px">
-            <div class="rcol"><h4>手冊的小節（選配）</h4><div class="ritems" id="cn-secs"></div></div>
-            <div class="rcol"><h4>簡報頁序 deck/order.md（必備）</h4><div class="ritems" id="cn-pages"></div></div>
+            <div class="rcol"><h4>主頁（照順序翻會看到）</h4><div class="ritems" id="cn-main"></div></div>
+            <div class="rcol"><h4>深入頁（接在 hk1 後面，按了才進去）</h4><div class="ritems" id="cn-deep"></div></div>
           </div>
           <div class="card" id="cn-res" style="font-size:18px"></div></div></div>
       ${U.side({
-        points: ['<b>簡報必備、手冊選配</b>：新人主要看簡報', '每個小節都要有簡報頁講到；簡報頁可以沒有小節', '指紋是<b>雙向</b>的：哪一邊改了，另一邊就要重看', '說法不同：查找時<b>兩種都列</b>，問要不要記勘誤'],
-        fact: { v: '22 / 90 頁', d: '半導體有對應小節的簡報頁；其他 68 頁只有簡報，照樣算數' },
-        analogy: { icon: 'pen', t: '比喻', p: '像中英對照的合約：兩份一樣有效，改了一份，另一份一定要跟著對一次。' }
+        points: ['<b>只有簡報一份</b>：不用兩份對照、不用指紋', '深入頁按「看深入」才進去，<b>頁碼和學習路徑不算</b>它', '說明可以有表格、圖片、公式、出處註腳', '一頁放不下時，Agent <b>建議</b>做深入頁，傳承者決定'],
+        fact: { v: '28 頁', d: '手冊三章的 28 個小節，原文照搬成深入頁，接在 22 個主頁後面' },
+        analogy: { icon: 'film', t: '比喻', p: '像影片的延伸片段：主線照順序播，想多知道一點再點進去看，看完接著播下一段。' }
       })}</div>`,
     init(el) {
       U.onSeg(el, 'cn-seg', k => {
-        const e = CN_EV[k];
-        U.$(el, '#cn-secs').innerHTML = CN_SECS.map(s => `<div class="ritem ${e.s[s.id] || ''}">${s.t}<span class="ids">${s.id}</span></div>`).join('')
-          + (e.s.hk5 ? `<div class="ritem ${e.s.hk5}">新的小節<span class="ids">hk5 · 沒有簡報頁講到</span></div>` : '');
-        U.$(el, '#cn-pages').innerHTML = CN_PAGES.map(p => `<div class="ritem ${e.p[p.id] || ''}">${p.id}<span class="ids">${p.s.length ? `${p.id}@頁指紋 → ` + p.s.map(x => x + '@指紋').join(', ') : '（不對應小節，照樣算數）'}</span></div>`).join('');
-        U.$(el, '#cn-res').innerHTML = e.m;
+        const e = DP_EV[k];
+        U.$(el, '#cn-main').innerHTML = DP_MAIN.map(p => `<div class="ritem ${e.m[p.id] || ''}">${p.t}<span class="ids">${p.id}</span></div>`).join('');
+        U.$(el, '#cn-deep').innerHTML = DP_DEEP.map(p => `<div class="ritem ${e.d[p.id] || ''}" style="border-style:dashed">${p.t}<span class="ids">${p.id} · 深入：hk1</span></div>`).join('');
+        U.$(el, '#cn-res').innerHTML = e.x;
       });
     },
-    notes: `新人主要看簡報，所以簡報必備、手冊選配，兩邊一樣重要。這是 10-25 定的，寫在 ADR-0006，取代原本「手冊是正本」的 ADR-0002。
+    notes: `2026-10-26 起拿掉手冊，只留簡報，寫在 ADR-0007。一頁放不下的長說明，做成接在主頁後面的深入頁。
 
-點上面幾件事看看。改了簡報頁 ocdb：檢查程式點名它對應的小節 ocd、tem 要重看；改了小節 ocd：點名對應的三頁簡報。頁序裡每一頁都記下兩邊的指紋，Agent 對照好之後跑 check.py --fp 更新，才能開提案。兩邊說法不一樣時，Agent 兩種都列，再問要不要記勘誤。新增小節卻沒做簡報頁，會被擋下；反過來，簡報頁可以沒有小節。
+點上面幾種情況看看。照順序翻只會經過主頁，深入頁不會出現；在主頁按「看深入」才進去，說明放在畫面下方、預設展開。深入頁之間照順序翻，看完最後一頁再翻就到下一個主頁。頁碼、學習路徑的時間和進度都只算主頁，深入頁另外標「選看」。原本定案是照順序翻會經過、可以一鍵跳過，10-26 試用後改成平常不經過。
 
-半導體 90 頁簡報裡，22 頁有對應小節，其他 68 頁只有簡報，照樣算數。`
+改主頁的時候，Agent 一起看後面的深入頁和自我檢查，說法要一致；因為只有一份內容，不用再兩邊對照、更新指紋。深入頁說明裡新寫的一段有數字沒出處，檢查會擋。
+
+半導體原本手冊三章的 28 個小節，原文照搬成 28 頁深入頁。`
   }, C1));
 
   /* ② 三種新增方式：對話逐句出現 */
   const MODES = [
-    { n: '研究', me: '傳承者', chat: [['me', '幫我研究 High-NA EUV，放進微影那章。'], ['ai', '好。我會用自己的知識和找到的資料，整理它和現在的 EUV 差在哪、為什麼要做、代價是什麼。數字一定附出處，找不到出處的就不寫。'], ['ai', '簡報頁草稿好了，放在微影那章的最後，頁 id 我建議用 litho9；一頁放得下，不另外寫手冊。你看看哪裡要改？']] },
+    { n: '研究', me: '傳承者', chat: [['me', '幫我研究 High-NA EUV，放進微影那章。'], ['ai', '好。我會用自己的知識和找到的資料，整理它和現在的 EUV 差在哪、為什麼要做、代價是什麼。數字一定附出處，找不到出處的就不寫。'], ['ai', '簡報頁草稿好了，放在微影那章的最後，頁 id 我建議用 litho9；一頁放得下，不用另做深入頁。你看看哪裡要改？']] },
     { n: '整理', me: '傳承者', chat: [['me', '參考這份《黃光區新人 SOP》第 3–8 頁，整理進微影那章。'], ['ai', '這幾頁有 5 個步驟和 2 個常見錯誤。我會做成兩頁簡報：步驟用一步步播放的樣板，常見錯誤放重點，再補一個比喻。原檔不放進知識庫，出處寫「黃光區新人 SOP，第 3–8 頁」加上它的存放位置。'], ['ai', '草稿好了。第 6 頁有一個數字我看不懂單位，請你確認一下。']] },
     { n: '訪談', me: '老王（傳承者）', chat: [['me', '我想講一下光罩為什麼怕汙染。'], ['ai', '先問三題：一、汙染通常是什麼東西？二、出事時產線最先看到什麼？三、新人最常誤會哪一點？沒空當面講，我也可以先把問題寫下來，你有空再回。'], ['me', '最怕的是微粒，一顆很小的粒子就可能讓整批重做……'], ['ai', '了解。這段的出處會寫成「老王（製程整合）口述，2026-10」。簡報頁草稿好了，也加了一題自我檢查，你看看有沒有說錯？']] }
   ];
@@ -267,13 +248,13 @@ Fig.add('mos-parts', Fig.parts({ … }));
 
   /* ② 一筆知識的旅程：逐步播放 */
   const ST = [
-    { n: '寫草稿', who: 'Agent', col: '#1f4fb5', d: '先做簡報頁：結論、重點、互動圖（先套樣板）、旁白，數字附出處；一頁放不下才寫手冊小節。' },
+    { n: '寫草稿', who: 'Agent', col: '#1f4fb5', d: '做簡報頁：結論、重點、互動圖（先套樣板）、旁白，數字附出處；一頁放不下才建議做深入頁。' },
     { n: '傳承者確認', who: '人', col: '#1f7a4d', d: '看草稿、改到滿意，確認之前不會往下走。' },
     { n: '自動檢查', who: '程式', col: '#b3541e', d: '每改一次就自動跑，沒過就擋；開變更提案後 CI 再跑一次。' },
-    { n: '讀者測試', who: 'Agent', col: '#1f4fb5', d: '沒有背景知識的 Agent 只讀這一章（簡報是每一頁的文字和旁白），答不出來就回去改寫。' },
+    { n: '讀者測試', who: 'Agent', col: '#1f4fb5', d: '沒有背景知識的 Agent 只讀這一章（每一頁的文字、深入頁的說明和旁白），答不出來就回去改寫。' },
     { n: '變更提案', who: 'Agent', col: '#1f4fb5', d: '開變更提案，連到要回答的 issue，寫一行來歷：研究、整理或訪談。' },
-    { n: '維護者審核', who: '人＋Agent', col: '#1f7a4d', d: 'Agent 用白話整理改了什麼，打開改過的簡報頁；維護者核准或留意見。' },
-    { n: '正式內容', who: '簡報＋手冊', col: '#17202b', d: '併進正式內容；CI 重新建置入口網站，新人看得到了。' }
+    { n: '維護者審核', who: '人＋Agent', col: '#1f7a4d', d: 'Agent 用白話整理改了什麼，打開改過的簡報頁和深入頁；維護者核准或留意見。' },
+    { n: '正式內容', who: '簡報', col: '#17202b', d: '併進正式內容；CI 重新建置入口網站，新人看得到了。' }
   ];
   function doc(c, x, y, i, p) {
     const bw = 250, bh = 128;
@@ -308,7 +289,7 @@ Fig.add('mos-parts', Fig.parts({ … }));
     });
     if (i === 6) {
       c.fillStyle = '#e3ebfa'; c.strokeStyle = '#1f4fb5'; c.lineWidth = 2; U.rrect(c, w * .66, h * .55, w * .3, h * .4, 8); c.fill(); c.stroke();
-      U.txt(c, '簡報＋手冊（正式內容）', w * .81, h * .55 + 26, { align: 'center', size: 16, w: 700, color: '#1f4fb5' });
+      U.txt(c, '簡報（正式內容）', w * .81, h * .55 + 26, { align: 'center', size: 16, w: 700, color: '#1f4fb5' });
       U.txt(c, '新人看得到了', w * .81, h * .95 - 14, { align: 'center', size: 14, color: '#3e4b5b' });
     }
     const target = i === 6 ? [w * .81, h * .76] : [U.clamp(xs[i], 140, w - 140), h * .7];
@@ -323,7 +304,7 @@ Fig.add('mos-parts', Fig.parts({ … }));
     render: () => `<div class="s-body w66">
       <div class="col">${U.figHTML('pp-cv', '研究 High-NA EUV 的一筆知識', '')}${U.stepperHTML('pp-st')}</div>
       ${U.side({
-        points: ['<b>藍色</b>是 Agent、<b>綠色</b>是人、<b>橘色</b>是程式', '檢查沒過，錯誤直接交給 Agent 修', '來歷是「研究」的提案，維護者要特別仔細看', '第一站<b>先做簡報頁</b>，一頁放不下才寫手冊'],
+        points: ['<b>藍色</b>是 Agent、<b>綠色</b>是人、<b>橘色</b>是程式', '檢查沒過，錯誤直接交給 Agent 修', '來歷是「研究」的提案，維護者要特別仔細看', '第一站<b>做簡報頁</b>，一頁放不下才做深入頁'],
         fact: { v: '7 站', d: '從草稿到正式內容，每站都有人或程式把關' },
         analogy: { icon: 'stairs', t: '比喻', p: '像出版一本書：寫稿、自己校對、排版檢查、找人試讀，再送編輯審，通過才印。' }
       })}</div>`,
@@ -336,6 +317,6 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
 
 維護者核准後，它就是正式內容，CI 重新建置入口網站。誰能合併、怎麼合併，第三部分再講。
 
-第一站是先做簡報頁：結論、重點、互動圖、旁白，一頁放不下才建議寫手冊小節。讀者測試也測簡報：只給那一章每一頁的文字和旁白。`
+第一站是做簡報頁：結論、重點、互動圖、旁白，一頁放不下才建議做深入頁。讀者測試只給那一章每一頁的文字、深入頁的說明和旁白。`
   }, C2));
 })();
