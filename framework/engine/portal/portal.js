@@ -43,7 +43,7 @@
         <div class="meta">${meta}${k.maintainers.length ? ` · 維護者：${esc(k.maintainers.join('、'))}` : ''}</div>
         ${k.updated ? `<div class="meta">最近更新 ${esc(k.updated.date)}：${esc(k.updated.subject)}</div>` : ''}
         ${k.deck ? `<div class="pbar" title="看過 ${n} / ${k.pages} 頁"><i style="width:${(n / k.pages * 100).toFixed(1)}%"></i></div><div class="meta">看過 ${n} / ${k.pages} 頁</div>` : ''}
-        <div class="acts">${go}<a class="btn" href="${k.name}/handbook.html" target="_blank" rel="noopener">手冊網站</a></div>
+        <div class="acts">${go}${k.sections ? `<a class="btn" href="${k.name}/handbook.html" target="_blank" rel="noopener">手冊網站</a>` : ''}</div>
       </article>`;
     }).join('');
   }
