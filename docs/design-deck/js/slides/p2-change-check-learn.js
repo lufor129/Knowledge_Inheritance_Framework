@@ -183,7 +183,7 @@
       <div class="col"><div class="controls">${U.seg('ln-seg', ['入口網站', '簡報：一頁', '簡報：深入頁', '簡報：整份'], 0)}</div>
         <div class="mock" id="ln-mock"></div></div>
       ${U.side({
-        points: ['從<b>入口網站</b>開始：「怎麼學」五站、學習路徑的章卡片（圖示、速覽、先修）、主題索引、搜尋', '簡報下面有<b>旁白、看深入、問 Agent</b>', '深入頁按「看深入」才進去，說明在下方預設展開', '每章最後有<b>自我檢查</b>，先想再展開答案'],
+        points: ['從<b>入口網站</b>開始：依角色分三頁；新人頁有「怎麼學」五站、學習路徑的章卡片、主題索引、搜尋', '簡報下面有<b>旁白、看深入、問 Agent</b>', '深入頁按「看深入」才進去，說明在下方預設展開', '每章最後有<b>自我檢查</b>，先想再展開答案'],
         fact: { v: '1 個壓縮檔', d: 'portal.zip：入口網站和所有簡報，解開就能離線看' },
         analogy: { icon: 'road', t: '比喻', p: '像逛博物館：入口拿一張導覽圖（全景圖），每個展間有說明牌（簡報），想聽解說戴耳機（旁白），想看更多走進旁邊的小展間（深入頁）。' }
       })}</div>`,
@@ -192,6 +192,7 @@
       const portal = `<div class="mbar"><i></i><i></i><i></i><span>入口網站 · 解開壓縮檔，打開 index.html（示意）</span></div>
         <div class="pg">
           <div style="font-size:22px;font-weight:700">知識傳承入口</div>
+          <div style="display:flex;gap:16px;font-size:14px;font-weight:600;border-bottom:1.5px solid var(--line);margin-top:-6px"><span style="color:var(--accent);border-bottom:3px solid var(--accent);padding-bottom:4px">新人：怎麼學</span><span style="color:var(--ink-2)">傳承者：新增和修改</span><span style="color:var(--ink-2)">維護者：審核</span></div>
           <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;text-align:center;font-size:12.5px;color:var(--ink-2)">${['挑一個知識庫', '照順序看簡報', '看深入', '問 Agent', '自我檢查'].map((t, i) => `<div><div style="width:30px;height:30px;margin:0 auto 2px;border-radius:50%;border:2px solid ${i === 3 ? 'var(--accent)' : 'var(--line-strong)'};background:${i === 3 ? 'var(--accent)' : '#fff'};color:${i === 3 ? '#fff' : 'var(--ink-2)'};display:grid;place-items:center;font-weight:700">${i + 1}</div>${t}</div>`).join('')}</div>
           <div style="font-size:13px;color:var(--ink-3);text-align:center;margin-top:-4px">怎麼學：點一站，看那一步的示意動畫</div>
           <div style="border:1.5px solid var(--line-strong);border-radius:6px;padding:4px 12px;color:var(--ink-3);font-size:15px;background:#fff">搜尋：找一個詞，例如 EUV、穿隧、OCD</div>
@@ -228,7 +229,7 @@
     },
     notes: `第五章，新人怎麼學。新人以看簡報為主，從入口網站開始。
 
-先看「入口網站」：CI 把入口頁和所有簡報打包成 portal.zip，新人解開就能離線看。最上面是「怎麼學」：五個步驟排成一條時間軸，點一站播一小段示意動畫，例如按「問 Agent」之後 Claude Code 怎麼回答、附什麼出處；第一次來會先打開第一站。挑一個知識庫，下面就是它的學習路徑：每章一張圖示卡片，有速覽、看了多少、先修和深入的小標籤；點卡片翻面看細節，先修還沒看完會提醒，但照樣能打開。圖示寫在章檔開頭的「圖示：」，從框架內建的一組挑。全景圖收在「看章節關係圖」裡，想看全貌再打開；下面還有主題索引。維護者、建置日期這些給開發者看的，放在頁尾。
+先看「入口網站」：CI 把入口頁和所有簡報打包成 portal.zip，新人解開就能離線看。入口網站依角色分三頁：新人、傳承者、維護者；傳承者和維護者那兩頁，同樣用一條流程和動作卡片講怎麼新增、修改、審核，卡片翻面就是跟 Agent 怎麼說。新人頁最上面是「怎麼學」：五個步驟排成一條時間軸，點一站播一小段示意動畫，例如按「問 Agent」之後 Claude Code 怎麼回答、附什麼出處；第一次來會先打開第一站。挑一個知識庫，下面就是它的學習路徑：每章一張圖示卡片，有速覽、看了多少、先修和深入的小標籤；點卡片翻面看細節，先修還沒看完會提醒，但照樣能打開。圖示寫在章檔開頭的「圖示：」，從框架內建的一組挑。全景圖收在「看章節關係圖」裡，想看全貌再打開；下面還有主題索引。維護者、建置日期這些給開發者看的，放在頁尾。
 
 切到「簡報：一頁」，點各個區塊看規則。下面那一排是給新人的按鈕：旁白、看深入、問 Agent。切到「簡報：深入頁」：平常翻頁不會經過，在主頁按「看深入」才進去；標題旁標「深入」，圖可以沿用主頁的，長說明放在下方、預設展開。「簡報：整份」可以看到每章最後自動多一頁自我檢查，最後還有出處頁和問答附錄。`
   }, C5));

@@ -401,6 +401,17 @@ def portal_data():
             g['pre'] = [[kn or name, keys[kn or name][K.chapter_name(n)], n] for kn, n, _ in ch.pre
                         if K.chapter_name(n) in keys.get(kn or name, {})]
     host, repo = K.CONFIG.get('host'), K.CONFIG.get('repo', '')
+    # 傳承者分頁「現在可以做的事」：數字還沒附出處的頁（同 index.py --todo），和 Git 主機上待回答、勘誤的連結
+    import check as C
+    from urllib.parse import quote
+    for k in kbs:
+        deck = decks[k['name']][0]
+        k['todo'] = [[p.id, K.plain(p.title), deck.titles.get((p.part, p.chap), ''), K.plain(bare[0][1])[:50], bool(p.deep)]
+                     for p in (deck.pages if deck else []) if p.md for bare in [C.unsourced(p)] if bare]
+        gl = K.CONFIG.get('gitlab_url', 'https://gitlab.com')
+        k['issues'] = {lab: (f'https://github.com/{repo}/issues?q={quote(f"is:issue is:open label:{lab} label:kb:{k["name"]}")}' if host == 'github'
+                             else f'{gl}/{repo}/-/issues?label_name[]={quote(lab)}&label_name[]={quote("kb:" + k["name"])}' if host == 'gitlab' else '')
+                       for lab in ('待回答', '勘誤')}
     latest = (f'https://github.com/{repo}/releases/latest' if host == 'github'
               else f'{K.CONFIG.get("gitlab_url", "https://gitlab.com")}/{repo}/-/releases' if host == 'gitlab' else '')
     commit = K.git('rev-parse', '--short', 'HEAD', check=False)
