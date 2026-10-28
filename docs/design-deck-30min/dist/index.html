@@ -487,6 +487,15 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
 .fs.done { background: var(--accent-soft); border-color: #bfcfee; }
 .fs.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .fs.on .who { color: #dbe5f7; }
+/* 送審流程：每一站的角色 */
+.pp-roles { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 14px 18px; }
+.pp-roles h4 { margin: 0 0 10px; font-size: 15px; font-family: var(--font-mono); color: var(--ink-3); font-weight: 500; letter-spacing: .04em; }
+.pp-roles h4 span { color: var(--ink); font-weight: 700; font-family: inherit; }
+.pp-roles ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.pp-roles li { border-left: 4px solid #1f4fb5; padding: 4px 0 4px 12px; display: flex; flex-direction: column; }
+.pp-roles li.h { border-color: #1f7a4d; } .pp-roles li.p { border-color: #b3541e; }
+.pp-roles li b { font-size: 18px; }
+.pp-roles li span { font-size: 16px; color: var(--ink-2); line-height: 1.45; }
 </style>
 
 <div id="viewport"><div id="stage"></div></div>
@@ -1822,6 +1831,17 @@ Fig.add('mos-parts', Fig.parts({ … }));
     { n: '維護者審核', who: '人＋Agent', col: '#1f7a4d', d: 'Agent 用白話整理改了什麼，打開改過的簡報頁和深入頁；維護者核准或留意見。' },
     { n: '正式內容', who: '簡報', col: '#17202b', d: '併進正式內容；CI 重新建置入口網站，新人看得到了。' }
   ];
+  /* 每一站有哪些角色、各做什麼（主管報告版加的） */
+  const ROLES = [
+    [['研究 Agent', '只給主題，查資料寫草稿，數字附出處'], ['整理 Agent', '把舊簡報、文件改寫成白話'], ['訪談 Agent', '反問老手，問到懂了才寫'], ['簡報 Agent', '做成簡報頁，互動圖先套樣板']],
+    [['傳承者（人）', '看草稿、提意見，確認才往下走'], ['簡報 Agent', '照意見修改草稿']],
+    [['規則檢查（程式）', '頁 id、引用、深入頁接錯、新數字沒出處'], ['程式審查 Agent', '互動圖會不會出錯、離線能不能播']],
+    [['外行讀者 Agent', '只讀這一章，答不出來代表寫得不清楚'], ['故事流暢 Agent', '整章順不順、前後頁有沒有跳步']],
+    [['提案 Agent', '寫提案說明：改了什麼、來歷、檢查和讀者測試結果，連到 issue']],
+    [['事實查核 Agent', '研究來的說法逐條對照出處'], ['審核助理 Agent', '用白話整理改了什麼，打開改過的頁'], ['維護者（人）', '最後決定核准或退回']],
+    [['CI（程式）', '重新建置簡報，和入口網站一起打包'], ['新人', '下載就看得到新內容']]
+  ];
+  const rolesHTML = k => ROLES[k].map(([r, d]) => `<li class="${/（人）|新人/.test(r) ? 'h' : /程式/.test(r) ? 'p' : 'a'}"><b>${r}</b><span>${d}</span></li>`).join('');
   function doc(c, x, y, i, p) {
     const bw = 250, bh = 128;
     c.save(); c.fillStyle = '#fff'; c.strokeStyle = '#9aa8b8'; c.lineWidth = 1.5;
@@ -1870,12 +1890,15 @@ Fig.add('mos-parts', Fig.parts({ … }));
     render: () => `<div class="s-body w66">
       <div class="col">${U.figHTML('pp-cv', '研究 High-NA EUV 的一筆知識', '')}${U.stepperHTML('pp-st')}</div>
       ${U.side({
-        points: ['<b>藍色</b>是 Agent、<b>綠色</b>是人、<b>橘色</b>是程式', '檢查沒過，錯誤直接交給 Agent 修', '來歷是「研究」的提案，維護者要特別仔細看', '第一站<b>做簡報頁</b>，一頁放不下才做深入頁'],
-        fact: { v: '7 站', d: '從草稿到正式內容，每站都有人或程式把關' },
-        analogy: { icon: 'stairs', t: '比喻', p: '像出版一本書：寫稿、自己校對、排版檢查、找人試讀，再送編輯審，通過才印。' }
+        top: `<div class="pp-roles"><h4>這一站誰負責：<span id="pp-rn"></span></h4><ul id="pp-roles"></ul></div>`,
+        points: ['<b>藍色</b>是 Agent、<b>綠色</b>是人、<b>橘色</b>是程式'],
+        fact: { v: '7 站', d: '從草稿到正式內容，每站都有人或程式把關' }
       })}</div>`,
     init(el, ctx) {
-      U.animSteps(el, ctx, { canvas: 'pp-cv', stepper: 'pp-st', dur: 1.1, interval: 2600, steps: ST.map((s, k) => ({ t: s.n, d: s.d, draw: (c, w, h, p) => drawPipe(c, w, h, k, p) })) });
+      let shown = -1;
+      const roles = k => { if (k === shown) return; shown = k; U.$(el, '#pp-rn').textContent = `${k + 1}. ${ST[k].n}`; U.$(el, '#pp-roles').innerHTML = rolesHTML(k); };
+      roles(0);
+      U.animSteps(el, ctx, { canvas: 'pp-cv', stepper: 'pp-st', dur: 1.1, interval: 2600, steps: ST.map((s, k) => ({ t: s.n, d: s.d, draw: (c, w, h, p) => { roles(k); drawPipe(c, w, h, k, p); } })) });
     },
     notes: `這頁看一筆知識走過的七站，按「下一步」一站一站看，或按「自動播放」。
 
@@ -3032,7 +3055,9 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
     parts: [['modes', '三種方式'], ['pipeline', '送審流程'], ['gh-write', 'GitHub 實際紀錄']],
     notes: `老手留下經驗有三種方式：只給主題讓 Agent 研究、給一份舊資料讓 Agent 整理、或直接口述讓 Agent 訪談。訪談是唯一能收進「只在人腦袋裡」的知識的方式，也是這套框架最大的價值。
 
-切到「送審流程」，按自動播放。草稿要傳承者確認，接著程式檢查、讀者測試，最後維護者核准，才會變成正式內容。所以 Agent 寫錯，不會直接傳給新人。
+切到「送審流程」，按自動播放。草稿要傳承者確認，接著程式檢查、讀者測試，最後維護者核准，才會變成正式內容。所以 Agent 寫錯，不會直接傳給新人。右邊會跟著列出這一站有哪些角色、各做什麼：寫草稿有研究、整理、訪談、簡報四種 Agent；自動檢查有規則檢查程式和程式審查 Agent；讀者測試有外行讀者和故事流暢 Agent；維護者審核前，有事實查核和審核助理 Agent 先整理好。
+
+【提示】目前實際在跑的是規則檢查、外行讀者、審核助理和維護者；程式審查、事實查核、故事流暢是設計，還沒實作。被問到時照實說，可以接到第 9 頁的驗證計畫。
 
 切到「GitHub 實際紀錄」：這是情境測試時真的開在 GitHub 上的提案 #6。標籤寫著「來歷:訪談」，說明裡有檢查結果和讀者測試 32/32；下面是代老王發出的「✅ 核准」。每一則都以 🤖 開頭，分得出哪些是 Agent 寫的。從開提案到合併 16 分鐘。`
   });

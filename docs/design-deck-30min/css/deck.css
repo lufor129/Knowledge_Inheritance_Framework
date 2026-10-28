@@ -485,3 +485,12 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
 .fs.done { background: var(--accent-soft); border-color: #bfcfee; }
 .fs.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .fs.on .who { color: #dbe5f7; }
+/* 送審流程：每一站的角色 */
+.pp-roles { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 14px 18px; }
+.pp-roles h4 { margin: 0 0 10px; font-size: 15px; font-family: var(--font-mono); color: var(--ink-3); font-weight: 500; letter-spacing: .04em; }
+.pp-roles h4 span { color: var(--ink); font-weight: 700; font-family: inherit; }
+.pp-roles ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.pp-roles li { border-left: 4px solid #1f4fb5; padding: 4px 0 4px 12px; display: flex; flex-direction: column; }
+.pp-roles li.h { border-color: #1f7a4d; } .pp-roles li.p { border-color: #b3541e; }
+.pp-roles li b { font-size: 18px; }
+.pp-roles li span { font-size: 16px; color: var(--ink-2); line-height: 1.45; }

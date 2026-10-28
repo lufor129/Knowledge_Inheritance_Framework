@@ -257,6 +257,17 @@ Fig.add('mos-parts', Fig.parts({ … }));
     { n: '維護者審核', who: '人＋Agent', col: '#1f7a4d', d: 'Agent 用白話整理改了什麼，打開改過的簡報頁和深入頁；維護者核准或留意見。' },
     { n: '正式內容', who: '簡報', col: '#17202b', d: '併進正式內容；CI 重新建置入口網站，新人看得到了。' }
   ];
+  /* 每一站有哪些角色、各做什麼（主管報告版加的） */
+  const ROLES = [
+    [['研究 Agent', '只給主題，查資料寫草稿，數字附出處'], ['整理 Agent', '把舊簡報、文件改寫成白話'], ['訪談 Agent', '反問老手，問到懂了才寫'], ['簡報 Agent', '做成簡報頁，互動圖先套樣板']],
+    [['傳承者（人）', '看草稿、提意見，確認才往下走'], ['簡報 Agent', '照意見修改草稿']],
+    [['規則檢查（程式）', '頁 id、引用、深入頁接錯、新數字沒出處'], ['程式審查 Agent', '互動圖會不會出錯、離線能不能播']],
+    [['外行讀者 Agent', '只讀這一章，答不出來代表寫得不清楚'], ['故事流暢 Agent', '整章順不順、前後頁有沒有跳步']],
+    [['提案 Agent', '寫提案說明：改了什麼、來歷、檢查和讀者測試結果，連到 issue']],
+    [['事實查核 Agent', '研究來的說法逐條對照出處'], ['審核助理 Agent', '用白話整理改了什麼，打開改過的頁'], ['維護者（人）', '最後決定核准或退回']],
+    [['CI（程式）', '重新建置簡報，和入口網站一起打包'], ['新人', '下載就看得到新內容']]
+  ];
+  const rolesHTML = k => ROLES[k].map(([r, d]) => `<li class="${/（人）|新人/.test(r) ? 'h' : /程式/.test(r) ? 'p' : 'a'}"><b>${r}</b><span>${d}</span></li>`).join('');
   function doc(c, x, y, i, p) {
     const bw = 250, bh = 128;
     c.save(); c.fillStyle = '#fff'; c.strokeStyle = '#9aa8b8'; c.lineWidth = 1.5;
@@ -305,12 +316,15 @@ Fig.add('mos-parts', Fig.parts({ … }));
     render: () => `<div class="s-body w66">
       <div class="col">${U.figHTML('pp-cv', '研究 High-NA EUV 的一筆知識', '')}${U.stepperHTML('pp-st')}</div>
       ${U.side({
-        points: ['<b>藍色</b>是 Agent、<b>綠色</b>是人、<b>橘色</b>是程式', '檢查沒過，錯誤直接交給 Agent 修', '來歷是「研究」的提案，維護者要特別仔細看', '第一站<b>做簡報頁</b>，一頁放不下才做深入頁'],
-        fact: { v: '7 站', d: '從草稿到正式內容，每站都有人或程式把關' },
-        analogy: { icon: 'stairs', t: '比喻', p: '像出版一本書：寫稿、自己校對、排版檢查、找人試讀，再送編輯審，通過才印。' }
+        top: `<div class="pp-roles"><h4>這一站誰負責：<span id="pp-rn"></span></h4><ul id="pp-roles"></ul></div>`,
+        points: ['<b>藍色</b>是 Agent、<b>綠色</b>是人、<b>橘色</b>是程式'],
+        fact: { v: '7 站', d: '從草稿到正式內容，每站都有人或程式把關' }
       })}</div>`,
     init(el, ctx) {
-      U.animSteps(el, ctx, { canvas: 'pp-cv', stepper: 'pp-st', dur: 1.1, interval: 2600, steps: ST.map((s, k) => ({ t: s.n, d: s.d, draw: (c, w, h, p) => drawPipe(c, w, h, k, p) })) });
+      let shown = -1;
+      const roles = k => { if (k === shown) return; shown = k; U.$(el, '#pp-rn').textContent = `${k + 1}. ${ST[k].n}`; U.$(el, '#pp-roles').innerHTML = rolesHTML(k); };
+      roles(0);
+      U.animSteps(el, ctx, { canvas: 'pp-cv', stepper: 'pp-st', dur: 1.1, interval: 2600, steps: ST.map((s, k) => ({ t: s.n, d: s.d, draw: (c, w, h, p) => { roles(k); drawPipe(c, w, h, k, p); } })) });
     },
     notes: `這頁看一筆知識走過的七站，按「下一步」一站一站看，或按「自動播放」。
 
