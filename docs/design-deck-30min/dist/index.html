@@ -487,6 +487,16 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
 .fs.done { background: var(--accent-soft); border-color: #bfcfee; }
 .fs.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .fs.on .who { color: #dbe5f7; }
+/* 誰來審 */
+.flow7 { display: grid; grid-template-columns: .8fr repeat(5, 1fr) 1fr 1fr; gap: 6px; align-items: stretch; }
+.flow7 .fz { display: grid; place-items: center; border: 1px dashed var(--line-strong); border-radius: 4px; font-weight: 700; color: var(--ink-2); font-size: 16px; }
+.flow7 .fs.human { border-color: #1f7a4d; background: #e8f4ee; }
+.flow7 .fs.human.on { background: #1f7a4d; border-color: #1f7a4d; }
+.rvstage { background: #fff; }
+.rv { margin: 0; display: grid; grid-template-columns: 150px 1fr; gap: 14px 18px; align-content: center; flex: 1; }
+.rv dt { font-size: 15px; font-family: var(--font-mono); color: var(--ink-3); letter-spacing: .06em; padding-top: 4px; }
+.rv dd { margin: 0; font-size: 24px; line-height: 1.5; }
+.rv dd.ex { color: var(--accent-2); font-weight: 600; }
 </style>
 
 <div id="viewport"><div id="stage"></div></div>
@@ -3018,6 +3028,42 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
     cards: ['i4', 'rel'],
     side: { points: ['新人不用懂 Git：說一句，Agent 寫好 issue', 'issue 裡寫明<b>在讀哪一章、誰問的</b>，老手好接手', '入口網站每次合併後自動建置，<b>下載就能看</b>'], fact: { v: 'portal.zip', d: '2.8 MB，離線就能打開' } } });
 
+  /* ---------- 新頁：誰來審（審查角色） ---------- */
+  const REVIEWERS = [
+    { who: '程式', t: '規則檢查', what: '頁 id 撞名、引用找不到、深入頁接錯、新寫的數字沒附出處', how: '每次開提案，CI 自動跑 check.py', ex: '新頁的 id 和別頁撞名，換一個才過', fail: '擋下，Agent 照錯誤訊息修好再送' },
+    { who: 'Agent', t: '程式審查', what: '互動圖的程式：會不會出錯、離線能不能播、拖到極端值還正不正常', how: '打開改過的頁，把每個按鈕、滑桿都操作一遍', ex: '滑桿拖到最底，數字變成 NaN', fail: '退回，修好互動圖再送' },
+    { who: 'Agent', t: '事實查核', what: '每個說法對照出處：出處有沒有真的這樣寫、數字和單位對不對', how: '一句一句找出處原文，對不上的標出來', ex: '「每薄 0.2 nm，漏電多 10 倍」要找得到支持這個數字的出處（勘誤 #5）', fail: '補出處或改說法；找不到出處就不寫' },
+    { who: 'Agent', t: '外行讀者', what: '沒有背景知識的人只讀這一章，看不看得懂', how: '只給這一章的文字，回答章末的自我檢查', ex: 'EOT 沒解釋，三題都答不出來', fail: '改寫成白話，再測一次' },
+    { who: 'Agent', t: '故事流暢', what: '整章的順序、前後頁的銜接、一頁一個概念、有沒有跳步', how: '從頭到尾順讀一遍，標出卡住的地方', ex: '「功函數」先用了，下一頁才解釋', fail: '調整頁序，或補一句銜接' },
+    { who: 'Agent', t: '審核助理', what: '把上面的結果和研究來的說法，整理成維護者看得懂的白話', how: '列出改了哪幾頁，研究來的說法逐條附出處', ex: '維護者一頁看完要注意的地方', fail: '—' },
+    { who: '人', t: '維護者', what: '最後決定核准或退回', how: '看審核助理的整理，打開改過的頁', ex: '內容對不對，只有人能負責', fail: '退回附逐條意見，傳承者照著改' }
+  ];
+  A({
+    id: 'reviewers', part: 2, minutes: 0, short: '誰來審',
+    title: '誰來審：五個角色一起把關，維護者最後決定', en: 'Reviewers',
+    thesis: '機器審得準的交給 <b>Agent</b>：程式、事實、看不看得懂、順不順；內容對不對由<b>人</b>決定。',
+    render: () => `<div class="s-body">
+      <div class="col">
+        <div class="flow7"><div class="fz">草稿</div>${REVIEWERS.map((r, k) => `<div class="fs${k === 6 ? ' human' : ''}" data-k="${k}"><div class="who">${r.who}</div><div class="t">${r.t}</div></div>`).join('')}</div>
+        <div class="fig grow rvstage"><div class="fig-title"><span id="rv-n"></span><span id="rv-who"></span></div>
+          <dl class="rv"><dt>審什麼</dt><dd id="rv-what"></dd><dt>怎麼審</dt><dd id="rv-how"></dd><dt>擋下的例子</dt><dd id="rv-ex" class="ex"></dd><dt>沒過怎麼辦</dt><dd id="rv-fail"></dd></dl></div>
+        ${U.stepperHTML('rv-st')}
+      </div>
+      ${U.side({ points: ['五個審查角色<b>同時審</b>，不用排隊', '審核助理把結果整理成白話給維護者', '<b>維護者核准</b>，才會變成正式內容'], fact: { v: '5 個', d: '審查角色：規則、程式、事實、讀者、故事' }, analogy: { icon: 'stack', t: '比喻', p: '像出版社：校對、事實查核、試讀、編輯各看一遍，最後總編輯決定出不出。' } })}
+    </div>`,
+    init(el, ctx) {
+      const fs = U.$$(el, '.fs');
+      const st = U.stepper(el, 'rv-st', REVIEWERS.map(r => ({ t: r.t, d: '' })), i => {
+        const r = REVIEWERS[i];
+        fs.forEach((x, k) => x.classList.toggle('on', k === i));
+        U.$(el, '#rv-n').textContent = `${i + 1} / ${REVIEWERS.length}　${r.t}`;
+        U.$(el, '#rv-who').textContent = r.who === '人' ? '人' : r.who === '程式' ? '程式（不是 Agent）' : 'Agent';
+        ['what', 'how', 'ex', 'fail'].forEach(f => { U.$(el, '#rv-' + f).textContent = r[f]; });
+      }, ctx, { interval: 2800 });
+      fs.forEach((x, k) => x.onclick = () => st.show(k));
+    }
+  });
+
   merge({
     id: 'm-users', part: 1, minutes: 2, short: '誰用、怎麼用', title: '誰用、怎麼用：每個人都只要跟 Agent 說話',
     parts: [['roles', '四種角色'], ['usecases', '實際情境']],
@@ -3029,12 +3075,14 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
   });
   merge({
     id: 'm-write', part: 2, minutes: 2, short: '知識怎麼寫進去', title: '知識怎麼寫進去：用說的，Agent 做成簡報頁',
-    parts: [['modes', '三種方式'], ['pipeline', '送審流程'], ['gh-write', 'GitHub 實際紀錄']],
+    parts: [['modes', '三種方式'], ['reviewers', '誰來審'], ['gh-write', 'GitHub 實際紀錄']],
     notes: `老手留下經驗有三種方式：只給主題讓 Agent 研究、給一份舊資料讓 Agent 整理、或直接口述讓 Agent 訪談。訪談是唯一能收進「只在人腦袋裡」的知識的方式，也是這套框架最大的價值。
 
-切到「送審流程」，按自動播放。草稿要傳承者確認，接著程式檢查、讀者測試，最後維護者核准，才會變成正式內容。所以 Agent 寫錯，不會直接傳給新人。
+切到「誰來審」，按自動播放。草稿送出去之後，五個角色同時審：規則檢查是程式，擋格式和沒附出處的數字；程式審查看互動圖會不會壞；事實查核一句一句對出處；外行讀者看不看得懂；故事流暢看整章順不順。審核助理把結果整理成白話，最後由維護者決定核准或退回。所以 Agent 寫錯，不會直接傳給新人。
 
-切到「GitHub 實際紀錄」：這是情境測試時真的開在 GitHub 上的提案 #6。標籤寫著「來歷:訪談」，說明裡有檢查結果和讀者測試 32/32；下面是代老王發出的「✅ 核准」。每一則都以 🤖 開頭，分得出哪些是 Agent 寫的。從開提案到合併 16 分鐘。`
+切到「GitHub 實際紀錄」：這是情境測試時真的開在 GitHub 上的提案 #6。標籤寫著「來歷:訪談」，說明裡有檢查結果和讀者測試 32/32；下面是代老王發出的「✅ 核准」。每一則都以 🤖 開頭，分得出哪些是 Agent 寫的。從開提案到合併 16 分鐘。
+
+【提示】目前實際在跑的是規則檢查、外行讀者、審核助理和維護者；程式審查、事實查核、故事流暢三個角色是設計，還沒實作。被問到時照實說，可以接到第 9 頁的驗證計畫。`
   });
   merge({
     id: 'm-quality', part: 2, minutes: 2, short: '品質怎麼把關', title: '品質怎麼把關：程式擋、讀者測試、維護者審',
@@ -3255,7 +3303,7 @@ Agent 寫草稿，傳承者確認。接著是自動檢查，這裡示範 id 撞�
 
   /* ---------- 附錄目錄＋附錄頁 ---------- */
   const APPX = [
-    ['m-proof', '成果與證據'], ['pilot', '試點計畫（舊版）'], ['decide', '需要您決定的事（舊版）'],
+    ['m-proof', '成果與證據'], ['pilot', '試點計畫（舊版）'], ['decide', '需要您決定的事（舊版）'], ['pipeline', '一筆知識的旅程（七站）'],
     ['struct', '知識怎麼存'], ['canon', '主頁和深入頁'], ['refs', '修改與刪除'], ['map', '全景圖'],
     ['gitmap', '對到 Git 上'], ['review', '誰能合併'], ['issues', '待回答與勘誤'],
     ['tools', '技術選擇'], ['skills', '五個 skill'], ['extskills', '外部 skill'],
