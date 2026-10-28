@@ -443,3 +443,45 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
 .pl-out { margin-top: auto; background: var(--panel); border-radius: 4px; padding: 14px 18px; }
 .pl-out h4 { margin: 0 0 8px; font-size: 14px; font-family: var(--font-mono); color: var(--ink-3); font-weight: 500; letter-spacing: .06em; }
 .pl-out .points li { font-size: 21px; }
+/* 上線前要驗證的三件事 */
+.todos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; min-height: 0; }
+.todo { border: 1.5px solid var(--line-strong); border-radius: 6px; background: #fff; padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; transition: background .2s, border-color .2s; }
+.todo .th { display: flex; gap: 10px; align-items: baseline; }
+.todo .n { font-size: 30px; color: var(--accent-2); line-height: 1; }
+.todo h3 { margin: 0; font-size: 26px; line-height: 1.25; }
+.todo dl { margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.todo dt { font-size: 14px; font-family: var(--font-mono); color: var(--ink-3); letter-spacing: .06em; margin-top: 6px; }
+.todo dd { margin: 0; font-size: 18px; line-height: 1.5; }
+.todo dd.need { color: var(--accent-2); font-weight: 600; }
+.todo .dst { margin-top: auto; }
+.todo[data-s="1"] { background: var(--accent-soft); border-color: #bfcfee; }
+.todo[data-s="2"] { background: #d9eee2; border-color: #1f7a4d; }
+.todo[data-s="2"] .seg button.on { background: #1f7a4d; }
+/* GitHub 實際紀錄卡（用 API 資料重畫，不仿 GitHub 外觀） */
+.ghcol { gap: 12px; overflow: hidden; }
+.ghc { background: #fff; border: 1px solid var(--line-strong); border-left: 5px solid var(--accent); border-radius: 4px; padding: 12px 18px; display: flex; flex-direction: column; gap: 6px; }
+.gh-top { display: flex; gap: 10px; align-items: center; font-size: 14px; font-family: var(--font-mono); color: var(--ink-3); }
+.gh-kind { font-family: var(--font-cjk, inherit); font-weight: 600; color: var(--ink-2); }
+.gh-num { color: var(--ink); font-weight: 600; }
+.gh-state { padding: 1px 10px; border-radius: 10px; color: #fff; font-size: 13px; font-family: var(--font-cjk, inherit); }
+.gh-state.s-open { background: #1f7a4d; } .gh-state.s-closed { background: #6a4bb5; } .gh-state.s-merged { background: #6a4bb5; } .gh-state.s-ok { background: #1f7a4d; }
+.gh-time { margin-left: auto; }
+.gh-title { font-size: 21px; font-weight: 700; line-height: 1.35; }
+.gh-labels { display: flex; gap: 6px; flex-wrap: wrap; }
+.gh-labels .lb { font-size: 13px; padding: 1px 9px; border-radius: 10px; background: var(--panel-2); color: var(--ink-2); }
+.gh-labels .lb.src { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.gh-labels .lb.q { background: #fdf0d5; color: #a8660a; font-weight: 600; }
+.gh-labels .lb.err { background: #f8dcd9; color: #b3261e; font-weight: 600; }
+.gh-labels .lb.test { background: var(--panel); color: var(--ink-3); }
+.gh-body p { margin: 0; font-size: 16.5px; line-height: 1.5; color: var(--ink-2); }
+.gh-body p b { color: var(--ink); }
+.ghstage { justify-content: center; background: var(--panel); }
+.ghstage .ghc { font-size: 1.1em; }
+.ghstage .gh-title { font-size: 25px; } .ghstage .gh-body p { font-size: 19px; }
+.flow6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.fs { border: 1px solid var(--line); background: var(--panel); border-radius: 4px; padding: 8px 10px; cursor: pointer; }
+.fs .who { font-size: 13px; font-family: var(--font-mono); color: var(--ink-3); }
+.fs .t { font-size: 16px; font-weight: 700; }
+.fs.done { background: var(--accent-soft); border-color: #bfcfee; }
+.fs.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.fs.on .who { color: #dbe5f7; }

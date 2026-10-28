@@ -18,7 +18,7 @@
           <div class="cards" style="margin-top:28px;grid-template-columns:1fr">
             <div class="card"><h4>問題</h4><p><b>經驗只在老手腦袋裡</b>，人一調走就沒了；新人不知道從哪裡看起、該問誰</p></div>
             <div class="card"><h4>做法</h4><p><b>Agent 把經驗做成互動簡報</b>，每次修改都經過檢查和維護者審核；已在半導體做出 90 頁</p></div>
-            <div class="card" style="background:var(--accent-2-soft);border-color:#eccab4"><h4>今天想請您決定</h4><p><b>Git 主機與帳號、維護者、半導體團隊 4 週試點</b></p></div>
+            <div class="card" style="background:var(--accent-2-soft);border-color:#eccab4"><h4>接下來：上線前驗證三件事</h4><p><b>公司 GitLab 自動化、地端模型做簡報的品質、同仁實際用起來順不順手</b></p></div>
           </div>
           <div class="meta">主管報告 · 20 分鐘報告＋10 分鐘討論<br>每頁的互動元件都可以操作；對話與情境為示意</div>
         </div>
