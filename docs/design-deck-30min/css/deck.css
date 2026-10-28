@@ -485,13 +485,3 @@ table.t td.y { color: var(--good); font-weight: 600; } table.t td.n { color: var
 .fs.done { background: var(--accent-soft); border-color: #bfcfee; }
 .fs.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .fs.on .who { color: #dbe5f7; }
-/* 誰來審 */
-.flow7 { display: grid; grid-template-columns: .8fr repeat(5, 1fr) 1fr 1fr; gap: 6px; align-items: stretch; }
-.flow7 .fz { display: grid; place-items: center; border: 1px dashed var(--line-strong); border-radius: 4px; font-weight: 700; color: var(--ink-2); font-size: 16px; }
-.flow7 .fs.human { border-color: #1f7a4d; background: #e8f4ee; }
-.flow7 .fs.human.on { background: #1f7a4d; border-color: #1f7a4d; }
-.rvstage { background: #fff; }
-.rv { margin: 0; display: grid; grid-template-columns: 150px 1fr; gap: 14px 18px; align-content: center; flex: 1; }
-.rv dt { font-size: 15px; font-family: var(--font-mono); color: var(--ink-3); letter-spacing: .06em; padding-top: 4px; }
-.rv dd { margin: 0; font-size: 24px; line-height: 1.5; }
-.rv dd.ex { color: var(--accent-2); font-weight: 600; }
