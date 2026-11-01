@@ -353,3 +353,6 @@ body.docked #viewport { bottom: 42vh; }
 .refs { overflow: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 22px; align-content: start; font-size: 14px; }
 .rf-page .rf-t { font: 600 15px var(--font-cjk); border: 0; background: none; color: var(--accent); cursor: pointer; padding: 0; text-align: left; }
 .rf-page ol { margin: 2px 0 8px; padding-left: 24px; color: var(--ink-2); line-height: 1.45; word-break: break-word; }
+
+/* 有數字、還沒有出處的說法 */
+.unv { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 3px; background: #f7ead3; color: #8a5407; font-size: 13px; font-weight: 600; line-height: 1.5; vertical-align: 2px; white-space: nowrap; }

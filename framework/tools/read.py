@@ -35,6 +35,10 @@ def page_where(kb, deck, p):
 def print_page(kb, deck, p):
     print(f'\n## 出處：{page_where(kb, deck, p)}（{K.rel(p.file)}:{p.line}）\n')
     print('\n'.join(p.lines))
+    bare = K.unverified(p)
+    if bare:
+        print(f'\n{K.UNVERIFIED}（這些數字還沒有出處；用到時要跟對方講明，不能講得跟有出處的一樣肯定）：')
+        print('\n'.join(f'- {label}：{K.plain(t)[:80]}' for label, t in bare))
     if p.deep:
         print(f'\n這是深入頁，接在主頁 {p.deep} 後面。')
     deep = [x.id for x in deck.pages if x.deep == p.id]
@@ -81,6 +85,8 @@ def main(argv):
                 if any(w.lower() in block.lower() for w in words):
                     n += 1
                     print(f'\n## 出處：{kb.name} › 簡報 › {ch.title} › 自我檢查\n\n{block}')
+                    if K.needs_source(K.faq_answer(ch, q)):
+                        print(f'\n{K.UNVERIFIED}：這一題答案裡的數字還沒有出處，用到時要跟對方講明。')
         if not n:
             print(f'自我檢查裡沒有：{"、".join(words)}')
         return 0
@@ -93,6 +99,10 @@ def main(argv):
             return 1
         print(f'## 出處：{kb.name} › 簡報 › {K.load_chapter(f, []).title}（{K.rel(f)}）\n')
         print(f.read_text(encoding='utf-8'))
+        bare = [(p.id, label, t) for p in deck.md_pages.values() if p.file == f for label, t in K.unverified(p)]
+        if bare:
+            print(f'\n{K.UNVERIFIED}（這些數字還沒有出處；用到時要跟對方講明）：')
+            print('\n'.join(f'- {i}｜{label}：{K.plain(t)[:80]}' for i, label, t in bare))
         return 0
     if args and args[0] == '--page':  # 舊的寫法：read.py <知識庫> --page <頁id>
         args = args[1:]

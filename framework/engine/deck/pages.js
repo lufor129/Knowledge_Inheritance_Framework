@@ -83,7 +83,7 @@
     return {
       id: 'refs-auto', part: pages[pages.length - 1].part, minutes: 0, generated: true,
       short: '出處', title: '出處', en: 'Sources',
-      thesis: '每一頁的數字和說法，出處都在這裡；在頁面上點數字後面的小標號也看得到。',
+      thesis: '每一頁的數字和說法，出處都在這裡；在頁面上點數字後面的小標號也看得到。標「待查證」的數字還沒有出處。',
       render: () => `<div class="s-body full"><div class="col refs">${pages.map(s => `<div class="rf-page"><button type="button" class="rf-t" data-go="${s.id}">${s.title}</button>
           <ol>${s.md.fns.map(([n, , t]) => `<li value="${n}">${t}</li>`).join('')}</ol></div>`).join('')}</div></div>`,
       init(el) { el.querySelectorAll('[data-go]').forEach(b => b.onclick = () => Deck.goId(b.dataset.go)); }

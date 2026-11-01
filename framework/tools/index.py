@@ -22,13 +22,19 @@ def todo(kb):
     if not kb.has_deck:
         print(f'{kb.title} 還沒有簡報。')
         return
-    pages = [(p, C.unsourced(p)) for p in K.load_deck(kb).pages if p.md]
+    deck = K.load_deck(kb)
+    pages = [(p, K.unverified(p)) for p in deck.pages if p.md]
     pages = [(p, bare) for p, bare in pages if bare]
-    print(f'# {kb.title}：數字還沒有出處的簡報頁和深入頁（{len(pages)} 頁）\n')
+    print(f'# {kb.title}：數字還沒有出處的簡報頁和深入頁，簡報上標「{K.UNVERIFIED}」（{len(pages)} 頁）\n')
     for p, bare in pages:
         print(f'{p.id}\t{p.title}\t{K.rel(p.file)}:{p.line}')
         for label, text in bare:
             print(f'  {label}：{K.plain(text)[:60]}')
+    faqs = [(ch, q) for qs in deck.checks.values() for ch, q in qs if K.needs_source(K.faq_answer(ch, q))]
+    if faqs:
+        print(f'\n自我檢查的答案（{len(faqs)} 題）：')
+        for ch, q in faqs:
+            print(f'  {K.rel(ch.file)}:{q.line}\t{q.q}')
 
 
 def main(argv):

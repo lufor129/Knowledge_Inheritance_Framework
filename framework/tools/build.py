@@ -69,6 +69,43 @@ def inline(text, fns=None):
     return K.FOOTREF.sub(fn, text)
 
 
+UNV_TAG = f'<span class="unv" title="這個數字還沒有出處">{K.UNVERIFIED}</span>'
+
+
+def tag(text):
+    """有數字沒有出處的說法，後面標「待查證」。補上出處註腳，標示就自動消失。"""
+    return text + UNV_TAG if K.needs_source(text) else text
+
+
+def tag_paras(text):
+    """一段一段標：旁白、自我檢查的答案。"""
+    return re.sub(r'(?:(?!\n\s*\n).)+', lambda m: tag(m.group(0)), text or '', flags=re.S)
+
+
+def tag_body(text):
+    """深入頁的說明：段落標在最後，清單和表格每一列各標各的（表格標在最後一格裡）。"""
+    blocks = []
+    for block in re.split(r'(\n\s*\n)', text or ''):
+        lines = block.splitlines()
+        keep = [l for l in lines if l.strip() and not l.startswith('#') and not K.FOOTDEF.match(l)]
+        if not keep:
+            blocks.append(block)
+        elif all(l.lstrip().startswith(('|', '- ', '* ')) or re.match(r'^\s*\d+\.\s', l) for l in keep):
+            out = []
+            for l in lines:
+                if K.needs_source(l) and not set(l.strip()) <= set('|-: '):
+                    s = l.rstrip()
+                    l = s[:-1].rstrip() + UNV_TAG + ' |' if s.endswith('|') else s + UNV_TAG
+                out.append(l)
+            blocks.append('\n'.join(out))
+        else:
+            if K.needs_source(' '.join(keep)):
+                k = max(i for i, l in enumerate(lines) if l in keep)
+                lines[k] = lines[k].rstrip() + UNV_TAG
+            blocks.append('\n'.join(lines))
+    return ''.join(blocks)
+
+
 def paras(text):
     """多段文字：空行分段，每段一個 <p>。"""
     return ''.join(f'<p>{inline(p.strip())}</p>' for p in re.split(r'\n\s*\n', text) if p.strip())
@@ -211,7 +248,7 @@ def checks(kb, deck):
     for (part, chap), qs in deck.checks.items():
         for ch, q in qs:
             out.setdefault(f'{part}-{chap}', []).append({
-                'q': q.q, 'deep': q.deep, 'a': paras(K.faq_answer(ch, q)),
+                'q': q.q, 'deep': q.deep, 'a': paras(tag_paras(K.faq_answer(ch, q))),
                 'pages': [[pid, titles[pid]] for kn, pid, _ in q.rel if not kn and pid in titles]})
     return out
 
@@ -225,7 +262,7 @@ def qa_appendix(deck):
             if not groups or (groups[-1]['part'], groups[-1]['topic']) != (label, q.topic):
                 groups.append({'part': label, 'topic': q.topic, 'items': []})
             n += 1
-            groups[-1]['items'].append({'n': n, 'q': q.q, 'a': inline(K.plain(K.faq_answer(ch, q))), 'go': [pid for kn, pid, _ in q.rel if not kn]})
+            groups[-1]['items'].append({'n': n, 'q': q.q, 'a': inline(K.plain(K.faq_answer(ch, q))) + (UNV_TAG if K.needs_source(K.faq_answer(ch, q)) else ''), 'go': [pid for kn, pid, _ in q.rel if not kn]})
     return groups
 
 
@@ -264,14 +301,15 @@ def md_page(p, main=None):
     captions = p.captions or (main.captions if same else [])
     d = {'id': p.id, 'part': p.part, 'chap': p.chap, 'title': inline(p.title), 'short': p.short, 'en': p.en,
          'minutes': p.minutes, 'fig': fig, 'figKind': kind, 'cap': cap.strip(),
-         'thesis': inline(p.thesis, fns), 'points': [inline(x, fns) for x in p.points],
-         'captions': [[inline(t, fns), inline(d, fns)] for t, d in captions],
-         'fact': [inline(p.fact[0], fns), inline(p.fact[1], fns)] if p.fact else None,
+         'thesis': inline(tag(p.thesis), fns), 'points': [inline(tag(x), fns) for x in p.points],
+         'captions': [[inline(t, fns), inline(d + (UNV_TAG if K.needs_source(t + '：' + d) else ''), fns)] for t, d in captions],
+         'fact': [inline(p.fact[0], fns), inline(p.fact[1] + (UNV_TAG if K.needs_source('｜'.join(p.fact)) else ''), fns)] if p.fact else None,
          'analogy': [p.analogy[0], inline(p.analogy[1], fns), p.analogy[2]] if p.analogy else None,
          'badge': p.badge, 'src': inline(p.src), 'deep': p.deep,
-         'notes': inline(p.notes)}
-    d['more'] = block_md(p.body, fns) if p.body else ''
-    d['figHtml'] = block_md(first_table(p.body), fns) if kind == 'table' else ''
+         'notes': inline(tag_paras(p.notes))}
+    body = tag_body(p.body)
+    d['more'] = block_md(body, fns) if p.body else ''
+    d['figHtml'] = block_md(first_table(body), fns) if kind == 'table' else ''
     for name in p.footnotes:  # 只在旁白或沒用到的註腳，也照順序編號
         fns.setdefault(name, len(fns) + 1)
     d['fns'] = [[n, name, linkify(p.footnotes.get(name, ''))] for name, n in fns.items()]
@@ -402,12 +440,11 @@ def portal_data():
                         if K.chapter_name(n) in keys.get(kn or name, {})]
     host, repo = K.CONFIG.get('host'), K.CONFIG.get('repo', '')
     # 傳承者分頁「現在可以做的事」：數字還沒附出處的頁（同 index.py --todo），和 Git 主機上待回答、勘誤的連結
-    import check as C
     from urllib.parse import quote
     for k in kbs:
         deck = decks[k['name']][0]
         k['todo'] = [[p.id, K.plain(p.title), deck.titles.get((p.part, p.chap), ''), K.plain(bare[0][1])[:50], bool(p.deep)]
-                     for p in (deck.pages if deck else []) if p.md for bare in [C.unsourced(p)] if bare]
+                     for p in (deck.pages if deck else []) if p.md for bare in [K.unverified(p)] if bare]
         gl = K.CONFIG.get('gitlab_url', 'https://gitlab.com')
         k['issues'] = {lab: (f'https://github.com/{repo}/issues?q={quote(f"is:issue is:open label:{lab} label:kb:{k["name"]}")}' if host == 'github'
                              else f'{gl}/{repo}/-/issues?label_name[]={quote(lab)}&label_name[]={quote("kb:" + k["name"])}' if host == 'gitlab' else '')

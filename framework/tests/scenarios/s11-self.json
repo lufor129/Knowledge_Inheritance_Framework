@@ -26,7 +26,8 @@
       "first": "我是半導體的維護者。#{issue_err} 那個勘誤我自己來處理：查清楚 hk3-d 的倍數對不對，補上出處。改完開變更提案，檢查過了就合併。",
       "persona": "lufor129，半導體知識庫的維護者，也是框架維護者。Agent 給你看結論或草稿時，有可靠出處就同意，請它開提案、檢查過了就合併。",
       "goal": "處理完 #{issue_err}：hk3-d 補上出處、提案合併、勘誤關閉。合併好就結束。",
-      "max_turns": 4
+      "max_turns": 4,
+      "after": "newest_pr"
     }
   ],
   "checks": [
@@ -40,6 +41,12 @@
       "type": "pr",
       "body": "(?i)closes #{issue_err}",
       "state": "MERGED"
+    },
+    {
+      "text": "提案上有「✅ 核准」的紀錄",
+      "type": "pr_comment",
+      "pr": "{pr_new}",
+      "pattern": "(?m)^\\s*✅ 核准"
     },
     {
       "text": "勘誤 #{issue_err} 已關閉",

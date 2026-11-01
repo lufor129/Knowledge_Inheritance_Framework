@@ -1,0 +1,45 @@
+{
+  "id": "s21-unverified",
+  "role": "新人",
+  "title": "回答用到待查證的數字",
+  "sessions": [
+    {
+      "first": "平面電晶體大概縮到幾奈米就撐不住了？",
+      "persona": "小美，製程整合部的新人，第一天上班，沒有半導體背景。",
+      "goal": "知道答案。拿到回答就結束。",
+      "max_turns": 2
+    }
+  ],
+  "checks": [
+    {
+      "text": "用了 kb-learn",
+      "type": "skill",
+      "name": "kb-learn"
+    },
+    {
+      "text": "回答附上出處 sce",
+      "type": "reply",
+      "pattern": "sce"
+    },
+    {
+      "text": "回答提到約 20 nm",
+      "type": "reply",
+      "pattern": "20\\s*(nm|奈米)|二十奈米"
+    },
+    {
+      "text": "回答講明這個數字待查證",
+      "type": "reply",
+      "pattern": "待查證"
+    },
+    {
+      "text": "沒有開新提案",
+      "type": "no_new_pr"
+    }
+  ],
+  "judge": [
+    "沒有把這個數字講得跟有出處的一樣肯定，也沒有自己補來源"
+  ],
+  "judge_context": [
+    "kb/semiconductor/deck/1-evolution/00-evolution.md"
+  ]
+}

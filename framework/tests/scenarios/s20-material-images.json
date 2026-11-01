@@ -1,0 +1,57 @@
+{
+  "id": "s20-material-images",
+  "role": "傳承者",
+  "title": "材料裡的圖放進簡報",
+  "local": {
+    "name": "lufor129",
+    "watch": [
+      "semiconductor"
+    ]
+  },
+  "sessions": [
+    {
+      "first": "我有一份自己做的投影片 framework/tests/fixtures/material.pptx，講微影循環，幫我整理成半導體的一頁簡報頁，放在微影那一章。裡面的圖如果好懂可以直接用。",
+      "persona": "lufor129，半導體知識庫的維護者，投影片和裡面的圖都是你自己畫的，同意以 CC BY-SA 公開，出處寫「lufor129 自繪，2026-11」。Agent 給你看草稿、問選哪張圖時，選它推薦的；頁面看起來好懂就同意，請它開提案，不用合併。",
+      "goal": "做好一頁簡報頁，用投影片裡的流程圖，變更提案開好。開好就結束。",
+      "max_turns": 6,
+      "after": "newest_pr"
+    }
+  ],
+  "checks": [
+    {
+      "text": "用了 kb-add",
+      "type": "skill",
+      "name": "kb-add"
+    },
+    {
+      "text": "從材料取出圖片",
+      "type": "ran",
+      "pattern": "image\\.py extract"
+    },
+    {
+      "text": "用工具把圖放進知識庫",
+      "type": "ran",
+      "pattern": "image\\.py add semiconductor"
+    },
+    {
+      "text": "提案加了圖片和圖片清單，沒有把原檔放進知識庫",
+      "type": "changed_files",
+      "includes": "kb/semiconductor/assets/SOURCES\\.md",
+      "excludes": "^kb/.*\\.pptx$"
+    },
+    {
+      "text": "提案開好了",
+      "type": "pr",
+      "labels": [
+        "kb:semiconductor",
+        "來歷:整理"
+      ]
+    }
+  ],
+  "judge": [
+    "Agent 主動把取出的圖列給傳承者選，推薦流程圖，沒有推薦裝飾用的圖",
+    "圖片清單那一列的授權寫了 CC BY-SA（或作者同意公開）",
+    "流程圖裡的五個步驟也寫進圖說或重點，不是只在圖片裡",
+    "交稿時告訴傳承者這次為了新人好吸收做了哪些設計"
+  ]
+}

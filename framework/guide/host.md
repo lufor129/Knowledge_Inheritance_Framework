@@ -25,7 +25,21 @@ who.py、get.py、proposal.py 會自己照 `host` 換指令，不用換。
 
 - CI 沒過就不合併。
 - 別人的提案要先有維護者核准（approve，或維護者的「✅ 核准」留言）才合併。
-- 自己的提案（作者就是那個知識庫的維護者）：自己審，CI 通過、使用者說好就合併。GitHub 不讓核准自己帳號開的提案，所以核准和退回都改成留言，以「✅ 核准」「↩ 要求修改」開頭。
+- 自己的提案（作者就是那個知識庫的維護者）：可以在同一次對話裡自己審，CI 通過、使用者說好就合併，不一定要跑 /kb-review。GitHub 不讓核准自己帳號開的提案，所以核准和退回都改成留言，以「✅ 核准」「↩ 要求修改」開頭。
+- 每個合併都要留紀錄，日後才查得到是誰看過、看了什麼。提案上沒有維護者的核准、也沒有以「✅ 核准」開頭的留言，hook 會擋下 `gh pr merge`。
+
+審核紀錄的寫法（只寫真的看過的；Agent 代寫時等維護者說好才送出）：
+
+```
+🤖 由 Agent 代 <名字> 發出
+✅ 核准
+看過的頁：<頁 id>、<頁 id>
+來歷：<研究／整理／訪談>；研究來的說法已逐條列給維護者看
+有沒有不該公開的內容：沒有（公司參數、客戶、事故細節）
+圖片授權：<都有寫／這次沒有加圖>
+```
+
+改框架的提案沒有頁：「看過的頁」寫看了哪些檔案，來歷和圖片授權省略。
 
 ## GitLab
 
@@ -36,7 +50,7 @@ who.py、get.py、proposal.py 會自己照 `host` 換指令，不用換。
 | `gh issue …` | `glab issue …` |
 | `gh pr create --base main --body-file <檔>` | `glab mr create --target-branch main --description "$(cat <檔>)"` |
 | `gh pr view`、`gh pr diff`、`gh pr checkout` | `glab mr view`、`glab mr diff`、`glab mr checkout` |
-| `gh pr review --approve` | `glab mr approve` |
+| `gh pr review --approve` | `glab mr approve`（hook 只看 GitHub；GitLab 要自己記得留紀錄） |
 | `gh pr review --request-changes`、`gh pr comment` | `glab mr note` |
 | `gh pr merge --squash --delete-branch` | `glab mr merge --squash --remove-source-branch` |
 | `gh pr checks` | `glab ci status` |

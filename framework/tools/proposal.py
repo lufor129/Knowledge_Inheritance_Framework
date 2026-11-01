@@ -63,7 +63,7 @@ def kb_body(kb, ch, source, closes, reader, warns, files):
     out += ['', '## 來歷', *origin, '', '## 影響']
     others = [f for f in files if not f.startswith(f'kb/{kb.name}/deck/') and f != f'kb/{kb.name}/terms.md']
     out.append(f'- 一起改的檔案：{"、".join(others) if others else "沒有"}')
-    out.append(f'- 讀者測試：{reader + " 題答對" if reader else "（n/n 題答對）"}')
+    out.append(f'- 讀者測試（和改過的頁有關的題目）：{reader + " 題答對" if reader else "（n/n 題答對）"}')
     if warns:
         out.append(f'- 檢查的提醒（{len(warns)} 個，在這次改的簡報頁裡，由維護者決定）：')
         out += [f'  - {w[2:]}' for w in warns]
@@ -91,11 +91,12 @@ def next_steps(kb, title, labels, branch):
     if kb is None:
         fw = [a for _, a in K.framework_maintainers() if a and a != me]
         print('3. 開好之後：' + (f'請框架維護者審：gh pr edit <N> --add-reviewer {",".join(fw)}' if fw
-                                else '使用者就是框架維護者：等 CI 通過（gh pr checks <N> --watch），使用者說好就合併'))
+                                else '使用者就是框架維護者：等 CI 通過（gh pr checks <N> --watch），使用者說好就照 framework/guide/host.md 留「✅ 核准」紀錄再合併'))
         return
     if W.is_maintainer(me, kb):
         print('3. 開好之後：使用者是這個知識庫的維護者，這是自己的提案。等 CI 通過（gh pr checks <N> --watch），'
-              '把研究來的段落列出來讓使用者再看一眼，使用者說好就合併：gh pr merge <N> --squash --delete-branch')
+              '把研究來的段落列出來讓使用者再看一眼，使用者說好就留紀錄（內容照 framework/guide/host.md，寫進 .kif/tmp/record.md）：'
+              'gh pr comment <N> --body-file .kif/tmp/record.md，再合併：gh pr merge <N> --squash --delete-branch。沒有紀錄，hook 會擋下合併。')
     else:
         accounts = ','.join(a for _, a in kb.maintainers if a)
         print(f'3. 開好之後：請維護者審：gh pr edit <N> --add-reviewer {accounts}；告訴使用者提案在等維護者審核。')

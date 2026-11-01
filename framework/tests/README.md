@@ -1,6 +1,6 @@
 # 情境測試
 
-用全新的 Claude Code 跑 docs/design.md 的情境（17 個，加上「刪除深入頁」），由另一個模型扮演使用者回話，最後評分。改了 skill、AGENTS.md 或 framework/guide/ 之後跑一次，看行為有沒有變好或變壞。
+用全新的 Claude Code 跑 docs/design.md 的情境（17 個，加上「刪除深入頁」、讀者測試範圍、合併留紀錄、材料放圖、回答帶待查證），由另一個模型扮演使用者回話，最後評分。改了 skill、AGENTS.md 或 framework/guide/ 之後跑一次，看行為有沒有變好或變壞。
 
 ## 怎麼跑
 
@@ -50,6 +50,8 @@ python3 <skill-creator>/eval-viewer/generate_review.py <iteration 資料夾> --s
 ```
 
 ## 情境檔
+
+`fixtures/material.pptx` 是材料放圖用的測試投影片，圖都是程式畫的。
 
 `scenarios/<id>.json`：
 
