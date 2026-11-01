@@ -89,7 +89,7 @@ def has_record(pr, repo, cwd):
 def check_merge(args, cwd):
     pr, repo = merge_target(args)
     if not has_record(pr, repo, cwd):
-        block('這個提案查不到審核紀錄，不能合併。先照 framework/guide/host.md 在提案上留「✅ 核准」紀錄（看過哪些頁、來歷、有沒有不該公開的內容、圖片授權），再合併。')
+        block('這個提案查不到審核紀錄，不能合併。先照 framework/guide/host.md 問維護者看過哪些頁、有沒有不該公開的內容，在提案上留「✅ 核准」紀錄，再用另一個指令合併。')
 
 
 def main():

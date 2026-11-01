@@ -51,7 +51,7 @@ python3 <skill-creator>/eval-viewer/generate_review.py <iteration 資料夾> --s
 
 ## 情境檔
 
-`fixtures/material.pptx` 是材料放圖用的測試投影片，圖都是程式畫的。
+`fixtures/material.pptx` 是材料放圖用的測試投影片，圖都是程式畫的；情境的 `materials` 把它放到 Agent 複本的 `.kif/materials/`。
 
 `scenarios/<id>.json`：
 

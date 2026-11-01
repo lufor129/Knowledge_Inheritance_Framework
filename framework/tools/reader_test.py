@@ -96,7 +96,7 @@ def main(argv):
         print(f'  題目卷：{K.rel(OUT / f"{stem}.questions.md")}')
         print(f'  答案卷：{K.rel(OUT / f"{stem}.answers.md")}')
     print('\n下一步：每一章開一個子 agent（Agent 工具），只跟它說「讀 <題目卷>，照裡面的指示作答」，不要多給別的資料。')
-    print('拿它的回答對照答案卷；全部答對才算通過，在提案說明寫「讀者測試：n/n 題答對」。')
+    print('拿它的回答對照答案卷；卷上的題目全部答對才能開提案，答不出來就改寫再測，不能說成舊題。提案說明寫「讀者測試：n/n 題答對」。')
     if every:
         print('這是整章的狀況，不是開提案的門檻：答不出來的舊題開成一個 issue（標籤：勘誤、kb:<知識庫>），不要混進這次的提案。')
     return 0
