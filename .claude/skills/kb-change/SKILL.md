@@ -32,7 +32,7 @@ allowed-tools: Bash(git push:*), Bash(gh pr create:*), Bash(gh pr edit:*), Bash(
    - **合併**：把 B 併進 A，保留 A 的 id；所有指向 B 的引用改成 A，再刪掉 B。舊 id 不留。
 5. **傳承者確認**：用白話講改了什麼、哪些引用一起改了；改到簡報頁時，打開給傳承者看：`python3 framework/tools/get.py <知識庫> deck --here --open --page <頁id>`。傳承者明確說好才往下走。
 6. **檢查**：`python3 framework/tools/check.py <知識庫>`，到沒有 ✗ 為止。
-7. **讀者測試**：照 framework/guide/reader-test.md（改過的章都要測）。刪除時也要做：受影響的自我檢查要還答得出來。
+7. **讀者測試**：照 framework/guide/reader-test.md（讀者讀整章，只考和改過的頁有關的題目）。刪除時也要做：受影響的自我檢查要還答得出來。
 8. **開變更提案**：commit 之後跑 `python3 framework/tools/proposal.py <知識庫> --source <研究|整理|訪談> --reader <n/n>`；修正勘誤時加 `--closes <N>`。來歷照新內容怎麼來的。草稿 `.kif/tmp/proposal.md` 會列出改了的簡報頁、深入頁和一起改的檔案；把「（……）」換成你的話，照它印出的指令推分支、開提案，再做「開好之後」那一步。
 
 完成：提案開好了，`git grep -n "<刪掉或併掉的 id>" -- kb/ framework/paths.md` 什麼都找不到，使用者知道提案編號和在等誰審。

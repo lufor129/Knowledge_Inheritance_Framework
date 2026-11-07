@@ -4,10 +4,12 @@
   python3 framework/tools/reader_test.py semiconductor
   python3 framework/tools/reader_test.py semiconductor --ask "hk3-d：二氧化鉿為什麼要最後才鋪？"
 
+  python3 framework/tools/reader_test.py semiconductor --all        整章的題目都考：想知道整章的狀況時用
+
 改過的章：和分支的起點比，簡報頁或自我檢查有變的章檔（只改了開頭的速覽、先修不算）。每一章產生兩個檔案，放在 .kif/tmp/reader-test/：
   <章>.questions.md   題目卷，給子 agent：那一章每一頁的文字、深入頁的說明和旁白；後面接題目
   <章>.answers.md     答案卷，給你：每題的參考答案和相關的頁
-題目是那一章的自我檢查（深入題除外），加上 --ask 補的題目（寫成「頁 id：題目」）。
+讀者讀整章，但只考這次有關的題目：「相關：」指到改過的頁的自我檢查（深入題除外）、這次新增或改過的題目，加上 --ask 補的題目（寫成「頁 id：題目」）。舊題答不出來不擋這次，它們是另外的工作。
 互動圖外行讀者看不到，所以測的是文字、說明和旁白講不講得清楚。
 改過的簡報頁沒有題目對應時，會列出來並停下；用 --ask 替它們各補一題，再跑一次。
 """
@@ -38,8 +40,11 @@ def main(argv):
             if not q:
                 sid, _, q = argv[i + 1].partition(':')
             asks.append((sid.strip(), q.strip()))
+    every = '--all' in argv
+    argv = [a for a in argv if a != '--all']
     new = K.find_kb(argv[0])
-    ch = K.changes(K.base_kb(new.name), new)
+    old = K.base_kb(new.name)
+    ch = K.changes(old, new)
     if not ch.deck_chapters:
         print(f'這個分支沒有改到 {new.title} 的簡報頁或自我檢查，不用做讀者測試。')
         return 2
@@ -48,6 +53,8 @@ def main(argv):
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
     missing, papers = [], []
+    od = K.load_deck(old) if old and old.has_deck else None
+    old_blocks = {K.faq_block(c, q) for qs in od.checks.values() for c, q in qs} if od else set()
 
     def paper(stem, title, how, body, ids, qs):
         """qs：[(題目, 參考答案, 相關的頁 id)]；ids：這一章的簡報頁。"""
@@ -55,7 +62,9 @@ def main(argv):
         covered = {sid for _, _, rel in qs for sid in rel}
         missing.extend(i for i in ids if i in changed and i not in covered)
         if not qs:
-            missing.append(f'{stem}（這一章沒有題目）')
+            if any(i in changed for i in ids):
+                missing.append(f'{stem}（這一章沒有題目）')
+            return
         papers.append((stem, title, how, body, qs, [i for i in ids if i in changed]))
 
     deck = K.load_deck(new)
@@ -64,12 +73,16 @@ def main(argv):
         pages = [deck.md_pages[s.id] for s in dc.sections if s.id in deck.md_pages]
         paper(f'deck-{f.parent.name}-{f.stem}', f'簡報：{dc.title}', INSTRUCTIONS,
               '\n\n'.join(K.deck_page_text(p) for p in pages) + '\n', [p.id for p in pages],
-              [(q.q, K.faq_answer(dc, q), [pid for _, pid, _ in q.rel]) for q in dc.faqs if not q.deep])
+              [(q.q, K.faq_answer(dc, q), [pid for _, pid, _ in q.rel]) for q in dc.faqs if not q.deep
+               and (every or K.faq_block(dc, q) not in old_blocks or any(pid in changed for _, pid, _ in q.rel))])
     if missing:
         print('這些改過的簡報頁還沒有題目，用 --ask 各補一題「讀完應該答得出來」的題目，再跑一次：')
         print('  ' + '、'.join(missing))
         print(f'  例如：python3 framework/tools/reader_test.py {new.name} --ask "{missing[0].split("（")[0]}：<題目>"')
         return 1
+    if not papers:
+        print('這次改動沒有要考的題目（沒有改到簡報頁，也沒有動到題目），不用做讀者測試。')
+        return 2
     for stem, title, how, body, qs, mine in papers:
         doc = [f'# 讀者測試：{title}', '', how, '', '---', '', body.rstrip(), '', '---', '', '## 題目', '']
         doc += [f'{i}. {q}' for i, (q, _, _) in enumerate(qs, 1)]
@@ -83,7 +96,9 @@ def main(argv):
         print(f'  題目卷：{K.rel(OUT / f"{stem}.questions.md")}')
         print(f'  答案卷：{K.rel(OUT / f"{stem}.answers.md")}')
     print('\n下一步：每一章開一個子 agent（Agent 工具），只跟它說「讀 <題目卷>，照裡面的指示作答」，不要多給別的資料。')
-    print('拿它的回答對照答案卷；全部答對才算通過，在提案說明寫「讀者測試：n/n 題答對」。')
+    print('拿它的回答對照答案卷；卷上的題目全部答對才能開提案，答不出來就改寫再測，不能說成舊題；答案本來就不在任何簡報頁時，照 framework/guide/reader-test.md 的「例外」問維護者。提案說明寫「讀者測試：n/n 題答對」。')
+    if every:
+        print('這是整章的狀況，不是開提案的門檻：答不出來的舊題開成一個 issue（標籤：勘誤、kb:<知識庫>），不要混進這次的提案。')
     return 0
 
 

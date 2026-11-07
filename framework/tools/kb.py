@@ -31,6 +31,14 @@ REL = re.compile(r'^\s*相關[：:]\s*(.+?)\s*$')
 REF = re.compile(r'^(?:([a-z0-9-]+)/)?([A-Za-z0-9_-]+)$')   # 「相關：」的一個頁 id（別的知識庫寫成 知識庫/頁id）
 CHECK_HEAD = '## 自我檢查'
 
+# 數字：12、0.9、「幾百」「數千」「上百」、「七到九」，後面接單位才算；西元年不算
+NUM = r'(?:\d(?:[\d,.]*\d)?|[幾數上][十百千萬]|[一二兩三四五六七八九十]+\s*到\s*[一二兩三四五六七八九十]+)'
+UNIT = re.compile(NUM + r'\s*(?:nm|奈米|µm|μm|微米|mm|毫米|吋|%|％|倍|億|萬|°C|℃|美元|台幣|小時|分鐘|個月|週|天|年|秒|V|伏特|W(?![A-Za-z])|瓦|kW|mV|顆|點|層|Gb/s|Gbps|GB|TB|GHz|MHz)')
+# 旁白是唸的，數字常寫成中文：只認不會誤判的單位（一顆、一點、一層、一度、千萬不要都不算）
+CN_UNIT = re.compile(r'[一二兩三四五六七八九十][一二兩三四五六七八九十百千]*\s*(?:奈米|微米|毫米|吋|倍|億|萬|美元|小時|分鐘)')
+YEAR = re.compile(r'(?:19|20)\d{2}\s*年')
+UNVERIFIED = '待查證'
+
 
 @dataclass
 class Section:
@@ -310,6 +318,50 @@ def faq_answer(ch, q):
             continue
         body.append(l)
     return '\n'.join(body).strip()
+
+
+# ---------- 出處 ----------
+
+def has_number(text):
+    """這段文字有沒有帶單位的數字（西元年不算）。"""
+    text = YEAR.sub('', plain(text))
+    return bool(UNIT.search(text) or CN_UNIT.search(text))
+
+
+def needs_source(text):
+    """有數字卻沒有出處註腳：簡報上標「待查證」，新寫到頁面上的會被檢查擋下。"""
+    return has_number(text) and '[^' not in text
+
+
+def body_blocks(text):
+    """說明拆成一段一段（空行分段；小標題不算，清單和表格的每一列各算一段）。"""
+    out = []
+    for block in re.split(r'\n\s*\n', text or ''):
+        lines = [l for l in block.splitlines() if l.strip() and not l.startswith('#') and not FOOTDEF.match(l)]
+        if lines and all(l.lstrip().startswith(('|', '- ', '* ')) or re.match(r'^\s*\d+\.\s', l) for l in lines):
+            out += [l.strip() for l in lines if not set(l.strip()) <= set('|-: ')]
+        elif lines:
+            out.append(' '.join(l.strip() for l in lines))
+    return out
+
+
+def claims(p):
+    """簡報頁上看得到的說法：結論、重點、圖說、數字卡，和深入頁說明的每一段：[(欄位, 文字)]。比喻和旁白不算。"""
+    items = [('結論', p.thesis)] + [('重點', x) for x in p.points] + [('圖說', '：'.join(c)) for c in p.captions]
+    if p.fact:
+        items.append(('數字卡', '｜'.join(p.fact)))
+    items += [('說明', b) for b in body_blocks(p.body)]
+    return [(label, t) for label, t in items if t]
+
+
+def note_paras(p):
+    """旁白的每一段。"""
+    return [x.strip() for x in re.split(r'\n\s*\n', p.notes or '') if x.strip()]
+
+
+def unverified(p):
+    """這一頁還沒有出處的說法（看得到的說法和旁白）：[(欄位, 文字)]。"""
+    return [(l, t) for l, t in claims(p) + [('旁白', x) for x in note_paras(p)] if needs_source(t)]
 
 
 # ---------- 這次改了什麼 ----------
@@ -742,7 +794,7 @@ def _legacy_pages(kb, wanted):
 # ---------- 圖片清單 ----------
 
 def load_sources(kb):
-    """assets/SOURCES.md 的表格：檔名 → (說明, 出處)。"""
+    """assets/SOURCES.md 的表格：檔名 → (說明, 出處, 授權)。"""
     f = kb.dir / 'assets/SOURCES.md'
     rows = {}
     if not f.exists():
@@ -750,7 +802,7 @@ def load_sources(kb):
     for l in f.read_text(encoding='utf-8').splitlines():
         c = [x.strip() for x in l.strip().strip('|').split('|')]
         if l.startswith('|') and len(c) >= 3 and c[0] not in ('檔名', '') and not set(c[0]) <= set('-: '):
-            rows[c[0].strip('`')] = (c[1], c[2])
+            rows[c[0].strip('`')] = (c[1], c[2], c[3] if len(c) > 3 else '')
     return rows
 
 

@@ -26,12 +26,12 @@
       "body": "hk2"
     },
     {
-      "text": "issue 內文第一行標明「🤖 由 Agent 產生」",
+      "text": "issue 內文第一行標明由 Agent 產生或代發",
       "type": "issue",
       "labels": [
         "勘誤"
       ],
-      "body": "^🤖 由 Agent 產生"
+      "body": "^🤖 由 Agent (產生|代 .+ 發出)"
     }
   ],
   "judge": [

@@ -20,6 +20,7 @@
 import argparse
 import json
 import pathlib
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -36,6 +37,14 @@ ALLOWED = ['Read', 'Edit', 'Write', 'Glob', 'Grep', 'Agent', 'Skill', 'WebSearch
            'Bash(mkdir:*)', 'Bash(head:*)', 'Bash(tail:*)', 'Bash(wc:*)', 'Bash(find:*)', 'Bash(echo:*)',
            'Bash(date:*)', 'Bash(sort:*)', 'Bash(sed:*)', 'Bash(cut:*)', 'Bash(awk:*)', 'Bash(cp:*)',
            'Bash(pdftotext:*)']  # 測試裡沒有人按「允許」：合理、不危險的指令先允許，要按幾次另外估計
+
+
+def put_materials(clone, case):
+    """情境的 materials：測試 repo 不含 framework/tests，材料另外放進 .kif/materials/（不進版控）。"""
+    for name in case.get('materials', []):
+        dest = clone / '.kif/materials' / name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(TESTS / 'fixtures' / name, dest)
 
 
 def agent_turn(clone, msg, sid, model):
@@ -101,6 +110,7 @@ def run_case(case, args, work, run_dir):
     t0 = time.time()
     vars['reset_sha'] = S.reset(args.ref, work)
     clone = S.clone(work / 'agent')
+    put_materials(clone, case)
     if case.get('local'):
         write_local(clone, case['local'])
     start = S.latest()

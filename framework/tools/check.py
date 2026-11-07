@@ -13,10 +13,10 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import kb as K  # noqa: E402
 
-# 數字：12、0.9、「幾百」「數千」「上百」、「七到九」
-NUM = r'(?:\d(?:[\d,.]*\d)?|[幾數上][十百千萬]|[一二兩三四五六七八九十]+\s*到\s*[一二兩三四五六七八九十]+)'
-UNIT = re.compile(NUM + r'\s*(?:nm|奈米|µm|μm|微米|mm|毫米|吋|%|％|倍|億|萬|°C|℃|美元|台幣|小時|分鐘|V|伏特|顆|點)')
-YEAR = re.compile(r'(?:19|20)\d{2}\s*年')
+# 出處註腳寫的要是查得到的東西：文件、論文、網址、口述的人和日期
+SOURCE_LIKE = re.compile(r'https?://|doi|isbn|口述|\d{4}|§|第\s*\d+\s*頁|出版|文件', re.I)
+FIG_TEXT = re.compile(r"['`]([^'`\n]*[\u4e00-\u9fff][^'`\n]*)['`]")
+BIG_IMAGE = 800 * 1024   # 整份簡報是單一 HTML，圖片太大會拖慢新人打開的速度
 
 
 class Report:
@@ -69,6 +69,8 @@ def check_footnotes(ch, r):
             defs[m.group(1)] = i
             if not m.group(2).strip():
                 r.err(ch.file, i, f'出處註腳 [^{m.group(1)}] 沒有寫出處')
+            elif not SOURCE_LIKE.search(m.group(2)):
+                r.warn(ch.file, i, f'出處註腳 [^{m.group(1)}] 看不出是查得到的來源：寫文件、論文、網址，或口述的人和日期')
     used = set()
     for i, l in enumerate(lines, 1):
         if K.FOOTDEF.match(l):
@@ -95,11 +97,16 @@ def check_images(kb, r):
                     r.err(f, i, f'{kind(img)} assets/{img} 不存在')
                 elif img not in src:
                     r.err(f, i, f'{kind(img)} assets/{img} 沒有列在圖片清單 assets/SOURCES.md；不在清單上的{kind(img)}不能用')
-    for img, (desc, origin) in src.items():
-        if not (kb.dir / 'assets' / img).exists():
+    for img, (desc, origin, lic) in src.items():
+        path = kb.dir / 'assets' / img
+        if not path.exists():
             r.err(kb.dir / 'assets/SOURCES.md', 0, f'圖片清單列了 {img}，但檔案不存在')
+        elif img.startswith('img/') and path.stat().st_size > BIG_IMAGE:
+            r.warn(path, 0, f'圖片 {img} 超過 {BIG_IMAGE // 1024} KB，會拖慢簡報；用 image.py add 重新放一次會自動縮小')
         if not origin:
             r.err(kb.dir / 'assets/SOURCES.md', 0, f'{kind(img)} {img} 沒有寫出處')
+        if not lic:
+            r.err(kb.dir / 'assets/SOURCES.md', 0, f'{kind(img)} {img} 沒有寫授權：照原圖標示（例如 CC BY 4.0）；查不到授權的論文或原廠圖寫「版權屬原作者（未取得授權）」')
 
 
 def kind(asset):
@@ -164,12 +171,17 @@ def check_deck_md(kb, in_order, r):
         new = [(label, t) for label, t in bare if before is not None and t not in before]
         for label, text in new:
             r.err(p.file, p.line, f'{"深入頁" if p.deep else "簡報頁"}「{p.id}」的{label}有數字，沒有出處註腳：「{re.sub(chr(10), " ", K.plain(text))[:40]}」；補出處或改成不帶數字的說法')
-        if len(new) < len(bare):
+        if K.unverified(p):
             todo.append(p.id)
+        for para in K.note_paras(p):  # 旁白不擋：新寫的提醒，簡報上會標「待查證」
+            if before is not None and para not in before and K.needs_source(para):
+                r.warn(p.file, p.line, f'「{p.id}」新寫的旁白有數字，沒有出處註腳（簡報上會標「{K.UNVERIFIED}」）：「{re.sub(chr(10), " ", K.plain(para))[:40]}」')
     if todo:
         r.warn(kb.dir / 'deck', 0, f'簡報裡有 {len(todo)} 頁的數字還沒有出處，可以慢慢補：python3 framework/tools/index.py {kb.name} --todo')
     for f in K.deck_files(kb):
         check_footnotes(K.load_chapter(f, [], K.CHECK_HEAD), r)
+    check_new_answers(kb, deck, r)
+    check_new_figures(kb, r)
     for ch, q in [x for qs in deck.checks.values() for x in qs]:
         for kname, pid, line in q.rel:
             if kname or pid not in in_order:
@@ -183,27 +195,6 @@ def check_deck_md(kb, in_order, r):
             for pid in PAGE_LINK.findall(l):
                 if pid not in in_order:
                     r.err(f, i, f'連結 (#{pid}) 指到的頁不在頁序裡；跳到另一頁寫成 [文字](#頁id)')
-
-
-def claims(p):
-    """簡報頁上看得到的說法：結論、重點、圖說、數字卡，和深入頁說明的每一段：[(欄位, 文字)]。比喻和旁白不算。"""
-    items = [('結論', p.thesis)] + [('重點', x) for x in p.points] + [('圖說', '：'.join(c)) for c in p.captions]
-    if p.fact:
-        items.append(('數字卡', '｜'.join(p.fact)))
-    items += [('說明', b) for b in body_blocks(p.body)]
-    return [(label, t) for label, t in items if t]
-
-
-def body_blocks(text):
-    """說明拆成一段一段（空行分段；小標題不算，清單和表格的每一列各算一段）。"""
-    out = []
-    for block in re.split(r'\n\s*\n', text or ''):
-        lines = [l for l in block.splitlines() if l.strip() and not l.startswith('#') and not K.FOOTDEF.match(l)]
-        if lines and all(l.lstrip().startswith(('|', '- ', '* ')) or re.match(r'^\s*\d+\.\s', l) for l in lines):
-            out += [l.strip() for l in lines if not set(l.strip()) <= set('|-: ')]
-        elif lines:
-            out.append(' '.join(l.strip() for l in lines))
-    return out
 
 
 def check_deep(deck, r):
@@ -254,7 +245,7 @@ def check_pre(kb, deck, r):
 
 def unsourced(p):
     """有數字卻沒有出處註腳的說法：[(欄位, 文字)]。"""
-    return [(label, t) for label, t in claims(p) if UNIT.search(YEAR.sub('', K.plain(t))) and '[^' not in t]
+    return [(label, x) for label, x in K.claims(p) if K.needs_source(x)]
 
 
 def changed_pages(kb):
@@ -264,8 +255,38 @@ def changed_pages(kb):
     except (SystemExit, Exception):  # 手動模式、沒有遠端、找不到起點：判斷不了就不擋
         return None
     od = K.load_deck(old).md_pages if old and old.has_deck else {}
-    return {i: {t for _, t in claims(od[i])} if i in od else set()
+    return {i: {t for _, t in K.claims(od[i])} | set(K.note_paras(od[i])) if i in od else set()
             for i, p in K.load_deck(kb).md_pages.items() if i not in od or od[i].fp != p.fp}
+
+
+def check_new_answers(kb, deck, r):
+    """自我檢查不擋：新寫的答案有數字沒出處就提醒，簡報上會標「待查證」。判斷不了起點時不提醒。"""
+    try:
+        old = K.base_kb(kb.name, fetch=False)
+    except (SystemExit, Exception):
+        return
+    od = K.load_deck(old) if old and old.has_deck else None
+    before = {K.faq_answer(c, q) for qs in od.checks.values() for c, q in qs} if od else set()
+    for qs in deck.checks.values():
+        for ch, q in qs:
+            a = K.faq_answer(ch, q)
+            if a not in before and K.needs_source(a):
+                r.warn(ch.file, q.line, f'新寫的自我檢查「{q.q[:24]}」答案有數字，沒有出處註腳（簡報上會標「{K.UNVERIFIED}」）；用那一頁的註腳名稱，例如 [^hk1-1]')
+
+
+def check_new_figures(kb, r):
+    """互動圖裡新寫的文字帶數字：查找和讀者測試都讀不到，也不會標待查證。提醒把數字放到章檔。"""
+    try:
+        base = K.base_ref(False)
+    except (SystemExit, Exception):
+        return
+    diff = K.git('diff', base, '--', K.rel(kb.dir / 'deck/figures'), check=False)
+    for f, text in re.findall(r'^\+\+\+ b/(.+)$|^\+(?!\+\+)(.*)$', diff, re.M):
+        if not text:
+            continue
+        for s in FIG_TEXT.findall(text):
+            if K.has_number(s):
+                r.warn(kb.dir / 'deck/figures', 0, f'互動圖新寫的文字帶數字，查找和讀者測試讀不到：「{s[:40]}」；數字和出處寫在章檔的重點或圖說')
 
 
 def check_paths(r):

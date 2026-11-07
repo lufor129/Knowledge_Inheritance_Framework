@@ -23,11 +23,14 @@ allowed-tools: Bash(gh pr review:*), Bash(gh pr comment:*), Bash(git push:*)
    - 有沒有圖；會動、會變、有因果的概念，圖能不能操作
    - 數字有沒有出處（點數字後面的小標號看得到）
    - 主頁和它的深入頁說法一不一致；一頁放不下的細節，是不是放在深入頁、主頁還講得清楚
+   - 新人看一遍懂不懂（framework/guide/deck.md 的「新人好吸收」）
+   - 有沒有不該公開的內容：公司參數、客戶、事故細節；訪談的受訪者知不知道會公開
+   - 新放的圖有沒有寫授權；未取得授權的圖，出處寫得夠完整嗎
 6. **要仔細看的說法**：來歷是研究時，把 Agent 寫的說法一條一條列出來（結論、重點、數字卡、深入頁說明的段落），每條附上它的出處，沒有出處的數字特別標出來；研究來的內容沒有人親身確認過，維護者是最後一關。其他來歷也標出沒有出處的數字。
    新增或修改的自我檢查：答案裡的說法，要在它「相關：」的頁裡找得到（`python3 framework/tools/read.py --here <知識庫> <頁id>` 讀那一頁）。找不到的話，讀者測試其實答不出來，因為外行讀者只看得到頁的文字；要指出來，請傳承者把知識補進頁裡，或附上出處。
 7. **等使用者決定**：核准，或退回。退回時請使用者說要改什麼，整理成逐條意見給使用者確認。
 8. **送出**：
-   - **核准**：`gh pr review <N> --approve --body "🤖 由 Agent 代 <名字> 發出…"`。自己帳號開的提案 GitHub 不讓核准，改成 `gh pr comment`，內容以「✅ 核准」開頭。CI 通過就合併：`gh pr merge <N> --squash --delete-branch`。別人的提案要先有維護者核准才合併。
+   - **核准**：審核紀錄照 framework/guide/host.md 寫進 `.kif/tmp/record.md`，只寫真的看過的頁，再送出：`gh pr review <N> --approve --body-file .kif/tmp/record.md`。自己帳號開的提案 GitHub 不讓核准，改成 `gh pr comment <N> --body-file .kif/tmp/record.md`。CI 通過就合併：`gh pr merge <N> --squash --delete-branch`；沒有紀錄，hook 會擋下。別人的提案要先有維護者核准才合併。
    - **退回**：`gh pr review <N> --request-changes --body-file .kif/tmp/review.md`，內容是逐條意見；自己帳號開的提案改成留言，以「↩ 要求修改」開頭。提案留著，等傳承者照意見改。真的不要的提案，請提出的人自己撤回。
    - **小修改**：維護者已經確定怎麼改的小地方（補出處註腳、錯字、標籤），可以直接改在提案的分支上（`gh pr checkout <N>`），跑過 check.py 再 `git push`，留言逐條寫改了什麼。內容要調整的，一律退回，因為內容要由傳承者確認。
    - 改到 framework/ 的提案：CI 會建置每個知識庫，全部成功才合併。

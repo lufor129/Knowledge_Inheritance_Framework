@@ -1,7 +1,8 @@
-"""PreToolUse hook：擋下很難救回的 git 指令。
+"""PreToolUse hook：擋下很難救回的 git 指令，和沒有審核紀錄的合併。
 
 Agent 會替不懂 Git 的同仁操作 Git，下面這幾種一出錯就救不回來，所以一律擋：
 強制推送、直接推主線、reset --hard、git branch -D。推分支照常可以。
+gh pr merge：提案上要有核准（維護者的 approve，或以「✅ 核准」開頭的留言）才放行。
 """
 import json
 import pathlib
@@ -41,10 +42,54 @@ def check_push(args, cwd):
     refspecs = pos[1:]
     for r in refspecs:
         dst = r.split(':')[-1]
+        if dst in ('HEAD', '@'):  # git push origin HEAD：推的是目前的分支
+            dst = current_branch(cwd)
         if dst in (MAIN, f'refs/heads/{MAIN}'):
             block(f'不能直接推到主線 {MAIN}：所有變更都要經過變更提案。請推自己的分支，再開變更提案。')
     if not refspecs and current_branch(cwd) == MAIN:
         block(f'你現在在主線 {MAIN} 上，不能直接推。請先開分支：git switch -c <分支>，再推分支、開變更提案。')
+
+
+MERGE_VALUE_FLAGS = {'-R', '--repo', '-b', '--body', '-F', '--body-file', '-t', '--subject', '-A', '--author-email', '--match-head-commit'}
+
+
+def merge_target(args):
+    """gh pr merge 的提案編號（或分支）和 -R 指定的 repo。"""
+    pr, repo, i = None, None, 0
+    while i < len(args):
+        a = args[i]
+        if a in MERGE_VALUE_FLAGS:
+            if a in ('-R', '--repo') and i + 1 < len(args):
+                repo = args[i + 1]
+            i += 2
+            continue
+        if a.startswith('--repo='):
+            repo = a.split('=', 1)[1]
+        elif not a.startswith('-') and pr is None:
+            pr = a
+        i += 1
+    return pr, repo
+
+
+def has_record(pr, repo, cwd):
+    """提案上有沒有核准：approve，或任何一行以「✅ 核准」開頭的留言。查不到就算沒有。"""
+    cmd = ['gh', 'pr', 'view', *([pr] if pr else []), *(['-R', repo] if repo else []), '--json', 'comments,reviews']
+    try:
+        r = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
+        d = json.loads(r.stdout) if r.returncode == 0 else None
+    except (OSError, ValueError):
+        d = None
+    if d is None:
+        return False
+    bodies = [c.get('body') or '' for c in d.get('comments', [])] + [x.get('body') or '' for x in d.get('reviews', [])]
+    return (any(x.get('state') == 'APPROVED' for x in d.get('reviews', []))
+            or any(l.strip().startswith('✅ 核准') for b in bodies for l in b.splitlines()))
+
+
+def check_merge(args, cwd):
+    pr, repo = merge_target(args)
+    if not has_record(pr, repo, cwd):
+        block('這個提案查不到審核紀錄，不能合併。先照 framework/guide/host.md 問維護者看過哪些頁、有沒有不該公開的內容，在提案上留「✅ 核准」紀錄，再用另一個指令合併。')
 
 
 def main():
@@ -58,6 +103,8 @@ def main():
             tokens = part.split()
         while tokens and re.match(r'^\w+=', tokens[0]):   # 開頭的環境變數設定
             tokens = tokens[1:]
+        if len(tokens) >= 3 and pathlib.Path(tokens[0]).name == 'gh' and tokens[1:3] == ['pr', 'merge']:
+            check_merge(tokens[3:], cwd)
         if not tokens or pathlib.Path(tokens[0]).name != 'git':
             continue
         sub, args = git_args(tokens)
