@@ -3,7 +3,7 @@
    學習路徑（每章一張圖示卡片：速覽、看了多少、先修和深入；點了翻面看細節）、收起來的全景圖、主題索引、角色路徑（有才顯示）；
    建置日期、維護者放在頁尾。給開發者看的東西（修改紀錄、頁 id、檔案路徑）不放上來。
    章的圖示寫在章檔開頭的「- 圖示：」，圖示本身在 icons.js（window.KIF_ICONS）；沒寫就顯示章的編號。
-   傳承者（#contribute）：「一筆知識怎麼進來」七站、可以做的事（動作卡片，翻面看跟 Agent 怎麼說）、現在可以做的事（還沒附出處的頁、待回答和勘誤的連結）。
+   傳承者（#contribute）：「一筆知識怎麼進來」八站、可以做的事（動作卡片，翻面看跟 Agent 怎麼說）、現在可以做的事（還沒附出處的頁、待回答和勘誤的連結）。
    維護者（#review）：「審核一個變更提案」六站、要做的事（動作卡片；框架維護者的事放最後）。
    資料由 build.py 放在 window.PORTAL：{ built, commit, latest, kbs: [{name, title, intro, maintainers, deck, sections, pages, minutes, deep, parts,
    path: [{key, part, chap, name, pages, minutes, deep, deepMinutes, last, overview, icon, pre: [[知識庫, key, 章名]]}], topics: [{zh, en, desc, pages: [[頁 id, 標題, 是不是深入頁]]}],
@@ -197,7 +197,8 @@
   const C_FLOW = [
     { k: 'start', ic: 'inbox', t: '開工', d: '跟 Agent 說「有什麼我可以做的？」：列出待回答、勘誤，和還沒附出處的頁；說「我來回答 #12」就認領。' },
     { k: 'say', ic: 'chat', t: '跟 Agent 說', d: '用中文講你要做什麼：給一個主題請它研究、給檔案請它整理，或直接口述經驗。' },
-    { k: 'draft', ic: 'doc', t: 'Agent 做草稿', d: '做成簡報頁，一頁講一個概念、每頁有圖；數字附出處，一頁放不下的建議做成深入頁。' },
+    { k: 'discuss', ic: 'users', t: '先問清楚', d: 'Agent 一輪一輪問，每題附建議答案，你回「好」或改正；研究、整理查完先跟你討論查到的內容，再給一張每頁的圖怎麼做的表讓你選。' },
+    { k: 'draft', ic: 'doc', t: 'Agent 做草稿', d: '做成簡報頁，一頁講一個概念、每頁有圖；數字附出處，一頁放不下的建議做成深入頁。研究、整理來的說法，另一個 Agent 先抓出處全文逐句核對。' },
     { k: 'confirm', ic: 'eye', t: '你確認', d: '在本機打開改過的頁看一遍，說得對不對由你判斷；改到你滿意才往下走。' },
     { k: 'check', ic: 'check', t: '檢查', d: '程式擋格式、引用和新寫的數字沒出處；再讓沒有背景的 Agent 讀一遍（讀者測試），看寫得清不清楚。' },
     { k: 'pr', ic: 'flag', t: '變更提案', d: 'Agent 開變更提案：寫好改了什麼、來歷（研究、整理、訪談）；回答 issue 時連到那個 issue。' },
@@ -207,7 +208,7 @@
     { k: 'notify', ic: 'inbox', t: '收到通知', d: 'Git 主機通知你有變更提案要審；你自己開的提案，檢查過了可以自己合併。' },
     { k: 'summary', ic: 'chat', t: '請 Agent 整理', d: '輸入 /kb-review 或說「幫我審 #31」：Agent 用白話整理改了什麼、來歷和影響。' },
     { k: 'pages', ic: 'eye', t: '看改過的頁', d: 'Agent 在本機打開改過的簡報頁和深入頁：看圖、互動、說法和出處。' },
-    { k: 'claims', ic: 'magnifier', t: '研究來的逐條看', d: '來歷是研究時，每個說法配上出處列出來，沒出處的數字特別標；Agent 說錯時語氣一樣肯定，你是最後一關。' },
+    { k: 'claims', ic: 'magnifier', t: '研究來的逐條看', d: '來歷是研究時，每個說法配上出處列出來，沒出處的數字特別標；提案說明有「事實查核」就一起對照。Agent 說錯時語氣一樣肯定，你是最後一關。' },
     { k: 'decide', ic: 'check', t: '核准或退回', d: '對就核准合併；不對就退回，跟 Agent 說哪裡不對，它幫你寫成意見留在提案上。' },
     { k: 'release', ic: 'star', t: '入口網站更新', d: '合併後 CI 自動建置、發布新的入口網站，新人下次下載就是新的。' }
   ];
@@ -219,6 +220,7 @@
     const k = byName[sel] || { path: [] }, kb = esc(k.title || '這個知識庫'), ch = esc(sample(k).ch);
     if (key === 'start') return term([['me', '有什麼我可以做的？'], ['ai', '待回答 #12：這台機台多久保養一次？'], ['ai', '勘誤 #15：某一頁的倍數好像寫錯'], ['ai', `還沒附出處的頁：${(k.todo || []).length} 頁`], ['me', '我來回答 #12']]);
     if (key === 'say') return `<div class="mi mi-say"><div class="tm"><div class="tl me">› 幫我研究〈主題〉，放進〈${ch}〉那一章</div></div><div class="ways"><span class="hot">研究：給主題</span><span>整理：給檔案</span><span>訪談：用說的</span></div></div>`;
+    if (key === 'discuss') return term([['ai', 'Q1 新人是誰？建議：剛進部門的工程師'], ['me', '好'], ['ai', '查到 4 個重點；第 2 點兩個來源說法不同……'], ['ai', '每頁的圖：第 1 頁一步步播放，第 2 頁拖拉桿看變化'], ['me', '第 2 頁改成點零件看說明']]);
     if (key === 'draft') return `<div class="mi mi-draft">${draftSlide('草稿')}<div class="sl deep"><div class="sl-h">放不下的長說明 <em>深入</em></div><div class="sl-more">推導、表格、出處</div></div></div>`;
     if (key === 'confirm') return `<div class="mi mi-confirm"><div class="bar">本機預覽（還沒合併）</div>${draftSlide()}<div class="ok-b"><span class="hot">這樣可以</span><span>第二點改成……</span></div></div>`;
     if (key === 'check') return `<div class="mi mi-cl"><div class="cl"><div><i></i>格式、頁 id、引用都對</div><div><i></i>新寫的數字都有出處</div><div><i></i>每頁都有圖</div><div><i></i>讀者測試：3 / 3 題答對</div></div></div>`;
@@ -236,9 +238,9 @@
   }
   /* 動作卡片：正面是圖示和一句話；翻面看「跟 Agent 這樣說」（可以複製）、Agent 會做什麼、你要做什麼 */
   const C_ACTS = [
-    { id: 'research', ic: 'magnifier', t: '研究新主題', d: '只給一個主題，Agent 查第一手來源，寫成簡報頁。', say: ['幫我研究〈主題〉，放進〈章名〉那一章'], agent: ['只查第一手來源，每個數字附出處', '做成簡報頁；一頁放不下，建議接一頁深入頁', '你確認後跑檢查和讀者測試，開變更提案，標「研究」'], you: '確認說得對；研究來的內容，維護者會特別仔細看。', cmd: '/kb-add' },
-    { id: 'organize', ic: 'data', t: '整理現有資料', d: '給檔案、網址或舊簡報，Agent 整理成簡報頁。', say: ['把〈檔案或網址〉整理成〈章名〉的簡報頁'], agent: ['讀你給的資料；原檔不放進知識庫，只在出處寫它在哪裡', '照一頁一個概念重新寫，每頁配圖', '跑檢查和讀者測試，開變更提案，標「整理」'], you: '提供資料，確認整理得對。', cmd: '/kb-add' },
-    { id: 'interview', ic: 'users', t: '訪談：用說的', d: '口述經驗就好，Agent 反問、寫成簡報頁。', say: ['我想記下〈某件事〉的經驗'], agent: ['一輪問完，每題附建議答案，你挑或改', '寫成簡報頁，出處寫「〈你的名字〉口述，年-月」', '你確認後開變更提案，標「訪談」'], you: '用說的回答。', cmd: '/kb-add' },
+    { id: 'research', ic: 'magnifier', t: '研究新主題', d: '只給一個主題，Agent 查第一手來源，寫成簡報頁。', say: ['幫我研究〈主題〉，放進〈章名〉那一章'], agent: ['先一輪一輪問範圍：新人是誰、讀完要會什麼', '查第一手來源，查完先跟你討論，再做成簡報頁', '另一個 Agent 逐句對過出處；你確認後開變更提案，標「研究」'], you: '確認說得對；研究來的內容，維護者會特別仔細看。', cmd: '/kb-add' },
+    { id: 'organize', ic: 'data', t: '整理現有資料', d: '給檔案、網址或舊簡報，Agent 整理成簡報頁。', say: ['把〈檔案或網址〉整理成〈章名〉的簡報頁'], agent: ['讀你給的資料；原檔不放進知識庫，只在出處寫它在哪裡', '先跟你討論讀到的重點、要放哪幾張圖，再照一頁一個概念重新寫', '另一個 Agent 逐句對過出處；跑檢查和讀者測試，開變更提案，標「整理」'], you: '提供資料，確認整理得對。', cmd: '/kb-add' },
+    { id: 'interview', ic: 'users', t: '訪談：用說的', d: '口述經驗就好，Agent 追問、寫成簡報頁。', say: ['我想記下〈某件事〉的經驗'], agent: ['一輪一輪問，每題附建議答案，你挑或改；和已有的頁說法不同時會追問', '寫成簡報頁，出處寫「〈你的名字〉口述，年-月」', '你確認後開變更提案，標「訪談」'], you: '用說的回答；沒空就先停，回來再接著問。', cmd: '/kb-add' },
     { id: 'answer', ic: 'inbox', t: '回答待回答', d: '新人問倒了簡報，回答成一頁和一題自我檢查。', say: ['有什麼我可以回答的？', '我來回答 #12'], agent: ['把 issue 指派給你', '用訪談或研究寫成簡報頁，加一題自我檢查', '變更提案寫「Closes #12」，合併後 issue 自動關閉、提問的人收到通知'], you: '回答問題、確認草稿。', cmd: '/kb-add' },
     { id: 'edit', ic: 'doc', t: '修改一頁', d: '說哪一頁、要怎麼改。', say: ['〈頁標題〉的第二點要改成……'], agent: ['後面的深入頁、指向它的自我檢查一起看，說法要一致', '在本機打開改過的頁給你看', '跑檢查和讀者測試，開變更提案'], you: '確認改得對。', cmd: '/kb-change' },
     { id: 'delete', ic: 'layers', t: '刪除或合併', d: '刪掉一頁，或把兩頁合成一頁。', say: ['把〈頁〉和〈頁〉合併成一頁', '刪掉〈頁〉'], agent: ['列出所有引用：頁序、深入頁、自我檢查、術語表、頁碼引用', '在同一個變更提案裡一起改掉，不留舊 id', '刪掉的內容，Git 歷史找得回來'], you: '確認要刪、要合併的是對的。', cmd: '/kb-change' },
@@ -396,7 +398,7 @@
         <div id="hits"></div>
       </div>
       <div data-tab="contribute" hidden>
-        <p class="lead">把你的經驗交給 Agent 寫成簡報頁：你只要講中文，Agent 做草稿、跑檢查、開變更提案；維護者核准後才算數。一筆知識這樣進來：</p>
+        <p class="lead">把你的經驗交給 Agent 寫成簡報頁：你只要講中文、回答 Agent 的問題，Agent 做草稿、跑檢查、開變更提案；維護者核准後才算數。一筆知識這樣進來：</p>
         <div id="flow-contribute" class="flow"></div>
       </div>
       <div data-tab="review" hidden>

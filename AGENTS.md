@@ -50,6 +50,7 @@
 ## 參考
 
 - 新人好吸收的做法、簡報頁、深入頁、章檔開頭的速覽和先修、互動圖樣板：framework/guide/deck.md
+- 追問傳承者的做法（研究前對齊範圍、討論查到的內容、訪談）：framework/guide/grill.md
 - 頁 id、自我檢查、出處、圖片和授權、術語表的寫法：framework/guide/writing.md
 - 讀者測試：framework/guide/reader-test.md
 - Git 主機的標籤、合併的規矩和審核紀錄、GitLab 的指令對照、沒有 Git 主機時的手動模式：framework/guide/host.md

@@ -191,6 +191,37 @@ Fig.add('hk-wall', Fig.canvas({
 
 套不上的才自己寫：`Fig.add('名稱', { render(頁) -> 左欄 HTML, init(el, ctx, 頁), meters, layout: 'w66' | 'w50' | 'full', side: false })`。輔助函式在 `framework/engine/widgets/core.js`、`anim.js`（`U.figHTML`、`U.range`、`U.seg`、`U.stepper`、`U.canvas`……）；`ctx.raf` 的動畫離頁自動停止。
 
+#### 共用畫法
+
+畫布上的東西先用引擎的共用畫法（`framework/engine/widgets/anim.js`），不要每章各寫一份：
+
+| 畫法 | 做什麼 |
+|---|---|
+| `U.node(c, x, y, w, h, 標題, o)` | 有字的方塊：圓角框加標題；`o.sub` 加第二行小字，`o.fill`、`o.stroke`、`o.dash`、`o.a` 改外觀 |
+| `U.frame(c, x, y, w, h, fn, o)` | 畫格：在 `fn()` 裡用自己的座標（預設 160×110）畫一個小場景，縮放放進方框 |
+| `U.clock()` | 計時：`k(選擇, t).el` 是這個選擇開始後過了幾秒；切換選擇就從 0 重算，用來重播動畫 |
+| `U.rng(種子)` | 固定種子的亂數，每次畫出來都一樣 |
+| `U.easeOut(p)` | 先快後慢的動畫進度 |
+| `U.txt`、`U.tag`、`U.arrow`、`U.dot`、`U.box`、`U.rrect` | 文字、有底色的標籤、箭頭、圓點、材料方塊、圓角框 |
+
+#### 參考色票
+
+畫互動圖可以參考這組顏色，`U.MAT` 裡有同名的顏色。這是參考，不是規定。
+
+| 用途 | 顏色 | `U.MAT` |
+|---|---|---|
+| 主色：重點、選到的 | `#1f4fb5`，淡色 `#e3ebfa` | `accent`、`accentSoft` |
+| 強調：新的、要注意的 | `#b3541e`，淡色 `#f8e9df` | `accent2`、`accent2Soft` |
+| 好、對 | `#1f7a4d`，淡色 `#e3f2ea` | `good`、`goodSoft` |
+| 壞、錯 | `#b3261e` | `bad` |
+| 提醒 | `#a8660a` | `warn` |
+| 文字 | `#17202b`，次要 `#3e4b5b`、更淡 `#6a7888` | `ink`、`ink2`、`ink3` |
+| 線、框 | `#d3dbe4` | `line` |
+
+#### 框架以外的工具做的圖
+
+只在傳承者要求時，才用框架以外的工具（例如別的畫圖 skill）做互動圖：做成知識庫 `deck/data/` 裡的一個檔案，不連外部網站；檔案開頭寫用什麼工具做的和授權，之後的人才知道怎麼改。
+
 版面特別的頁（例如全頁的表格、章節頁）寫 `body: true`，`render` 回傳整個內容區，右欄用 `U.pageSide({ top, meters, extra })` 放這一頁 Markdown 的重點、數字卡、比喻；`raw: true` 連標題都自己畫。`cls`、`eyebrow`、`back`、`hub` 這些頁面設定也寫在互動圖裡。半導體的互動圖（`kb/semiconductor/deck/figures/`）都是這種寫法，可以參考。
 
 互動圖只畫圖、管操作；要讓新人讀的文字寫在 Markdown（重點、圖說、旁白），查找、搜尋和讀者測試才讀得到。
