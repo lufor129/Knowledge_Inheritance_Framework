@@ -15,7 +15,8 @@
     si: '#a9bcd0', siDark: '#7f97b0', ox: '#f1e3a8', nit: '#8fc1b5', pr: '#e39ac2', prExp: '#f6d3e6',
     poly: '#c2a878', hk: '#9d80d6', metal: '#7b8794', cu: '#c9793b', sige: '#b8c85a', n: '#5b8fd9', p: '#d9765b',
     w: '#5e6770', ru: '#6f86a8', mask: '#2b3440', air: '#ffffff', lowk: '#d9e7c4', tin: '#6e5f4b', bond: '#c8cdd4',
-    accent: '#1f4fb5', accent2: '#b3541e', ink: '#17202b', ink2: '#3e4b5b', ink3: '#6a7888', line: '#d3dbe4', good: '#1f7a4d', bad: '#b3261e', warn: '#a8660a'
+    accent: '#1f4fb5', accent2: '#b3541e', ink: '#17202b', ink2: '#3e4b5b', ink3: '#6a7888', line: '#d3dbe4', good: '#1f7a4d', bad: '#b3261e', warn: '#a8660a',
+    accentSoft: '#e3ebfa', accent2Soft: '#f8e9df', goodSoft: '#e3f2ea'
   };
   U.MAT = MAT;
   /* 粒子顏色（全場統一）：電子＝藍色實心、電洞＝紅色空心、出問題的電子（漏電、穿隧）＝藍點加紅框 */

@@ -66,6 +66,44 @@
   };
   U.dot = (c, x, y, r, col) => { c.fillStyle = col; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); };
   U.rand = (a, b) => a + Math.random() * (b - a);
+
+  /* 共用畫法：各知識庫的互動圖都會用到的小工具，做圖先用這些，不要每章各寫一份 */
+  // 有字的方塊：圓角框加標題，o = { fill, stroke, lw, dash, a（透明度）, size, color, ty（標題的高度）, sub（第二行小字） }
+  U.node = (c, x, y, w, h, label, o) => {
+    o = o || {};
+    c.save(); c.globalAlpha = o.a === undefined ? 1 : o.a;
+    c.fillStyle = o.fill || '#fff'; U.rrect(c, x, y, w, h, 10); c.fill();
+    c.strokeStyle = o.stroke || '#d3dbe4'; c.lineWidth = o.lw || 1.5; if (o.dash) c.setLineDash(o.dash);
+    U.rrect(c, x, y, w, h, 10); c.stroke(); c.setLineDash([]);
+    U.txt(c, label, x + w / 2, y + (o.ty || h / 2 + 6), { align: 'center', size: o.size || 15, w: 700, color: o.color || '#17202b' });
+    if (o.sub) U.txt(c, o.sub, x + w / 2, y + (o.ty || h / 2 + 6) + 20, { align: 'center', size: 12.5, color: '#6a7888' });
+    c.restore();
+  };
+  // 畫格：把用自己座標（預設 160×110）畫的小場景，縮放放進畫面上的方框；fn() 裡照場景座標畫。o = { sw, sh, col, lw, dash }
+  U.frame = (c, x, y, w, h, fn, o) => {
+    o = o || {};
+    c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip();
+    c.translate(x, y); c.scale(w / (o.sw || 160), h / (o.sh || 110));
+    fn();
+    c.restore();
+    c.save(); c.strokeStyle = o.col || '#17202b'; c.lineWidth = o.lw || 2; if (o.dash) c.setLineDash(o.dash); c.strokeRect(x + 1, y + 1, w - 2, h - 2); c.restore();
+  };
+  // 計時：const k = U.clock(); 每次畫時 k(選擇, t) 回傳 { el: 這個選擇開始後過了幾秒, dt: 和上一次畫隔了幾秒 }；選擇一變，el 從 0 重算
+  U.clock = () => {
+    const st = { key: undefined, t0: 0, last: 0 };
+    return (key, t) => {
+      const dt = st.last ? Math.min(0.1, t - st.last) : 0; st.last = t;
+      if (key !== st.key) { st.key = key; st.t0 = t; }
+      return { el: t - st.t0, dt };
+    };
+  };
+  // 亂數：固定種子，每次畫出來都一樣。const r = U.rng(7); r() 回傳 0～1
+  U.rng = seed => {
+    let a = seed >>> 0;
+    return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  };
+  // 先快後慢：p 從 0 到 1（超出範圍會截掉）
+  U.easeOut = p => 1 - Math.pow(1 - U.clamp(p, 0, 1), 3);
 })();
 
 /* 逐步動畫播放器：steps = [{t, d, draw(c, w, h, p, time)}]，p 在進入該步時由 0 平滑跑到 1 */

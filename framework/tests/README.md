@@ -1,6 +1,6 @@
 # 情境測試
 
-用全新的 Claude Code 跑 docs/design.md 的情境（17 個，加上「刪除深入頁」、讀者測試範圍、合併留紀錄、材料放圖、回答帶待查證），由另一個模型扮演使用者回話，最後評分。改了 skill、AGENTS.md 或 framework/guide/ 之後跑一次，看行為有沒有變好或變壞。
+用全新的 Claude Code 跑 docs/design.md 的情境（17 個，加上「刪除深入頁」、讀者測試範圍、合併留紀錄、材料放圖、回答帶待查證、研究時傳承者否決說法、訪談說法和已有的頁不同），由另一個模型扮演使用者回話，最後評分。改了 skill、AGENTS.md 或 framework/guide/ 之後跑一次，看行為有沒有變好或變壞。
 
 ## 怎麼跑
 
@@ -13,7 +13,7 @@ python3 framework/tests/run.py --ref main --config with_skill --iteration .kif/t
 - `--model`：Agent 用的模型；例如 `--model sonnet` 看中階模型夠不夠用。
 - 其他選項見 run.py 開頭。
 
-一個情境大約 2 到 15 分鐘，全部跑完一兩個小時。研究類的情境（s07、s11）最花錢。
+一個情境大約 2 到 15 分鐘，全部跑完一兩個小時。研究類的情境（s07、s11、s22）最花錢。
 
 ## 會發生什麼
 

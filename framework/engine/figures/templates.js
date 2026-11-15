@@ -2,7 +2,8 @@
    要讓新人讀的文字（每一步的說明、每個零件的說明）寫在頁面 Markdown 的「圖說：」，這裡只管畫圖和操作。
      Fig.add('hk-wall', Fig.canvas({ … }))   拉桿看變化、切換比較：例如閘極那頁拖動厚度、切換材料
      Fig.add('gaa-flow', Fig.steps({ … }))   一步步播放：例如環繞式電晶體的製造步驟
-     Fig.add('mos-parts', Fig.parts({ … }))  可以點的結構圖：例如電晶體的零件 */
+     Fig.add('mos-parts', Fig.parts({ … }))  可以點的結構圖：例如電晶體的零件
+   draw 裡畫的東西先用共用畫法（anim.js 的 U.node、U.frame、U.clock、U.rng、U.easeOut），顏色參考 deck.md 的參考色票。 */
 (function () {
   let n = 0;
   const uid = p => `${p}${++n}`;

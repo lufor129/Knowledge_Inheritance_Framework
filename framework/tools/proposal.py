@@ -60,7 +60,13 @@ def kb_body(kb, ch, source, closes, reader, warns, files):
                   '- 報導：（新聞、業界媒體，各支持哪些說法；沒有就寫「沒有」）']
     else:
         origin = [f'{source}：（內容從哪裡來：整理了哪份資料／誰口述的）']
-    out += ['', '## 來歷', *origin, '', '## 影響']
+    out += ['', '## 來歷', *origin]
+    if source in ('研究', '整理'):  # kb-add 第 9 步：另一個 Agent 逐句核對出處，結果給維護者對照
+        out += ['', '## 事實查核', '另一個 Agent 抓出處全文逐句核對的結果，不是維護者的核准。',
+                '- 查了：（幾個來源的全文、幾輪；沒有做查核就把這一段刪掉）',
+                '- 抓到並改了：（哪一頁、哪一句、原本的問題；沒有就寫「沒有」）',
+                '- 還留著的提醒：（例如可能不該公開的內容，由維護者判斷；沒有就寫「沒有」）']
+    out += ['', '## 影響']
     others = [f for f in files if not f.startswith(f'kb/{kb.name}/deck/') and f != f'kb/{kb.name}/terms.md']
     out.append(f'- 一起改的檔案：{"、".join(others) if others else "沒有"}')
     out.append(f'- 讀者測試（和改過的頁有關的題目）：{reader + " 題答對" if reader else "（n/n 題答對）"}')
